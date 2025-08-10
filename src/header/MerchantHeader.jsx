@@ -9,7 +9,11 @@ const MerchantHeader = () => {
     <div className="w-full h-[60px] flex items-center px-[120px] border-b border-gray-200 font-pretendard">
       {/* 로고 */}
       <div className="flex-1 flex justify-start">
-        <img src={logo} alt="로고" className="w-[89.65px] h-[20px]" />
+        <img
+          src={logo}
+          alt="로고"
+          className="w-[89.65px] h-[20px] cursor-pointer"
+        />
       </div>
 
       {/* 검색창 */}
@@ -22,7 +26,7 @@ const MerchantHeader = () => {
           <input
             type="text"
             placeholder="어떤 공모전을 찾고있나요?"
-            className="ml-1.5 bg-[#F3F3F3] text-[12px] text-[#212121] placeholder:text-[12px] placeholder:text-[#A3A3A3] placeholder:font-medium focus:bg-[#FBFBFB] focus:outline-none"
+            className="w-full ml-1.5 bg-[#F3F3F3] text-[12px] text-[#212121] placeholder:text-[12px] placeholder:text-[#A3A3A3] placeholder:font-medium focus:bg-[#FBFBFB] focus:outline-none"
           />
         </div>
       </div>
@@ -34,7 +38,7 @@ const MerchantHeader = () => {
         </button>
         <Link
           to="/project-register"
-          className="w-[106px] h-[32px] px-[14px] py-[7px] text-[#4C4C4C] font-medium border-[1px] border-[#4C4C4C] rounded-[6px] text-[12px] cursor-pointer"
+          className="w-[106px] h-[32px] px-[14px] py-[7px] text-[#4C4C4C] font-medium border-[1px] border-[#4C4C4C] rounded-[6px] text-[12px] cursor-pointer hover:bg-[#2FD8F6]"
         >
           공모전 등록하기
         </Link>

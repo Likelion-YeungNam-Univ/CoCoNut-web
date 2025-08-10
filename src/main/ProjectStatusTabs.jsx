@@ -5,7 +5,7 @@ const ProjectStatusTabs = ({ activeTab, setActiveTab }) => {
   const tabs = ["진행 중", "투표 중", "완료"];
 
   return (
-    <div className="flex gap-4 pl-[416px] pt-[40px] pb-[40px]">
+    <div className="flex gap-4 pl-[416px] pt-[40px] pb-[32px]">
       {tabs.map((tab) => (
         <button
           key={tab}
