@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import RendingHeader from "../header/rendingHeader";
+import RendingHeader from "../header/RendingHeader";
 
 export default function Layout() {
   const location = useLocation();
