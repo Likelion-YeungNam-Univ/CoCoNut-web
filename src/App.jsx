@@ -1,7 +1,9 @@
+// App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Rending from "./pages/Rending";
 import Signup from "./pages/Signup";
+import Signin from "./pages/Signin";
 
 export default function App() {
   return (
@@ -10,6 +12,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Rending />} />
           <Route path="signup" element={<Signup />} />
+          <Route path="signin" element={<Signin />} />
         </Route>
       </Routes>
     </BrowserRouter>
