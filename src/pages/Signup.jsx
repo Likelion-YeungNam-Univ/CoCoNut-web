@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaCheckCircle } from "react-icons/fa";
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -281,7 +282,7 @@ const checkEmailDuplicate = async () => {
                     <span className="text-[12px] text-[#EE4343] mt-[4px]">{passwordMessage}</span>
                   )}
                 </div>
-                
+
               {/* 약관 동의 체크박스 */}
               <div className='mt-[32px]'>
                 <div className='flex flex-col gap-[14px]'>
@@ -314,7 +315,7 @@ const checkEmailDuplicate = async () => {
 
                   <div className='flex gap-[191px]'>
                   <span className='text-[14px]'>(필수) 서비스 이용약관 동의</span>
-                  <Link className='text-[12px] underline text-[#A3A3A3]' to='modal'>자세히보기</Link>
+                  <Link className='text-[12px] underline text-[#A3A3A3] hover:[#828282]' to='modal'>자세히보기</Link>
                   </div>
                 
                   
@@ -348,7 +349,7 @@ const checkEmailDuplicate = async () => {
                 </label>
                   <div className='flex gap-[123px]'>
                   <span className='text-[14px]'>(필수) 개인정보수집 및 이용에 대한 안내</span>
-                  <Link className='text-[12px] underline text-[#A3A3A3]' to='modal'>자세히보기</Link>
+                  <Link className='text-[12px] underline text-[#A3A3A3] hover:[#828282]' to='modal'>자세히보기</Link>
                   </div>
                 </div>
                 </div>
@@ -370,6 +371,16 @@ const checkEmailDuplicate = async () => {
           </div>
         </div>
       )}
+    {currentStep === 3 && (
+      <div className='flex flex-col font-pretendard items-center border border-white rounded-[12px] bg-white w-[504px] h-[340px]'>
+      <FaCheckCircle className='mt-[60px]' size={60} color='#2FD8F6' />
+      <span className='mt-[20px] font-semibold text-[24px]'>회원가입이 완료되었습니다.</span>
+      <span className='mt-[8px] text-[#A3A3A3] text-[14px]'>로그인 후 브릿지의 서비스를 이용하실 수 있습니다.</span>
+      <Link className='mt-[40px] border border-[#2FD8F6] text-white bg-[#2FD8F6] rounded-[8px] py-[12px] px-[40px]' to='signin'>로그인하러 가기</Link>
+      </div>
+    )}
+
+  
     </div>
   );
 };
