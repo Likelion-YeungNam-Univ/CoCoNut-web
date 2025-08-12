@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaCheckCircle } from "react-icons/fa";
+import ScriptModal from '../components/ScriptModal';
+import PolicyContent from '../components/PolicyContent';
 
 const Signup = () => {
   const [name, setName] = useState("");
@@ -18,6 +20,9 @@ const Signup = () => {
   const [currentStep, setCurrentStep] = useState(1);
 
   const [passwordMessage, setPasswordMessage] = useState("");
+
+    const [isTermsOpen, setIsTermsOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false); //모달상태
 
   const validatePassword = (value) => {
   // 영문, 숫자, 특수기호 포함 8~16자 정규식
@@ -315,7 +320,13 @@ const checkEmailDuplicate = async () => {
 
                   <div className='flex gap-[191px]'>
                   <span className='text-[14px]'>(필수) 서비스 이용약관 동의</span>
-                  <Link className='text-[12px] underline text-[#A3A3A3] hover:[#828282]' to='modal'>자세히보기</Link>
+                  <button
+                        type="button"
+                        className='text-[12px] underline text-[#A3A3A3] hover:text-[#828282]'
+                        onClick={() => setIsTermsOpen(true)}
+                      >
+                        자세히보기
+                      </button>
                   </div>
                 
                   
@@ -349,7 +360,13 @@ const checkEmailDuplicate = async () => {
                 </label>
                   <div className='flex gap-[123px]'>
                   <span className='text-[14px]'>(필수) 개인정보수집 및 이용에 대한 안내</span>
-                  <Link className='text-[12px] underline text-[#A3A3A3] hover:[#828282]' to='modal'>자세히보기</Link>
+                   <button
+                        type="button"
+                        className='text-[12px] underline text-[#A3A3A3] hover:text-[#828282]'
+                        onClick={() => setIsPrivacyOpen(true)}
+                      >
+                        자세히보기
+                      </button>
                   </div>
                 </div>
                 </div>
@@ -379,8 +396,21 @@ const checkEmailDuplicate = async () => {
       <Link className='mt-[40px] border border-[#2FD8F6] text-white bg-[#2FD8F6] rounded-[8px] py-[12px] px-[40px]' to='signin'>로그인하러 가기</Link>
       </div>
     )}
+   <ScriptModal
+      isOpen={isTermsOpen}
+      onClose={() => setIsTermsOpen(false)}
+      title="서비스 이용약관"
+    >
+      <PolicyContent type="terms" />
+    </ScriptModal>
 
-  
+    <ScriptModal
+      isOpen={isPrivacyOpen}
+      onClose={() => setIsPrivacyOpen(false)}
+      title="개인정보 수집 및 이용"
+    >
+      <PolicyContent type="privacy" />
+</ScriptModal>
     </div>
   );
 };
