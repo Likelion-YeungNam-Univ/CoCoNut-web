@@ -3,6 +3,7 @@ import ProjectCardInProgress from "./projectCard/ProjectCardInProgress";
 import ProjectCardVoting from "./projectCard/ProjectCardVoting";
 import ProjectCardClosed from "./projectCard/ProjectCardClosed";
 import Pagination from "../components/Pagination";
+import noProjectIcon from "../assets/noProjectIcon.png";
 
 // 임시 목업 데이터
 const projects = [
@@ -280,10 +281,16 @@ const ProjectList = ({
   selectedBusinesses = [],
 }) => {
   const [page, setPage] = useState(1); // 현재 보고있는 페이지 번호 상태
+
+  // 탭이 바뀌거나, 카테고리/업종 체크박스 선택 시 1페이지로 리셋
   useEffect(() => {
-    // 탭이 바뀌거나, 카테고리/업종 체크박스 선택 시 1페이지로 리셋
     setPage(1);
   }, [activeTab, selectedCategories, selectedBusinesses]);
+
+  // 페이지 전환할 때 효과
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
 
   // 탭 상태, 선택된 카테고리/업종과 동일한 공모전만 보여주기
   const filtered = useMemo(() => {
@@ -313,27 +320,37 @@ const ProjectList = ({
   const Card = CardByStatus[activeTab];
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="text-[20px] font-pretendard font-semibold mb-[16px]">
+    <div className="flex flex-col gap-4 font-pretendard">
+      <div className="text-[20px] font-semibold mb-[16px]">
         {headerText[activeTab]}
       </div>
 
       {pageItems.length === 0 ? (
-        <div>공모전이 없습니다.</div>
+        <div className="flex flex-col justify-center items-center w-[856px] pt-[80px]">
+          <img src={noProjectIcon} className="w-[120px] h-[120px]" />
+          <div className="pt-[16px] text-[16px] text-[#212121] font-semibold">
+            아직 공모전이 없어요.
+          </div>
+          <div className="pt-[8px] text-[12px] text-[#A3A3A3] font-medium">
+            조금만 기다려주세요.
+          </div>
+        </div>
       ) : (
-        pageItems.map((project) => (
-          <Card key={project.project_id} project={project} />
-        ))
+        <>
+          {pageItems.map((project) => (
+            <Card key={project.project_id} project={project} />
+          ))}
+          <div className="mt-[60px]">
+            <Pagination
+              totalItems={totalItems}
+              page={page}
+              onPageChange={setPage}
+              pageSize={PAGE_SIZE}
+              blockSize={BLOCK_SIZE}
+            />
+          </div>
+        </>
       )}
-      <div className="mt-[60px]">
-        <Pagination
-          totalItems={totalItems}
-          page={page}
-          onPageChange={setPage}
-          pageSize={PAGE_SIZE}
-          blockSize={BLOCK_SIZE}
-        />
-      </div>
     </div>
   );
 };
