@@ -1,15 +1,17 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./pages/Layout";
 import Rending from "./pages/Rending";
+import Signup from "./pages/Signup";
 
-const App = () => {
-  return(
-<BrowserRouter>
-  <Routes>
-    <Route path="/" element={<Rending/>}>
-    </Route>
-  </Routes>
- </BrowserRouter>
- )
-};
-
-export default App;
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Rending />} />
+          <Route path="signup" element={<Signup />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
+}
