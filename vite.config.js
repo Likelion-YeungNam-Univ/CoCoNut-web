@@ -10,4 +10,7 @@ export default defineConfig({
     port: 5173,
     open: true,
   },
+  css: {
+    url: false, // CSS 안의 url() 리라이트 비활성화
+  },
 });
