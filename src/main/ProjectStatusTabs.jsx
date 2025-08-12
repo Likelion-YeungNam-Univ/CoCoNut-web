@@ -18,7 +18,7 @@ const ProjectStatusTabs = ({ activeTab, setActiveTab }) => {
           className={`text-[20px] font-pretendard font-semibold cursor-pointer ${
             activeTab === tab
               ? "text-[#212121] border-b-[4px] border-[#212121]"
-              : "text-[#C3C3C3]"
+              : "text-[#C3C3C3] hover:text-[#AEAEAE]"
           }`}
         >
           {tabLabels[tab]}

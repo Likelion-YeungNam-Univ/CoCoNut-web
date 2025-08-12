@@ -21,7 +21,8 @@ const Pagination = ({
     onPageChange(p);
   };
 
-  const iconStyle = "w-[16px] h-[16px] text-[#A3A3A3] cursor-pointer";
+  const iconStyle =
+    "w-[16px] h-[16px] text-[#A3A3A3] cursor-pointer hover:text-[#828282]";
 
   return (
     <div className="flex items-center justify-center gap-[12px]">
