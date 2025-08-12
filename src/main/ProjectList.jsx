@@ -1,12 +1,183 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import ProjectCardInProgress from "./projectCard/ProjectCardInProgress";
 import ProjectCardVoting from "./projectCard/ProjectCardVoting";
 import ProjectCardClosed from "./projectCard/ProjectCardClosed";
+import Pagination from "../components/Pagination";
 
 // 임시 목업 데이터
 const projects = [
   {
     project_id: 1,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 11,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 12,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 13,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 14,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 15,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 16,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 17,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 18,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 19,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    merchant_name: "빌런호프",
+    category: "그래픽/편집",
+    business_type: "식당/카페/주점",
+    description:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    period: "2025.08.10 - 2025.08.20",
+    reward_amount: 300000,
+    summary: "감성적인 로고를 원합니다.",
+    created_at: "2025-08-10",
+    deadline: "2025-08-27",
+    status: "in_progress",
+    user_id: 101,
+    nickname: "오뚜기",
+  },
+  {
+    project_id: 19,
     title: "음식점 메뉴판 3장 디자인 필요해요",
     merchant_name: "빌런호프",
     category: "그래픽/편집",
@@ -100,11 +271,20 @@ const CardByStatus = {
   closed: ProjectCardClosed,
 };
 
+const PAGE_SIZE = 10; // 페이지 당 최대 카드 수
+const BLOCK_SIZE = 5; // 1~5, 다음으로는 6~10 처럼 보이는 페이지 묶음 크기
+
 const ProjectList = ({
   activeTab,
   selectedCategories = [],
   selectedBusinesses = [],
 }) => {
+  const [page, setPage] = useState(1); // 현재 보고있는 페이지 번호 상태
+  useEffect(() => {
+    // 탭이 바뀌거나, 카테고리/업종 체크박스 선택 시 1페이지로 리셋
+    setPage(1);
+  }, [activeTab, selectedCategories, selectedBusinesses]);
+
   // 탭 상태, 선택된 카테고리/업종과 동일한 공모전만 보여주기
   const filtered = useMemo(() => {
     const byStatus = projects.filter((project) => project.status === activeTab);
@@ -126,6 +306,10 @@ const ProjectList = ({
     return byBusiness;
   }, [activeTab, selectedCategories, selectedBusinesses]);
 
+  const totalItems = filtered.length; // 필터 거친 아이템 개수
+  const start = (page - 1) * PAGE_SIZE; // 현재 페이지에서 몇 번째 데이터부터 가져올지 계산
+  const pageItems = filtered.slice(start, start + PAGE_SIZE); //현재 페이지에 해당하는 데이터만 잘라서 저장
+
   const Card = CardByStatus[activeTab];
 
   return (
@@ -134,13 +318,22 @@ const ProjectList = ({
         {headerText[activeTab]}
       </div>
 
-      {filtered.length === 0 ? (
+      {pageItems.length === 0 ? (
         <div>공모전이 없습니다.</div>
       ) : (
-        filtered.map((project) => (
+        pageItems.map((project) => (
           <Card key={project.project_id} project={project} />
         ))
       )}
+      <div className="mt-[60px]">
+        <Pagination
+          totalItems={totalItems}
+          page={page}
+          onPageChange={setPage}
+          pageSize={PAGE_SIZE}
+          blockSize={BLOCK_SIZE}
+        />
+      </div>
     </div>
   );
 };
