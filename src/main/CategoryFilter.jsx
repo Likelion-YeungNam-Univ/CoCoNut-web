@@ -69,7 +69,7 @@ const CategoryFilter = ({
               const id = `category-${index}`;
               const checked = selectedCategories.includes(category);
               return (
-                <li key={id} className="flex items-center gap-2 ml-1.5">
+                <li key={id} className="flex items-center gap-2 ml-1.5 ">
                   <input
                     id={id}
                     type="checkbox"
@@ -82,7 +82,14 @@ const CategoryFilter = ({
                     className={`
                   appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3] checked:bg-[url('/checkIcon.png')] checked:border-none checked:bg-center checked:bg-[length:20px_20px]`}
                   />
-                  <label htmlFor={id} className="text-[12px] text-[#828282]">
+                  <label
+                    htmlFor={id}
+                    className={`text-[12px] ${
+                      checked
+                        ? "text-[#212121]"
+                        : "text-[#828282] hover:text-[#626262]"
+                    }`}
+                  >
                     {category}
                   </label>
                 </li>
