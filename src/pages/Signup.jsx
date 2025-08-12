@@ -3,12 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaCheckCircle } from "react-icons/fa";
 import ScriptModal from '../components/ScriptModal';
 import PolicyContent from '../components/PolicyContent';
+import { IoEyeSharp } from "react-icons/io5";
+import { BsFillEyeSlashFill } from "react-icons/bs";
 
 const Signup = () => {
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const [email, setEmail] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
@@ -123,21 +127,25 @@ const checkEmailDuplicate = async () => {
   };
 
   const stepBox = (step, label) => (
-    <div className='flex flex-row gap-[8px] border border-[#FFFFFF] bg-[#FFFFFF] rounded-[8px] p-[14px]'>
+    <div className='flex flex-row gap-[8px] border border-[#FFFFFF] bg-[#FFFFFF] rounded-[8px] w-[152px] h-[48px] p-[14px] text-[14px]'>
       <div
-        className={`border w-7 h-7 rounded-full flex items-center justify-center 
-          ${currentStep === step ? "bg-black text-white" : "bg-gray-300 text-white"}`}
+        className={`border w-[20px] h-[20px] rounded-full flex justify-center
+          ${currentStep === step ? "bg-black text-white" : "bg-[#E1E1E1] text-white"}`}
       >
         {step}
       </div>
-      <span className='mt-0.5'>{label}</span>
+       <span
+    className={currentStep === step ? "text-[#212121]" : "text-[#A3A3A3]"}
+  >
+    {label}
+  </span>
     </div>
   );
 
   return (
-    <div className='bg-[#F3F3F3] min-h-screen flex flex-col items-center gap-3 font-pretendard'>
-      <span className='font-bold text-4xl mt-[120px]'>회원가입</span>
-      <div className='flex flex-row gap-[8px] p-[14px] '>
+    <div className='bg-[#F3F3F3] flex flex-col items-center gap-3 font-pretendard '>
+      <span className='font-bold text-4xl mt-[60px]'>회원가입</span>
+      <div className='flex flex-row gap-[8px] p-[14px]'>
         {stepBox(1, "회원 유형 선택")}
         {stepBox(2, "회원 정보 입력")}
         {stepBox(3, "회원가입 완료")}
@@ -197,24 +205,27 @@ const checkEmailDuplicate = async () => {
         <div className='border w-[504px] h-[620px] rounded-[12px] border-[#FFFFFF] bg-[#FFFFFF] font-pretendard'>
           <div className='flex flex-col my-[18px] mx-[36px]'>
             <form className='flex flex-col gap-[8px]' onSubmit={signUpHandler}>
-              <div className='flex flex-col gap-[2px]'>
-                <span className='text-[14px]'>아이디</span>
+              <div className='flex flex-col gap-[20px]'>
+              <div className='flex flex-col gap-[8px]'>
+                <label className='text-[14px] flex gap-[2px]'>아이디<span className='text-[14px] text-[#2FD8F6]'>*</span></label>
                 <div>
                   <div className="flex gap-[8px] items-center">
                     <input
-                      className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
+                      className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] text-[14px] border rounded-[6px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder='이메일을 입력해 주세요.'
                     />
-                    <button
-                      type="button"
-                      onClick={checkEmailDuplicate}
-                      className="w-[83px] h-[48px] border rounded-[6px] border-[#E1E1E1] bg-[#E1E1E1] text-[#828282] hover:bg-[#4C4C4C]"
-                      disabled={checkingEmail}
+                  <button
+                    type="button"
+                    onClick={checkEmailDuplicate}
+                    className={`w-[83px] h-[48px] border rounded-[6px]
+                      ${!email || checkingEmail ? "border-[#E1E1E1] bg-[#E1E1E1] text-[#828282] cursor-not-allowed"
+                                                : "bg-[#4C4C4C] text-white hover:opacity-90"}`}
+                    disabled={!email || checkingEmail}
                     >
-                      {checkingEmail ? "확인중" : "중복확인"}
-                    </button>
+                    {checkingEmail ? "확인중" : "중복확인"}
+                </button>
                   </div>
                  {emailMessage && (
                   <span
@@ -228,20 +239,23 @@ const checkEmailDuplicate = async () => {
                 </div>
               </div>
 
-              <div className='flex flex-col gap-[2px]'>
-                <span className='text-[14px]'>닉네임</span>
+              <div className='flex flex-col gap-[8px]'>
+                <label className='text-[14px] flex gap-[2px]'>닉네임<span className='text-[14px] text-[#2FD8F6]'>*</span></label>
                 <div className="flex gap-[8px] items-center">
                   <input
-                    className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
+                    className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] text-[14px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
                     value={nickname}
                     onChange={(e) => setNickname(e.target.value)}
                     placeholder='10자 이내로 작성해 주세요.'
                   />
-                  <button
+                 <button
                     type="button"
                     onClick={checkNicknameDuplicate}
-                    className="w-[83px] h-[48px] border rounded-[6px] border-[#E1E1E1] bg-[#E1E1E1] text-[#828282] hover:bg-[#4C4C4C]"
-                    disabled={checkingNickname}
+                    className={`w-[83px] h-[48px] border rounded-[6px]
+                      ${!nickname || checkingNickname
+                        ? "border-[#E1E1E1] bg-[#E1E1E1] text-[#828282] cursor-not-allowed"
+                        : "bg-[#4C4C4C] text-white hover:opacity-90"}`}
+                    disabled={!nickname || checkingNickname}
                   >
                     {checkingNickname ? "확인중" : "중복확인"}
                   </button>
@@ -261,33 +275,44 @@ const checkEmailDuplicate = async () => {
                     )}
               </div>
 
-              <div className='flex flex-col gap-[2px]'>
-                <span className='text-[14px]'>이름</span>
+              <div className='flex flex-col gap-[8px]'>
+                <label className='text-[14px] flex gap-[2px]'>이름<span className='text-[14px] text-[#2FD8F6]'>*</span></label>
                 <input
-                  className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] border-[#F3F3F3] w-[424px] h-[48px] focus:outline-none'
+                  className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] text-[14px] border rounded-[6px] border-[#F3F3F3] w-[424px] h-[48px] focus:outline-none'
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder='이름을 입력해 주세요.'
                 />
               </div>
 
-              <div className='flex flex-col gap-[2px]'>
-                  <span className='text-[14px]'>비밀번호</span>
+              <div className='flex flex-col gap-[8px]'>
+                <label className='text-[14px] flex gap-[2px]'>
+                  비밀번호<span className='text-[14px] text-[#2FD8F6]'>*</span>
+                </label>
+                <div className="relative w-[424px]">
                   <input
-                    className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] border-[#F3F3F3] w-[424px] h-[48px] focus:outline-none'
+                    className='text-[14px] pt-[15px] pr-[40px] pb-[15px] pl-[16px] border rounded-[6px] border-[#F3F3F3] w-full h-[48px] focus:outline-none'
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
-                      validatePassword(e.target.value); // 입력 시마다 검증
+                      validatePassword(e.target.value);
                     }}
                     placeholder='영문,숫자,특수기호 조합 8자~16자'
-                    type='password'
+                    type={showPassword ? 'text' : 'password'}
                   />
-                  {passwordMessage && (
-                    <span className="text-[12px] text-[#EE4343] mt-[4px]">{passwordMessage}</span>
-                  )}
+                  <span
+                    className="absolute right-[20px] top-1/2 transform -translate-y-2 cursor-pointer text-[#828282]"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <IoEyeSharp size={16} /> : <BsFillEyeSlashFill size={16} />}
+                  </span>
                 </div>
+  {passwordMessage && (
+    <span className="text-[12px] text-[#EE4343] mt-[4px]">{passwordMessage}</span>
+  )}
 
+</div>
+</div>
               {/* 약관 동의 체크박스 */}
               <div className='mt-[32px]'>
                 <div className='flex flex-col gap-[14px]'>
@@ -301,7 +326,7 @@ const checkEmailDuplicate = async () => {
                     />
                     <span
                       className={`w-[20px] h-[20px] flex items-center justify-center rounded border 
-                        ${termsAgreed1 ? "bg-[#2FD8F6] border-[#2FD8F6]" : "bg-white border-gray-400"}`}
+                        ${termsAgreed1 ? "bg-[#2FD8F6] border-[#F3F3F3]" : "bg-white border-[#F3F3F3]"}`}
                     >
                       {termsAgreed1 && (
                         <svg
@@ -338,11 +363,11 @@ const checkEmailDuplicate = async () => {
                     type="checkbox"
                     checked={termsAgreed2}
                     onChange={() => setTermsAgreed2(!termsAgreed2)}
-                    className="hidden"
+                    className="hidden "
                   />
                   <span
                     className={`w-[20px] h-[20px] flex items-center justify-center rounded border 
-                      ${termsAgreed2 ? "bg-[#2FD8F6] border-[#2FD8F6]" : "bg-white border-gray-400"}`}
+                      ${termsAgreed2 ? "bg-[#2FD8F6] border-[#F3F3F3]" : "bg-white border-[#F3F3F3]"}`}
                   >
                     {termsAgreed2 && ( // 체크박스 커스텀
                       <svg
