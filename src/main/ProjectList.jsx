@@ -100,12 +100,31 @@ const CardByStatus = {
   closed: ProjectCardClosed,
 };
 
-const ProjectList = ({ activeTab }) => {
-  // 탭 상태와 동일한 status만 보여주기
-  const filtered = useMemo(
-    () => projects.filter((project) => project.status === activeTab),
-    [projects, activeTab]
-  );
+const ProjectList = ({
+  activeTab,
+  selectedCategories = [],
+  selectedBusinesses = [],
+}) => {
+  // 탭 상태, 선택된 카테고리/업종과 동일한 공모전만 보여주기
+  const filtered = useMemo(() => {
+    const byStatus = projects.filter((project) => project.status === activeTab);
+
+    const byCategory =
+      selectedCategories.length === 0
+        ? byStatus
+        : byStatus.filter((project) =>
+            selectedCategories.includes(project.category)
+          );
+
+    const byBusiness =
+      selectedBusinesses.length === 0
+        ? byCategory
+        : byCategory.filter((project) =>
+            selectedBusinesses.includes(project.business_type)
+          );
+
+    return byBusiness;
+  }, [activeTab, selectedCategories, selectedBusinesses]);
 
   const Card = CardByStatus[activeTab];
 

@@ -27,9 +27,18 @@ const businesses = [
   "기타",
 ];
 
-const CategoryFilter = () => {
+const CategoryFilter = ({
+  selectedCategories,
+  setSelectedCategories,
+  selectedBusinesses,
+  setSelectedBusinesses,
+}) => {
   const [categoryOpen, setCategoryOpen] = useState(true);
   const [businessOpen, setBusinessOpen] = useState(true);
+
+  // 배열에 해당 값이 있으면 제거, 없으면 추가하여 새로운 배열 반환
+  const toggleArrayItem = (arr, value) =>
+    arr.includes(value) ? arr.filter((v) => v !== value) : [...arr, value];
 
   return (
     <div className="w-[136px] h-[712px] font-pretendard">
@@ -56,21 +65,29 @@ const CategoryFilter = () => {
         {/* 카테고리 목록 */}
         {categoryOpen && (
           <ul className="mt-3 space-y-[12px]">
-            {categories.map((category, index) => (
-              <li key={index} className="flex items-center gap-2 ml-1.5">
-                <input
-                  type="checkbox"
-                  className={`
+            {categories.map((category, index) => {
+              const id = `category-${index}`;
+              const checked = selectedCategories.includes(category);
+              return (
+                <li key={id} className="flex items-center gap-2 ml-1.5">
+                  <input
+                    id={id}
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() =>
+                      setSelectedCategories((prev) =>
+                        toggleArrayItem(prev, category)
+                      )
+                    }
+                    className={`
                   appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3] checked:bg-[url('/checkIcon.png')] checked:border-none checked:bg-center checked:bg-[length:20px_20px]`}
-                />
-                <label
-                  htmlFor={`category-${index}`}
-                  className="text-[12px] text-[#828282]"
-                >
-                  {category}
-                </label>
-              </li>
-            ))}
+                  />
+                  <label htmlFor={id} className="text-[12px] text-[#828282]">
+                    {category}
+                  </label>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
@@ -100,21 +117,29 @@ const CategoryFilter = () => {
         {/* 업종 목록 */}
         {businessOpen && (
           <ul className="mt-3 space-y-[12px]">
-            {businesses.map((business, index) => (
-              <li key={index} className="flex items-center gap-2 ml-1.5">
-                <input
-                  type="checkbox"
-                  className={`
+            {businesses.map((business, index) => {
+              const id = `business-${index}`;
+              const checked = selectedBusinesses.includes(business);
+              return (
+                <li key={id} className="flex items-center gap-2 ml-1.5">
+                  <input
+                    id={id}
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() =>
+                      setSelectedBusinesses((prev) =>
+                        toggleArrayItem(prev, business)
+                      )
+                    }
+                    className={`
                   appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3] checked:bg-[url('/checkIcon.png')] checked:border-none checked:bg-center checked:bg-[length:20px_20px]`}
-                />
-                <label
-                  htmlFor={`business-${index}`}
-                  className="text-[12px] text-[#828282]"
-                >
-                  {business}
-                </label>
-              </li>
-            ))}
+                  />
+                  <label htmlFor={id} className="text-[12px] text-[#828282]">
+                    {business}
+                  </label>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
