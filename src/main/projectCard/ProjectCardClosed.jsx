@@ -7,7 +7,7 @@ import projectImgExample from "../../assets/projectImgExample.png";
 
 const ProjectCardClosed = ({ project }) => {
   return (
-    <div className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard">
+    <div className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
       {/* 수상작 대표 이미지 */}
       <img
         src={projectImgExample}

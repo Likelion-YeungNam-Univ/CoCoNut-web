@@ -7,7 +7,7 @@ import { PiLineVertical } from "react-icons/pi";
 
 const ProjectCardInProgress = ({ project }) => {
   return (
-    <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard">
+    <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
       {/* 상단 카테고리/마감일 */}
       <div className="flex gap-[4px] text-[12px] text-[#A3A3A3] font-medium mt-[20px]">
         <span>30일 후 마감</span>
