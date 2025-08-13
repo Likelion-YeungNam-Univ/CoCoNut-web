@@ -15,13 +15,16 @@ const ProjectStatusTabs = ({ activeTab, setActiveTab }) => {
         <button
           key={tab}
           onClick={() => setActiveTab(tab)}
-          className={`text-[20px] font-pretendard font-semibold cursor-pointer ${
+          className={`relative text-[20px] font-pretendard font-semibold cursor-pointer ${
             activeTab === tab
-              ? "text-[#212121] border-b-[4px] border-[#212121]"
+              ? "text-[#212121]"
               : "text-[#C3C3C3] hover:text-[#AEAEAE]"
           }`}
         >
           {tabLabels[tab]}
+          {activeTab === tab && (
+            <span className="absolute left-0 bottom-[-4px] w-full h-[4px] bg-[#212121] rounded-[2px]" />
+          )}
         </button>
       ))}
     </div>
