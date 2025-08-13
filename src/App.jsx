@@ -4,9 +4,11 @@ import Layout from "./pages/Layout";
 import Rending from "./pages/Rending";
 import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
+import AuthProvider from "./contexts/AuthProvider";
 
 export default function App() {
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         <Route element={<Layout />}>
@@ -16,5 +18,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   );
 }
