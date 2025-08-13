@@ -5,14 +5,21 @@ import ScriptModal from '../components/ScriptModal';
 import PolicyContent from '../components/PolicyContent';
 import { IoEyeSharp } from "react-icons/io5";
 import { BsFillEyeSlashFill } from "react-icons/bs";
+import signUpApi from "../apis/signUpApi";
 
 const Signup = () => {
+const checkEmailApi = async () => ({ exists: false });
+const checkNicknameApi = async () => ({ exists: false });
+
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
+
+  const [termsAgreed1, setTermsAgreed1] = useState(false);
+const [termsAgreed2, setTermsAgreed2] = useState(false);
 
   const [email, setEmail] = useState("");
   const [emailMessage, setEmailMessage] = useState("");
@@ -28,39 +35,17 @@ const Signup = () => {
     const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false); //모달상태
 
-  const validatePassword = (value) => {
-  // 영문, 숫자, 특수기호 포함 8~16자 정규식
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{};':"\\|,.<>/?]).{8,16}$/;
-  if (!passwordRegex.test(value)) {
-    setPasswordMessage("영문, 숫자, 특수기호 조합 8자~16자를 입력해 주세요.");
-  } else {
-    setPasswordMessage(""); // 조건 충족 시 메시지 제거
-  }
+ const validatePassword = (value) => {
+  const passwordRegex =
+    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};':"\\|,.<>/?]).{8,16}$/;
+  setPasswordMessage(
+    passwordRegex.test(value)
+      ? ""
+      : "영문, 숫자, 특수기호 조합 8자~16자를 입력해 주세요."
+  );
 };
 
-
-  // 약관 동의 상태 관리
-  const [termsAgreed1, setTermsAgreed1] = useState(false);
-  const [termsAgreed2, setTermsAgreed2] = useState(false);
-
-  const navigate = useNavigate();
-
-  const checkEmailApi = async (emailValue) => {
-    return new Promise((resolve) =>
-      setTimeout(() => resolve({ exists: false }), 500)
-    );
-  };
-  const checkNicknameApi = async (nicknameValue) => {
-    return new Promise((resolve) =>
-      setTimeout(() => resolve({ exists: false }), 500)
-    );
-  };
-  const signUpApi = async (body) => {
-    return new Promise((resolve) =>
-      setTimeout(() => resolve({ ok: true }), 700)
-    );
-  };
-
+// --- 이메일 중복확인(실제 API 있으면 연동) ---
 const checkEmailDuplicate = async () => {
   if (!email) {
     setEmailMessage("이메일을 입력하세요.");
@@ -69,67 +54,85 @@ const checkEmailDuplicate = async () => {
   try {
     setCheckingEmail(true);
 
-    // 형식 검사
+    // 형식 검사(서버 정책에 맞게 유지/완화)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setEmailMessage("이메일 형식에 맞춰 입력해 주세요.(예시: abcd@gmail.com)");
-      return; // 형식 틀리면 API 호출 안 함
+      setEmailMessage("이메일 형식에 맞춰 입력해 주세요.(예: abcd@gmail.com)");
+      return;
     }
 
-    // 중복 검사
-    const res = await checkEmailApi(email);
-    if (res.exists) {
-      setEmailMessage("이미 존재하는 아이디입니다. 다른 아이디를 입력해 주세요.");
-    } else {
-      setEmailMessage("사용 가능한 아이디입니다.");
-    }
-  } catch (e) {
-    setEmailMessage("중복확인 중 오류가 발생했습니다.");
+    // TODO: 실제 중복확인 API로 교체
+    const res = await (async () => ({ exists: false }))();
+    setEmailMessage(
+      res.exists ? "이미 존재하는 아이디입니다." : "사용 가능한 아이디입니다."
+    );
+  } catch {
+    setEmailMessage("중복 확인 중 오류가 발생했습니다.");
   } finally {
     setCheckingEmail(false);
   }
 };
 
+// --- 닉네임 중복확인(실제 API 있으면 연동) ---
+const checkNicknameDuplicate = async () => {
+  if (!nickname) {
+    setNicknameMessage("닉네임을 입력하세요.");
+    return;
+  }
+  try {
+    setCheckingNickname(true);
 
-  const checkNicknameDuplicate = async () => {
-    if (!nickname) {
-      setNicknameMessage("닉네임을 입력하세요.");
-      return;
-    }
-    try {
-      setCheckingNickname(true);
-      const res = await checkNicknameApi(nickname);
-      setNicknameMessage(res.exists ? "이미 존재하는 닉네임입니다. 다른 닉네임을 입력해 주세요." : "사용 가능한 닉네임입니다.");
-    } catch (e) {
-      setNicknameMessage("중복확인 중 오류가 발생했습니다.");
-    } finally {
-      setCheckingNickname(false);
-    }
+    // TODO: 실제 중복확인 API로 교체
+    const res = await (async () => ({ exists: false }))();
+    setNicknameMessage(
+      res.exists ? "이미 존재하는 닉네임입니다." : "사용 가능한 닉네임입니다."
+    );
+  } catch {
+    setNicknameMessage("중복 확인 중 오류가 발생했습니다.");
+  } finally {
+    setCheckingNickname(false);
+  }
+};
+
+// --- 회원가입 제출 ---
+const signUpHandler = async (e) => {
+  e.preventDefault();
+
+  if (!(termsAgreed1 && termsAgreed2)) {
+    alert("필수 약관에 동의해 주세요.");
+    return;
+  }
+
+  if (!email || !name || !nickname || !password || !role) {
+    alert("필수 정보를 모두 입력해 주세요.");
+    return;
+  }
+
+  // 🔸 role 매핑 (서버 스펙에 맞게 조정)
+  const roleMap = {
+    "참가자": "ROLE_USER",
+    "소상공인": "ROLE_MERCHANT", // 서버에서 요구하는 값으로 바꾸세요
   };
+  const mappedRole = roleMap[role] ?? role;
 
-  const signUpHandler = async (e) => {
-    e.preventDefault();
+  const body = { email, name, nickname, password, role: mappedRole };
 
-    const body = {
-      name,
-      nickname,
-      password,
-      role,
-      email,
-    };
-
-    try {
-      await signUpApi(body);
-      navigate("/main");
-    } catch (err) {
-      alert(`회원가입 실패: ${err.message}`);
-    }
-  };
-
+  try {
+    await signUpApi(body);        // 실제 API 호출
+    setCurrentStep(3);            // 완료 스텝으로 이동
+  } catch (err) {
+    console.error("회원가입 실패:", {
+      message: err.message,
+      status: err.response?.status,
+      data: err.response?.data,
+    });
+    alert(`회원가입 실패: ${err?.response?.data?.message || err.message}`);
+  }
+};
   const stepBox = (step, label) => (
     <div className='flex flex-row gap-[8px] border border-[#FFFFFF] bg-[#FFFFFF] rounded-[8px] w-[152px] h-[48px] p-[14px] text-[14px]'>
       <div
-        className={`border w-[20px] h-[20px] rounded-full flex justify-center
+        className={`border text-[12px] w-[20px] h-[20px] rounded-full flex justify-center
           ${currentStep === step ? "bg-black text-white" : "bg-[#E1E1E1] text-white"}`}
       >
         {step}
@@ -219,17 +222,18 @@ const checkEmailDuplicate = async () => {
                   <button
                     type="button"
                     onClick={checkEmailDuplicate}
-                    className={`w-[83px] h-[48px] border rounded-[6px]
+                    className={`w-[91px] h-[48px] border rounded-[6px]
                       ${!email || checkingEmail ? "border-[#E1E1E1] bg-[#E1E1E1] text-[#828282] cursor-not-allowed"
-                                                : "bg-[#4C4C4C] text-white hover:opacity-90"}`}
+                                                : "bg-[#4C4C4C] text-white hover:opacity-90 text-[14px]"}`}
                     disabled={!email || checkingEmail}
                     >
-                    {checkingEmail ? "확인중" : "중복확인"}
+                    {checkingEmail ? "확인중" : "중복 확인"}
                 </button>
                   </div>
-                 {emailMessage && (
+                 <div className="h-[1px]">
+                {emailMessage && (
                   <span
-                    className={`text-[12px] mt-[4px] ${
+                    className={`text-[12px] ${
                       emailMessage.includes("사용 가능한") ? "text-[#2CCC41]" : "text-[#EE4343]"
                     }`}
                   >
@@ -237,42 +241,53 @@ const checkEmailDuplicate = async () => {
                   </span>
                 )}
                 </div>
+                </div>
               </div>
 
-              <div className='flex flex-col gap-[8px]'>
-                <label className='text-[14px] flex gap-[2px]'>닉네임<span className='text-[14px] text-[#2FD8F6]'>*</span></label>
-                <div className="flex gap-[8px] items-center">
-                  <input
-                    className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] text-[14px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                    placeholder='10자 이내로 작성해 주세요.'
-                  />
-                 <button
-                    type="button"
-                    onClick={checkNicknameDuplicate}
-                    className={`w-[83px] h-[48px] border rounded-[6px]
-                      ${!nickname || checkingNickname
-                        ? "border-[#E1E1E1] bg-[#E1E1E1] text-[#828282] cursor-not-allowed"
-                        : "bg-[#4C4C4C] text-white hover:opacity-90"}`}
-                    disabled={!nickname || checkingNickname}
-                  >
-                    {checkingNickname ? "확인중" : "중복확인"}
-                  </button>
-                </div>
-                                    {nicknameMessage && (
-                      <span
-                        className={`text-[12px] mt-[4px] ${
-                          nicknameMessage.includes("사용 가능한")
-                            ? "text-[#2CCC41]" 
-                            : nicknameMessage.includes("이미 사용 중")
-                            ? "text-[#EE4343]" 
-                            : "text-[#828282]" 
-                        }`}
-                      >
-                        {nicknameMessage}
-                      </span>
-                    )}
+            <div className='flex flex-col gap-[8px]'>
+  <label className='text-[14px] flex gap-[2px]'>
+    닉네임<span className='text-[14px] text-[#2FD8F6]'>*</span>
+  </label>
+
+  {/* 입력행 + 메시지 전용 래퍼: 여기서는 gap 제거 */}
+  <div className="flex flex-col">
+    <div className="flex gap-[8px] items-center">
+      <input
+        className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] text-[14px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
+        value={nickname}
+        onChange={(e) => setNickname(e.target.value)}
+        placeholder='10자 이내로 작성해 주세요.'
+      />
+      <button
+        type="button"
+        onClick={checkNicknameDuplicate}
+        className={`w-[91px] h-[48px] border rounded-[6px]
+          ${!nickname || checkingNickname
+            ? "border-[#E1E1E1] bg-[#E1E1E1] text-[#828282] cursor-not-allowed"
+            : "bg-[#4C4C4C] text-white hover:opacity-90 text-[14px]"}`}
+        disabled={!nickname || checkingNickname}
+      >
+        {checkingNickname ? "확인중" : "중복 확인"}
+      </button>
+    </div>
+
+    <div className="mt-[1px] h-[1px]">
+      {nicknameMessage && (
+        <span
+          className={`text-[12px] ${
+            nicknameMessage.includes("사용 가능한")
+              ? "text-[#2CCC41]"
+              : nicknameMessage.includes("이미 사용 중")
+              ? "text-[#EE4343]"
+              : "text-[#828282]"
+          }`}
+        >
+          {nicknameMessage}
+        </span>
+      )}
+    </div>
+  </div>
+
               </div>
 
               <div className='flex flex-col gap-[8px]'>
@@ -285,34 +300,42 @@ const checkEmailDuplicate = async () => {
                 />
               </div>
 
-              <div className='flex flex-col gap-[8px]'>
-                <label className='text-[14px] flex gap-[2px]'>
-                  비밀번호<span className='text-[14px] text-[#2FD8F6]'>*</span>
-                </label>
-                <div className="relative w-[424px]">
-                  <input
-                    className='text-[14px] pt-[15px] pr-[40px] pb-[15px] pl-[16px] border rounded-[6px] border-[#F3F3F3] w-full h-[48px] focus:outline-none'
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      validatePassword(e.target.value);
-                    }}
-                    placeholder='영문,숫자,특수기호 조합 8자~16자'
-                    type={showPassword ? 'text' : 'password'}
-                  />
-                  <span
-                    className="absolute right-[20px] top-1/2 transform -translate-y-2 cursor-pointer text-[#828282]"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <IoEyeSharp size={16} /> : <BsFillEyeSlashFill size={16} />}
-                  </span>
-                </div>
-  {passwordMessage && (
-    <span className="text-[12px] text-[#EE4343] mt-[4px]">{passwordMessage}</span>
-  )}
+             <div className='flex flex-col gap-[8px]'>
+  <label className='text-[14px] flex gap-[2px]'>
+    비밀번호<span className='text-[14px] text-[#2FD8F6]'>*</span>
+  </label>
 
+  {/* 입력창 + 메시지 전용 래퍼 */}
+  <div className="flex flex-col">
+    <div className="relative w-[424px]">
+      <input
+        className='text-[14px] pt-[15px] pr-[40px] pb-[15px] pl-[16px] border rounded-[6px] border-[#F3F3F3] w-full h-[48px] focus:outline-none'
+        value={password}
+        onChange={(e) => {
+          setPassword(e.target.value);
+          validatePassword(e.target.value);
+        }}
+        placeholder='영문,숫자,특수기호 조합 8자~16자'
+        type={showPassword ? 'text' : 'password'}
+      />
+      <span
+        className="absolute right-[20px] top-1/2 transform -translate-y-2 cursor-pointer text-[#828282]"
+        onClick={() => setShowPassword(!showPassword)}
+      >
+        {showPassword ? <IoEyeSharp size={16} /> : <BsFillEyeSlashFill size={16} />}
+      </span>
+    </div>
+
+    {/* 메시지 영역: mt 값으로 간격 조절 */}
+    <div className="mt-[1px] h-[1px]">
+      {passwordMessage && (
+        <span className="text-[12px] text-[#EE4343]">{passwordMessage}</span>
+      )}
+    </div>
+  </div>
 </div>
 </div>
+
               {/* 약관 동의 체크박스 */}
               <div className='mt-[32px]'>
                 <div className='flex flex-col gap-[14px]'>
@@ -400,8 +423,7 @@ const checkEmailDuplicate = async () => {
               {/* 다음 버튼 */}
               <div className="flex justify-center">
                 <button
-                  type='button'
-                  onClick={() => setCurrentStep(3)}
+                  type='submit'
                   disabled={!(termsAgreed1 && termsAgreed2)}
                   className={` mt-[38px] w-[180px] h-[45px] border rounded-[8px] pt-[12px] pr-[20px] pb-[12px] pl-[20px] border-[#E1E1E1] text-white 
                     ${termsAgreed1 && termsAgreed2 ? 'bg-[#2FD8F6]' : 'bg-[#E1E1E1]'}`}
@@ -418,7 +440,7 @@ const checkEmailDuplicate = async () => {
       <FaCheckCircle className='mt-[60px]' size={60} color='#2FD8F6' />
       <span className='mt-[20px] font-semibold text-[24px]'>회원가입이 완료되었습니다.</span>
       <span className='mt-[8px] text-[#A3A3A3] text-[14px]'>로그인 후 브릿지의 서비스를 이용하실 수 있습니다.</span>
-      <Link className='mt-[40px] border border-[#2FD8F6] text-white bg-[#2FD8F6] rounded-[8px] py-[12px] px-[40px]' to='signin'>로그인하러 가기</Link>
+      <Link className='mt-[40px] border border-[#2FD8F6] text-white bg-[#2FD8F6] rounded-[8px] py-[12px] px-[40px]' to='/signin'>로그인하러 가기</Link>
       </div>
     )}
    <ScriptModal
