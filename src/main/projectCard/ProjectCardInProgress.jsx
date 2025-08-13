@@ -5,9 +5,12 @@ import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
 import { PiLineVertical } from "react-icons/pi";
 
-const ProjectCardInProgress = ({ project, categories }) => {
+const ProjectCardInProgress = ({ project, categories, businessTypes }) => {
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
+  const businessTypeObj = businessTypes.find(
+    (b) => b.code === project.business_type
+  );
 
   return (
     <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
@@ -17,7 +20,11 @@ const ProjectCardInProgress = ({ project, categories }) => {
         <PiLineVertical className="mt-[3px]" />
         <span>{categoryObj ? categoryObj.description : project.category}</span>
         <span>·</span>
-        <span>{project.business_type}</span>
+        <span>
+          {businessTypeObj
+            ? businessTypeObj.description
+            : project.business_type}
+        </span>
       </div>
 
       {/* 제목 */}

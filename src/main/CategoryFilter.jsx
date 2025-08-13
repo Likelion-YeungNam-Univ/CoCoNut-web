@@ -2,22 +2,13 @@ import React, { useEffect, useState } from "react";
 import { GoChevronUp, GoChevronDown } from "react-icons/go";
 import checkIcon from "../assets/checkIcon.png";
 import { fetchCategories } from "../apis/category";
-
-const businesses = [
-  "식당/카페/주점",
-  "의류/쇼핑몰",
-  "뷰티/헬스",
-  "교육/학원",
-  "병원/약국",
-  "문화/여가",
-  "서비스/전문직",
-  "숙박/관광",
-  "기타",
-];
+import { getBusinessTypes } from "../apis/businessTypes";
 
 const CategoryFilter = ({
   categories,
   setCategories,
+  businessTypes,
+  setBusinessTypes,
   selectedCategories,
   setSelectedCategories,
   selectedBusinesses,
@@ -26,9 +17,21 @@ const CategoryFilter = ({
   const [categoryOpen, setCategoryOpen] = useState(true);
   const [businessOpen, setBusinessOpen] = useState(true);
 
+  // 카테고리 목록 가져오기
   useEffect(() => {
     fetchCategories()
-      .then(setCategories)
+      .then((data) => {
+        setCategories(data);
+      })
+      .catch((err) => console.error(err));
+  }, []);
+
+  // 업종 목록 가져오기
+  useEffect(() => {
+    getBusinessTypes()
+      .then((data) => {
+        setBusinessTypes(data);
+      })
       .catch((err) => console.error(err));
   }, []);
 
@@ -126,9 +129,9 @@ const CategoryFilter = ({
         {/* 업종 목록 */}
         {businessOpen && (
           <ul className="mt-3 space-y-[12px]">
-            {businesses.map((business, index) => {
-              const id = `business-${index}`;
-              const checked = selectedBusinesses.includes(business);
+            {businessTypes.map((business) => {
+              const id = `business-${business.code}`;
+              const checked = selectedBusinesses.includes(business.code);
               return (
                 <li key={id} className="flex items-center gap-2 ml-1.5">
                   <input
@@ -137,7 +140,7 @@ const CategoryFilter = ({
                     checked={checked}
                     onChange={() =>
                       setSelectedBusinesses((prev) =>
-                        toggleArrayItem(prev, business)
+                        toggleArrayItem(prev, business.code)
                       )
                     }
                     className="appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3]"
@@ -150,7 +153,7 @@ const CategoryFilter = ({
                     }}
                   />
                   <label htmlFor={id} className="text-[12px] text-[#828282]">
-                    {business}
+                    {business.description}
                   </label>
                 </li>
               );

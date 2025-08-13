@@ -5,9 +5,12 @@ import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
 import projectImgExample from "../../assets/projectImgExample.png";
 
-const ProjectCardClosed = ({ project, categories }) => {
+const ProjectCardClosed = ({ project, categories, businessTypes }) => {
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
+  const businessTypeObj = businessTypes.find(
+    (b) => b.code === project.business_type
+  );
 
   return (
     <div className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
@@ -23,7 +26,11 @@ const ProjectCardClosed = ({ project, categories }) => {
             {categoryObj ? categoryObj.description : project.category}
           </span>
           <span>·</span>
-          <span>{project.business_type}</span>
+          <span>
+            {businessTypeObj
+              ? businessTypeObj.description
+              : project.business_type}
+          </span>
         </div>
 
         {/* 제목 */}
