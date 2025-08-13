@@ -12,6 +12,8 @@ const MerchantMainPage = () => {
   const [activeTab, setActiveTab] = useState("closed"); // 진행중, 투표중, 완료 탭 상태
   const [selectedCategories, setSelectedCategories] = useState([]); // 카테고리 선택 상태
   const [selectedBusinesses, setSelectedBusinesses] = useState([]); // 업종 선택 상태
+  const [q, setQ] = useState(""); // 검색어 상태
+  const [isSearched, setIsSearched] = useState(false); // 검색 제출 여부
 
   return (
     <div>
@@ -26,6 +28,8 @@ const MerchantMainPage = () => {
           setSelectedBusinesses={setSelectedBusinesses}
         />
         <ProjectList
+          q={q}
+          isSearched={isSearched}
           activeTab={activeTab}
           selectedCategories={selectedCategories}
           selectedBusinesses={selectedBusinesses}
