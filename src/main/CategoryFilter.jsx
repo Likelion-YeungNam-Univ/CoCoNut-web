@@ -5,9 +5,9 @@ import { fetchCategories } from "../apis/category";
 import { getBusinessTypes } from "../apis/businessTypes";
 
 const CategoryFilter = ({
-  categories,
+  categories = [],
   setCategories,
-  businessTypes,
+  businessTypes = [],
   setBusinessTypes,
   selectedCategories,
   setSelectedCategories,

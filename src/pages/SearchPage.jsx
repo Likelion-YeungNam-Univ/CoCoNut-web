@@ -15,6 +15,8 @@ const SearchPage = () => {
   const [activeTab, setActiveTab] = useState(null); // 초기 미선택 = 전체
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBusinesses, setSelectedBusinesses] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [businessTypes, setBusinessTypes] = useState([]);
 
   // q가 바뀌면 스크롤
   useEffect(() => {
@@ -45,6 +47,10 @@ const SearchPage = () => {
       {/* 상태 탭(검색 전용 디자인) */}
       <div className="flex px-[240px] gap-[40px]" id="search-results">
         <CategoryFilter
+          categories={categories}
+          setCategories={setCategories}
+          businessTypes={businessTypes}
+          setBusinessTypes={setBusinessTypes}
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
           selectedBusinesses={selectedBusinesses}
@@ -56,6 +62,8 @@ const SearchPage = () => {
             q={q}
             isSearched={!!q}
             activeTab={activeTab}
+            categories={categories}
+            businessTypes={businessTypes}
             selectedCategories={selectedCategories}
             selectedBusinesses={selectedBusinesses}
             searchMode

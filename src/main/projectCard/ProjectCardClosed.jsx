@@ -5,7 +5,11 @@ import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
 import projectImgExample from "../../assets/projectImgExample.png";
 
-const ProjectCardClosed = ({ project, categories, businessTypes }) => {
+const ProjectCardClosed = ({
+  project,
+  categories = [],
+  businessTypes = [],
+}) => {
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
