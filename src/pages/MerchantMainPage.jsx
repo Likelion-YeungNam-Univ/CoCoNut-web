@@ -14,6 +14,8 @@ const MerchantMainPage = () => {
   const [selectedBusinesses, setSelectedBusinesses] = useState([]); // 업종 선택 상태
   const [q, setQ] = useState(""); // 검색어 상태
   const [isSearched, setIsSearched] = useState(false); // 검색 제출 여부
+  const [categories, setCategories] = useState([]); // 카테고리 API 상태
+  const [businessTypes, setBusinessTypes] = useState([]); // 업종 목록 상태
 
   return (
     <div>
@@ -22,6 +24,10 @@ const MerchantMainPage = () => {
       <ProjectStatusTabs activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex px-[240px] gap-[40px]">
         <CategoryFilter
+          categories={categories}
+          setCategories={setCategories}
+          businessTypes={businessTypes}
+          setBusinessTypes={setBusinessTypes}
           selectedCategories={selectedCategories}
           setSelectedCategories={setSelectedCategories}
           selectedBusinesses={selectedBusinesses}
@@ -31,6 +37,8 @@ const MerchantMainPage = () => {
           q={q}
           isSearched={isSearched}
           activeTab={activeTab}
+          categories={categories}
+          businessTypes={businessTypes}
           selectedCategories={selectedCategories}
           selectedBusinesses={selectedBusinesses}
         />
