@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { SlArrowUpCircle } from "react-icons/sl";
 
 import MerchantHeader from "../header/MerchantHeader";
+import Footer from "../components/Footer";
 import TermsModal from "../modal/TermsModal";
 import PreviewModal from "../modal/PreviewModal";
 import ConfirmModal from "../modal/ConfirmModal";
@@ -55,8 +56,6 @@ const ProjectRegister = () => {
   const [modalContent, setModalContent] = useState("");
   const [previewData, setPreviewData] = useState(null);
   const [isEasyHelpModalOpen, setIsEasyHelpModalOpen] = useState(false);
-  // isHovering 상태 제거
-  // const [isHovering, setIsHovering] = useState(false);
 
   // AI analysis-related states
   const [assistanceText, setAssistanceText] = useState("");
@@ -73,6 +72,7 @@ const ProjectRegister = () => {
   const [category, setCategory] = useState("");
   const [businesstype, setBusinesstype] = useState("");
   const [color, setColor] = useState("");
+  // style과 target 상태 초기값을 빈 문자열로 설정
   const [style, setStyle] = useState("");
   const [target, setTarget] = useState("");
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -117,53 +117,66 @@ const ProjectRegister = () => {
     { value: "target_free", label: "타겟 자유" },
   ];
 
+  // COLORS_DATA의 color_free에 '색상 자유' label 추가
   const COLORS_DATA = [
     {
       hex: "linear-gradient(to right, #FF91DC 0%, #FF00AE 100%)",
       code: "pink",
+      label: "핑크",
     },
     {
       hex: "linear-gradient(to right, #9FFF98 0%, #4DF041 100%)",
       code: "green",
+      label: "초록",
     },
     {
       hex: "linear-gradient(to right, #F0DB64 0%, #BFA200 100%)",
       code: "gold",
+      label: "골드",
     },
     {
       hex: "linear-gradient(to right, #FF9E9E 0%, #FF0000 100%)",
       code: "red",
+      label: "빨강",
     },
     {
       hex: "linear-gradient(to right, #85C6FF 0%, #0088FF 100%)",
       code: "blue",
+      label: "파랑",
     },
     {
       hex: "linear-gradient(to right, #AA8F7E 0%, #6D3615 100%)",
       code: "brown",
+      label: "브라운",
     },
     {
       hex: "linear-gradient(to right, #FFC096 0%, #FF6600 100%)",
       code: "orange",
+      label: "주황",
     },
     {
       hex: "linear-gradient(to right, #858BD2 0%, #181F7A 100%)",
       code: "navy",
+      label: "네이비",
     },
     {
       hex: "linear-gradient(to right, #868686 0%, #212121 100%)",
       code: "black",
+      label: "블랙",
     },
     {
       hex: "linear-gradient(to right, #FFF1A2 0%, #FFD900 100%)",
       code: "yellow",
+      label: "노랑",
     },
     {
       hex: "linear-gradient(to right, #BE7AFF 0%, #8400FF 100%)",
       code: "purple",
+      label: "보라",
     },
     {
       code: "color_free",
+      label: "색상 자유",
     },
   ];
 
@@ -294,10 +307,10 @@ const ProjectRegister = () => {
   };
 
   return (
-    <>
+    <div className="flex flex-col">
       <MerchantHeader />
       <div className="bg-[#F8F8F8] flex justify-center py-12 px-4">
-        <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-[1032px] min-h-[1980px]">
+        <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-[1032px] min-h-[2408px]">
           <div className="max-w-2xl mx-auto mt-12">
             {/* Title Section */}
             <section className="flex flex-col mb-12 items-center">
@@ -320,7 +333,7 @@ const ProjectRegister = () => {
               </label>
             </div>
 
-            <hr className="border-t border-[#A3A3A3]" />
+            <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
             {/* Basic Info Section */}
             <section className="my-10">
               <div className="space-y-7">
@@ -424,7 +437,7 @@ const ProjectRegister = () => {
             <h2 className="text-xl font-semibold mb-2 text-[#000000]">
               공모전 내용 입력
             </h2>
-            <hr className="border-t border-[#A3A3A3]" />
+            <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
 
             {/* Contest Content Section */}
             <section className="my-10">
@@ -436,7 +449,7 @@ const ProjectRegister = () => {
                     </label>
                     <a
                       href="#"
-                      className="w-44 text-xs rounded-3xl text-[#FFFFFF] pt-2 pb-2 text-center bg-[#2FD8F6]"
+                      className="w-40 text-xs rounded-3xl text-[#FFFFFF] pt-2 pb-2 text-center bg-[#2FD8F6]"
                       onClick={(e) => {
                         e.preventDefault(); // 링크 이동 방지
                       }}
@@ -587,7 +600,7 @@ const ProjectRegister = () => {
             <h2 className="text-xl font-semibold mb-4 text-[#000000]">
               선호하는 스타일 선택
             </h2>
-            <hr className="border-t border-[#A3A3A3]" />
+            <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
 
             {/* Style Section */}
             <section className="my-10">
@@ -602,23 +615,25 @@ const ProjectRegister = () => {
                       {COLORS_DATA.map((c) => (
                         <button
                           key={c.code}
-                          className={`py-4 h-12 rounded border-2 ${
-                            color === c.code
-                              ? "border-[#212121]"
-                              : "border-transparent"
-                          } transition`}
-                          style={{ background: c.hex }}
+                          className={`w-full h-12 rounded transition flex items-center justify-center
+                            ${
+                              color === c.code
+                                ? "border-2 border-[#212121]"
+                                : "border border-[#F3F3F3]"
+                            }
+                            ${c.code === "color_free" ? "bg-white" : ""}`}
+                          style={
+                            c.code !== "color_free" ? { background: c.hex } : {}
+                          }
                           onClick={() => setColor(c.code)}
                         >
-                          <span
-                            className={`text-xs font-normal border${
-                              c.code === "color_free"
-                                ? "text-gray-400"
-                                : "text-white"
-                            } `}
-                          >
-                            {c.name}
-                          </span>
+                          {c.code === "color_free" && (
+                            <span
+                              className={`text-xs font-normal text-gray-400`}
+                            >
+                              {c.label}
+                            </span>
+                          )}
                         </button>
                       ))}
                     </div>
@@ -635,10 +650,14 @@ const ProjectRegister = () => {
                       {STYLES_DATA.map((s) => (
                         <button
                           key={s.value}
-                          className={`w-full py-4 text-xs rounded border transition ${
+                          className={`w-full py-4 text-xs rounded bg-white transition flex items-center justify-center ${
                             style === s.value
                               ? "border-2 border-[#212121]"
-                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                              : "border border-[#F3F3F3]"
+                          } ${
+                            s.value === "style_free"
+                              ? "text-gray-200"
+                              : "text-black"
                           }`}
                           onClick={() => setStyle(s.value)}
                         >
@@ -659,10 +678,14 @@ const ProjectRegister = () => {
                       {TARGETS_DATA.map((t) => (
                         <button
                           key={t.value}
-                          className={`w-full py-4 text-xs rounded border transition ${
+                          className={`w-full py-4 text-xs rounded bg-white transition flex items-center justify-center ${
                             target === t.value
                               ? "border-2 border-[#212121]"
-                              : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
+                              : "border border-[#F3F3F3]"
+                          } ${
+                            t.value === "target_free"
+                              ? "text-gray-200"
+                              : "text-black"
                           }`}
                           onClick={() => setTarget(t.value)}
                         >
@@ -682,7 +705,7 @@ const ProjectRegister = () => {
                 공모전 등록을 위해 아래 내용을 꼭 확인해 주세요.
               </label>
             </div>
-            <hr className="border-t border-[#A3A3A3]" />
+            <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
 
             {/* Terms Agreement Section */}
             <section className="my-10">
@@ -779,6 +802,8 @@ const ProjectRegister = () => {
           </div>
         </div>
       </div>
+      <Footer />
+
       {/* Modal Components */}
       <TermsModal
         isOpen={isTermsModalOpen}
@@ -797,8 +822,7 @@ const ProjectRegister = () => {
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={handleConfirmSubmit}
       />
-      {/* 저작권 정보 추가 */}
-    </>
+    </div>
   );
 };
 
