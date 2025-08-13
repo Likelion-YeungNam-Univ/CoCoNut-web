@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { GoChevronUp, GoChevronDown } from "react-icons/go";
+import checkIcon from "../assets/checkIcon.png";
 
 const categories = [
   "기획/아이디어",
@@ -79,8 +80,14 @@ const CategoryFilter = ({
                         toggleArrayItem(prev, category)
                       )
                     }
-                    className={`
-                  appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3] checked:bg-[url('/checkIcon.png')] checked:border-none checked:bg-center checked:bg-[length:20px_20px]`}
+                    className="appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3]"
+                    style={{
+                      backgroundImage: checked ? `url(${checkIcon})` : "none",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "20px 20px",
+                      border: checked ? "none" : undefined,
+                    }}
                   />
                   <label
                     htmlFor={id}
@@ -138,8 +145,14 @@ const CategoryFilter = ({
                         toggleArrayItem(prev, business)
                       )
                     }
-                    className={`
-                  appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3] checked:bg-[url('/checkIcon.png')] checked:border-none checked:bg-center checked:bg-[length:20px_20px]`}
+                    className="appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3]"
+                    style={{
+                      backgroundImage: checked ? `url(${checkIcon})` : "none",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundSize: "20px 20px",
+                      border: checked ? "none" : undefined,
+                    }}
                   />
                   <label htmlFor={id} className="text-[12px] text-[#828282]">
                     {business}
