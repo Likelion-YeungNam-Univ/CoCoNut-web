@@ -12,7 +12,7 @@ const projects = [
     project_id: 1,
     title: "음식점 메뉴판 3장 디자인 필요해요",
     merchant_name: "빌런호프",
-    category: "그래픽/편집",
+    category: "PLANNING_IDEA",
     business_type: "식당/카페/주점",
     description:
       "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
@@ -286,6 +286,7 @@ const ProjectList = ({
   q = "",
   isSearched = false,
   activeTab,
+  categories,
   selectedCategories = [],
   selectedBusinesses = [],
   hideHeader = false,
@@ -374,7 +375,13 @@ const ProjectList = ({
             const Card = activeTab
               ? CardByStatus[activeTab]
               : CardByStatus[project.status];
-            return <Card key={project.project_id} project={project} />;
+            return (
+              <Card
+                key={project.project_id}
+                project={project}
+                categories={categories}
+              />
+            );
           })}
           <div className="mt-[60px]">
             <Pagination
