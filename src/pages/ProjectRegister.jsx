@@ -7,6 +7,7 @@ import TermsModal from "../modal/TermsModal";
 import PreviewModal from "../modal/PreviewModal";
 import ConfirmModal from "../modal/ConfirmModal";
 import EasyHelpModal from "../modal/EasyHelpModal";
+import ConfirmBackModal from "../modal/ConfirmBackModal";
 
 import axios from "axios";
 const api = axios.create({
@@ -56,6 +57,9 @@ const ProjectRegister = () => {
   const [modalContent, setModalContent] = useState("");
   const [previewData, setPreviewData] = useState(null);
   const [isEasyHelpModalOpen, setIsEasyHelpModalOpen] = useState(false);
+
+  // 뒤로가기 모달을 위한 상태 추가
+  const [isBackModalOpen, setIsBackModalOpen] = useState(false);
 
   // AI analysis-related states
   const [assistanceText, setAssistanceText] = useState("");
@@ -208,6 +212,24 @@ const ProjectRegister = () => {
     fetchData();
   }, []);
 
+  // 뒤로가기 모달을 위한 useEffect 추가
+  useEffect(() => {
+    // 현재 페이지 상태를 기록하여 뒤로가기 버튼 감지
+    window.history.pushState(null, "", window.location.href);
+
+    const handlePopstate = () => {
+      // 뒤로가기 버튼이 눌렸을 때 모달을 띄웁니다.
+      setIsBackModalOpen(true);
+    };
+
+    window.addEventListener("popstate", handlePopstate);
+
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+    };
+  }, []); // 빈 배열은 컴포넌트가 처음 마운트될 때만 실행됨
+
   // 모든 약관 동의 핸들러
   const handleAgreeAllChange = (e) => {
     const isChecked = e.target.checked;
@@ -306,6 +328,16 @@ const ProjectRegister = () => {
     }
   };
 
+  // 뒤로가기 모달 관련 핸들러
+  const handleOpenBackModal = () => {
+    setIsBackModalOpen(true);
+  };
+
+  const handleConfirmBack = () => {
+    setIsBackModalOpen(false);
+    window.history.back();
+  };
+
   return (
     <div className="flex flex-col">
       <MerchantHeader />
@@ -323,6 +355,13 @@ const ProjectRegister = () => {
               <p className="text-sm text-[#828282]">
                 마음에 드는 수상작을 직접 선택할 수 있습니다.
               </p>
+              {/* 뒤로가기 버튼 추가 */}
+              <button
+                className="mt-4 py-2 px-4 border border-[#E1E1E1] rounded-lg text-[12px] text-gray-700 hover:bg-gray-100 transition"
+                onClick={handleOpenBackModal}
+              >
+                뒤로가기
+              </button>
             </section>
             <div className="flex justify-between">
               <h1 className="text-xl font-semibold text-[#000000] mb-2">
@@ -821,6 +860,12 @@ const ProjectRegister = () => {
         isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={handleConfirmSubmit}
+      />
+      {/* 뒤로가기 모달 추가 */}
+      <ConfirmBackModal
+        isOpen={isBackModalOpen}
+        onClose={() => setIsBackModalOpen(false)}
+        onConfirm={handleConfirmBack}
       />
     </div>
   );
