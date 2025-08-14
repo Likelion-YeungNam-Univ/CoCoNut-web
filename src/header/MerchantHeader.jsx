@@ -19,11 +19,13 @@ const MerchantHeader = ({ defaultValue = "" }) => {
     <div className="w-full h-[60px] flex items-center px-[120px] border-b border-gray-200 font-pretendard">
       {/* 로고 */}
       <div className="flex-1 flex justify-start">
-        <img
-          src={logo}
-          alt="로고"
-          className="w-[89.65px] h-[20px] cursor-pointer"
-        />
+        <Link to="/merchant-main">
+          <img
+            src={logo}
+            alt="로고"
+            className="w-[89.65px] h-[20px] cursor-pointer"
+          />
+        </Link>
       </div>
 
       {/* 검색창 */}
