@@ -55,15 +55,15 @@ const ProjectCardClosed = ({
 
         <div className="flex flex-col gap-[8px] mt-[20px]">
           {/* 상금 */}
-          <div className="flex gap-2">
-            <div className="flex gap-2 w-[60px]">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-[60px]">
               <img src={prizeIcon} alt="상금" className="w-[16px] h-[16px]" />
               <span className="text-[12px] text-[#828282] font-medium">
                 상금
               </span>
             </div>
             <span className="text-[12px] text-[#212121] font-medium">
-              {project.rewardAmount}원
+              {project.rewardAmount?.toLocaleString()}원
             </span>
           </div>
 

@@ -67,7 +67,7 @@ const ProjectCardInProgress = ({
             <span className="text-[12px] text-[#828282] font-medium">상금</span>
           </div>
           <span className="text-[12px] text-[#212121] font-medium">
-            {project.rewardAmount}원
+            {project.rewardAmount?.toLocaleString()}원
           </span>
         </div>
 
