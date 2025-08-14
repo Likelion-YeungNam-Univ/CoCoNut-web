@@ -5,7 +5,7 @@
    const { data } = await api.get("users/check-email", {
     params: { email },
    });
-   return data; // 예: { exists: true/false }
+   return data; 
  };
 
  export default emailcheckApi
