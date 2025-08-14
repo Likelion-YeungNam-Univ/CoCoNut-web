@@ -4,6 +4,7 @@ import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
 import projectImgExample from "../../assets/projectImgExample.png";
+import { formatDate } from "../../utils/dateUtils";
 
 const ProjectCardClosed = ({
   project,
@@ -13,12 +14,12 @@ const ProjectCardClosed = ({
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
-    (b) => b.code === project.business_type
+    (b) => b.code === project.businessType
   );
 
   return (
     <div className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
-      {/* 수상작 대표 이미지 */}
+      {/* 수상작 대표 이미지 -> 작품 선정 기능이 완료되면 선정된 작품 API에서 이미지 받아올 것 */}
       <img
         src={projectImgExample}
         className="w-[228px] h-[228px] mt-[12px] ml-[12px] rounded-[8px]"
@@ -33,7 +34,7 @@ const ProjectCardClosed = ({
           <span>
             {businessTypeObj
               ? businessTypeObj.description
-              : project.business_type}
+              : project.businessType}
           </span>
         </div>
 
@@ -43,21 +44,19 @@ const ProjectCardClosed = ({
         </h3>
 
         {/* 설명 */}
-        <p className="text-[14px] text-[#828282] mt-[6px]">
-          {project.description}
-        </p>
+        <p className="text-[14px] text-[#828282] mt-[6px]">{project.summary}</p>
 
         <div className="flex flex-col gap-[8px] mt-[20px]">
           {/* 상금 */}
-          <div className="flex gap-2">
-            <div className="flex gap-2 w-[60px]">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-[60px]">
               <img src={prizeIcon} alt="상금" className="w-[16px] h-[16px]" />
               <span className="text-[12px] text-[#828282] font-medium">
                 상금
               </span>
             </div>
             <span className="text-[12px] text-[#212121] font-medium">
-              {project.reward_amount.toLocaleString()}원
+              {project.rewardAmount?.toLocaleString()}원
             </span>
           </div>
 
@@ -79,8 +78,8 @@ const ProjectCardClosed = ({
           </div>
 
           {/* 기간 */}
-          <div className="flex gap-2">
-            <div className="flex gap-2 w-[60px]">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-[60px]">
               <img
                 src={calendarIcon}
                 alt="기간"
@@ -91,7 +90,9 @@ const ProjectCardClosed = ({
               </span>
             </div>
             <span className="text-[12px] text-[#212121] font-medium">
-              {project.period}
+              {`${formatDate(project.createdAt)} - ${formatDate(
+                project.deadline
+              )}`}
             </span>
           </div>
         </div>
@@ -100,7 +101,7 @@ const ProjectCardClosed = ({
         <div className="flex gap-2 text-[14px] text-[#A3A3A3] mt-[17px]">
           <IoPersonCircle className="w-[16px] h-[16px]" />
           <span className="text-[12px] font-medium">
-            {project.merchant_name} | {project.nickname}
+            {project.merchantName} | {project.writerNickname}
           </span>
         </div>
       </div>

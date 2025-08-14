@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
 
 const MerchantMainPage = () => {
-  const [activeTab, setActiveTab] = useState("closed"); // 진행중, 투표중, 완료 탭 상태
+  const [activeTab, setActiveTab] = useState("CLOSED"); // 진행중, 투표중, 완료 탭 상태
   const [selectedCategories, setSelectedCategories] = useState([]); // 카테고리 선택 상태
   const [selectedBusinesses, setSelectedBusinesses] = useState([]); // 업종 선택 상태
   const [q, setQ] = useState(""); // 검색어 상태

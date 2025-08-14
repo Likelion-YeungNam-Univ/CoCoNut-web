@@ -12,7 +12,7 @@ const SearchPage = () => {
   const [params, setParams] = useSearchParams();
   const q = (params.get("q") ?? "").trim();
 
-  const [activeTab, setActiveTab] = useState(null); // 초기 미선택 = 전체
+  const [activeTab, setActiveTab] = useState("IN_PROGRESS"); // 초기 미선택 = 전체
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBusinesses, setSelectedBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
