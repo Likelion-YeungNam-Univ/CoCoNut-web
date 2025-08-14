@@ -12,8 +12,16 @@ const ProjectCardVoting = ({
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
-    (b) => b.code === project.business_type
+    (b) => b.code === project.businessType
   );
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+  };
 
   return (
     <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
@@ -22,9 +30,7 @@ const ProjectCardVoting = ({
         <span>{categoryObj ? categoryObj.description : project.category}</span>
         <span>·</span>
         <span>
-          {businessTypeObj
-            ? businessTypeObj.description
-            : project.business_type}
+          {businessTypeObj ? businessTypeObj.description : project.businessType}
         </span>
       </div>
 
@@ -33,6 +39,7 @@ const ProjectCardVoting = ({
         {(() => {
           const today = new Date();
           const end = new Date(project.deadline);
+          end.setDate(end.getDate() + 7); // 투표 종료일 = 공모전 마감일 + 7일
           const startOfToday = new Date( // 자정으로 세팅 (날짜 기준으로 계산되게)
             today.getFullYear(),
             today.getMonth(),
@@ -50,11 +57,7 @@ const ProjectCardVoting = ({
           let badgeText = "";
           let badgeClass = "";
 
-          if (daysLeft < 0) {
-            // 투표 기간 지난 경우 -> 완료 탭으로 이동 처리 예정
-            badgeText = "투표 종료";
-            badgeClass = "text-red-500";
-          } else if (daysLeft === 0) {
+          if (daysLeft === 0) {
             badgeText = "오늘 투표 마감";
             badgeClass = "w-[80px] h-[25px] bg-[#2FD8F6] text-white";
           } else {
@@ -78,9 +81,7 @@ const ProjectCardVoting = ({
       </div>
 
       {/* 설명 */}
-      <p className="text-[14px] text-[#828282] mt-[6px]">
-        {project.description}
-      </p>
+      <p className="text-[14px] text-[#828282] mt-[6px]">{project.summary}</p>
 
       <div className="flex flex-col gap-[8px] mt-[20px]">
         {/* 상금 */}
@@ -90,7 +91,7 @@ const ProjectCardVoting = ({
             <span className="text-[12px] text-[#828282] font-medium">상금</span>
           </div>
           <span className="text-[12px] text-[#212121] font-medium">
-            {project.reward_amount.toLocaleString()}원
+            {project.rewardAmount}원
           </span>
         </div>
 
@@ -110,13 +111,15 @@ const ProjectCardVoting = ({
         </div>
 
         {/* 기간 */}
-        <div className="flex gap-2">
-          <div className="flex gap-2 w-[60px]">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-[60px]">
             <img src={calendarIcon} alt="기간" className="w-[16px] h-[16px]" />
             <span className="text-[12px] text-[#828282] font-medium">기간</span>
           </div>
           <span className="text-[12px] text-[#212121] font-medium">
-            {project.period}
+            {`${formatDate(project.createdAt)} - ${formatDate(
+              project.deadline
+            )}`}
           </span>
         </div>
       </div>
@@ -125,7 +128,7 @@ const ProjectCardVoting = ({
       <div className="flex gap-2 text-[14px] text-[#A3A3A3] mt-[17px]">
         <IoPersonCircle className="w-[16px] h-[16px]" />
         <span className="text-[12px] font-medium">
-          {project.merchant_name} | {project.nickname}
+          {project.merchantName} | {project.writerNickname}
         </span>
       </div>
     </div>

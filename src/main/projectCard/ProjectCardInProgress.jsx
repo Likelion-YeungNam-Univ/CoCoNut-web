@@ -13,21 +13,41 @@ const ProjectCardInProgress = ({
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
-    (b) => b.code === project.business_type
+    (b) => b.code === project.businessType
   );
+
+  // 남은 일 수 계산 함수
+  const getDaysLeft = (deadline) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // 오늘 자정
+
+    const endDate = new Date(deadline);
+    endDate.setHours(0, 0, 0, 0); // 마감일 자정
+
+    const diffTime = endDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // 일 단위로 변환
+
+    return diffDays;
+  };
+
+  const formatDate = (isoString) => {
+    const date = new Date(isoString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}.${month}.${day}`;
+  };
 
   return (
     <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
       {/* 상단 카테고리/마감일 */}
       <div className="flex gap-[4px] text-[12px] text-[#A3A3A3] font-medium mt-[20px]">
-        <span>30일 후 마감</span>
+        <span>{getDaysLeft(project.deadline)}일 후 마감</span>
         <PiLineVertical className="mt-[3px]" />
         <span>{categoryObj ? categoryObj.description : project.category}</span>
         <span>·</span>
         <span>
-          {businessTypeObj
-            ? businessTypeObj.description
-            : project.business_type}
+          {businessTypeObj ? businessTypeObj.description : project.businessType}
         </span>
       </div>
 
@@ -37,9 +57,7 @@ const ProjectCardInProgress = ({
       </h3>
 
       {/* 설명 */}
-      <p className="text-[14px] text-[#828282] mt-[6px]">
-        {project.description}
-      </p>
+      <p className="text-[14px] text-[#828282] mt-[6px]">{project.summary}</p>
 
       <div className="flex flex-col gap-[8px] mt-[20px]">
         {/* 상금 */}
@@ -49,7 +67,7 @@ const ProjectCardInProgress = ({
             <span className="text-[12px] text-[#828282] font-medium">상금</span>
           </div>
           <span className="text-[12px] text-[#212121] font-medium">
-            {project.reward_amount.toLocaleString()}원
+            {project.rewardAmount}원
           </span>
         </div>
 
@@ -75,7 +93,9 @@ const ProjectCardInProgress = ({
             <span className="text-[12px] text-[#828282] font-medium">기간</span>
           </div>
           <span className="text-[12px] text-[#212121] font-medium">
-            {project.period}
+            {`${formatDate(project.createdAt)} - ${formatDate(
+              project.deadline
+            )}`}
           </span>
         </div>
       </div>
@@ -84,7 +104,7 @@ const ProjectCardInProgress = ({
       <div className="flex items-center gap-2 text-[14px] text-[#A3A3A3] mt-[17px]">
         <IoPersonCircle className="w-[16px] h-[16px]" />
         <span className="text-[12px] font-medium">
-          {project.merchant_name} | {project.nickname}
+          {project.merchantName} | {project.writerNickname}
         </span>
       </div>
     </div>
