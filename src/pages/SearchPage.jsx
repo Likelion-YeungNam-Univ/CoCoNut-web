@@ -5,8 +5,8 @@ import CategoryFilter from "../main/CategoryFilter";
 import ProjectList from "../main/ProjectList";
 import Footer from "../components/Footer";
 import SearchStatusTabs from "../components/SearchStatusTaps";
-import MainBanner from "../main/MainBanner";
 import { BiSolidPencil } from "react-icons/bi";
+import MerchantBanner from "../main/MerchantBanner";
 
 const SearchPage = () => {
   const [params, setParams] = useSearchParams();
@@ -35,7 +35,7 @@ const SearchPage = () => {
   return (
     <div>
       <MerchantHeader />
-      <MainBanner />
+      <MerchantBanner />
       {/* 상단 요약 바 */}
       <div
         id="search-title"

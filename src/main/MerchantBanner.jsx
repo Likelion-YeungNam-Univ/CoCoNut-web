@@ -1,7 +1,7 @@
 import React from "react";
-import bannerImg from "../assets/banner.png";
+import bannerImg from "../assets/merchantBanner.png";
 
-const MainBanner = () => {
+const MerchantBanner = () => {
   return (
     <div
       className="relative w-full h-[340px]"
@@ -22,4 +22,4 @@ const MainBanner = () => {
   );
 };
 
-export default MainBanner;
+export default MerchantBanner;

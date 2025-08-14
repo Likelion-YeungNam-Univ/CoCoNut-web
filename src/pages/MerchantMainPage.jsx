@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import MerchantHeader from "../header/MerchantHeader";
-import MainBanner from "../main/MainBanner";
 import ProjectStatusTabs from "../main/ProjectStatusTabs";
 import CategoryFilter from "../main/CategoryFilter";
 import ProjectList from "../main/ProjectList";
 import { BiSolidPencil } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import Footer from "../components/Footer";
+import MerchantBanner from "../main/MerchantBanner";
 
 const MerchantMainPage = () => {
   const [activeTab, setActiveTab] = useState("CLOSED"); // 진행중, 투표중, 완료 탭 상태
@@ -20,7 +20,7 @@ const MerchantMainPage = () => {
   return (
     <div>
       <MerchantHeader />
-      <MainBanner />
+      <MerchantBanner />
       <ProjectStatusTabs activeTab={activeTab} setActiveTab={setActiveTab} />
       <div className="flex px-[240px] gap-[40px]">
         <CategoryFilter
