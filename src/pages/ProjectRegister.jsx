@@ -1016,6 +1016,7 @@ const ProjectRegister = () => {
       {/* 모달 컴포넌트들 */}
       {isTermsModalOpen && (
         <TermsModal
+          isOpen={isTermsModalOpen} // isTermsModalOpen 상태를 isOpen prop으로 전달합니다.
           title={modalTitle}
           content={modalContent}
           onClose={() => setIsTermsModalOpen(false)}
