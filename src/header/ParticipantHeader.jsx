@@ -12,7 +12,11 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
   const submit = (e) => {
     e.preventDefault();
     const q = value.trim();
-    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+    navigate(
+      q
+        ? `/participant-search?q=${encodeURIComponent(q)}`
+        : "/participant-search"
+    );
   };
 
   return (

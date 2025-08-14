@@ -8,7 +8,7 @@ import SearchStatusTabs from "../components/SearchStatusTaps";
 import { BiSolidPencil } from "react-icons/bi";
 import MerchantBanner from "../main/MerchantBanner";
 
-const SearchPage = () => {
+const SearchPage = ({ showRegisterButton = true }) => {
   const [params, setParams] = useSearchParams();
   const q = (params.get("q") ?? "").trim();
 
@@ -73,17 +73,19 @@ const SearchPage = () => {
         </div>
       </div>
       <Footer />
-      <Link
-        to="/project-register"
-        className="fixed bottom-[50px] right-[110px] z-[9999]
-             flex items-center gap-[6px] pl-[16px] pr-[20px] py-[12px] w-[157px] h-[45px]
-             rounded-[8px] bg-[#2FD8F6] text-white hover:bg-[#2AC2DD] cursor-pointer"
-      >
-        <BiSolidPencil className="w-[16px] h-[16px]" />
-        <span className="text-[16px] font-medium font-pretendard leading-[130%] tracking-[-0.02em]">
-          공모전 등록하기
-        </span>
-      </Link>
+      {showRegisterButton && (
+        <Link
+          to="/project-register"
+          className="fixed bottom-[50px] right-[110px] z-[9999]
+                  flex items-center gap-[6px] pl-[16px] pr-[20px] py-[12px] w-[157px] h-[45px]
+                  rounded-[8px] bg-[#2FD8F6] text-white hover:bg-[#2AC2DD] cursor-pointer"
+        >
+          <BiSolidPencil className="w-[16px] h-[16px]" />
+          <span className="text-[16px] font-medium font-pretendard leading-[130%] tracking-[-0.02em]">
+            공모전 등록하기
+          </span>
+        </Link>
+      )}
     </div>
   );
 };
