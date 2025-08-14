@@ -51,20 +51,19 @@ const SignIn = () => {
     } catch (err) {
       // 서버 메시지/필드 정보 파싱
       const server = err?.response?.data || {};
-      const serverMsg =
-        server.message || server.error || err.message || "";
+      const serverMsg = server.message || server.error || err.message || "";
 
       // 서버가 잘못된 필드를 알려주는 여러 케이스를 대응
       const errorField =
-        server.field ||
-        server.errorField ||
-        server?.errors?.[0]?.field ||
-        null;
+        server.field || server.errorField || server?.errors?.[0]?.field || null;
 
       if (errorField === "email" || /email|아이디/i.test(serverMsg)) {
         setEmailError("아이디를 잘못 입력하셨습니다. 다시 입력해 주세요.");
         setPasswordError(""); // 다른 필드 메시지는 비움
-      } else if (errorField === "password" || /password|비밀번호/i.test(serverMsg)) {
+      } else if (
+        errorField === "password" ||
+        /password|비밀번호/i.test(serverMsg)
+      ) {
         setPasswordError("비밀번호를 잘못 입력하셨습니다. 다시 입력해주세요.");
         setEmailError("");
       } else {
