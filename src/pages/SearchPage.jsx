@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import MerchantHeader from "../header/MerchantHeader";
 import CategoryFilter from "../main/CategoryFilter";
 import ProjectList from "../main/ProjectList";
@@ -7,10 +7,14 @@ import Footer from "../components/Footer";
 import SearchStatusTabs from "../components/SearchStatusTaps";
 import { BiSolidPencil } from "react-icons/bi";
 import MerchantBanner from "../main/MerchantBanner";
+import ParticipantHeader from "../header/ParticipantHeader";
+import ParticipantBanner from "../main/ParticipantBanner";
 
-const SearchPage = ({ showRegisterButton = true }) => {
+const SearchPage = () => {
   const [params, setParams] = useSearchParams();
   const q = (params.get("q") ?? "").trim();
+  const location = useLocation();
+  const isMerchant = location.pathname.startsWith("/search");
 
   const [activeTab, setActiveTab] = useState("IN_PROGRESS"); // 초기 미선택 = 전체
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -34,8 +38,8 @@ const SearchPage = ({ showRegisterButton = true }) => {
 
   return (
     <div>
-      <MerchantHeader />
-      <MerchantBanner />
+      {isMerchant ? <MerchantHeader /> : <ParticipantHeader />}
+      {isMerchant ? <MerchantBanner /> : <ParticipantBanner />}
       {/* 상단 요약 바 */}
       <div
         id="search-title"
@@ -73,7 +77,7 @@ const SearchPage = ({ showRegisterButton = true }) => {
         </div>
       </div>
       <Footer />
-      {showRegisterButton && (
+      {isMerchant && (
         <Link
           to="/project-register"
           className="fixed bottom-[50px] right-[110px] z-[9999]
