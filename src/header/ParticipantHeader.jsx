@@ -5,21 +5,25 @@ import { IoPersonCircle } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import { IoIosClose } from "react-icons/io";
 
-const MerchantHeader = ({ defaultValue = "" }) => {
+const ParticipantHeader = ({ defaultValue = "" }) => {
   const [value, setValue] = useState(defaultValue); // value : 검색창에 쓴 글자
   const navigate = useNavigate();
 
   const submit = (e) => {
     e.preventDefault();
     const q = value.trim();
-    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+    navigate(
+      q
+        ? `/participant-search?q=${encodeURIComponent(q)}`
+        : "/participant-search"
+    );
   };
 
   return (
     <div className="w-full h-[60px] flex items-center px-[120px] border-b border-gray-200 font-pretendard">
       {/* 로고 */}
       <div className="flex-1 flex justify-start">
-        <Link to="/merchant-main-page">
+        <Link to="/participant-main-page">
           <img
             src={logo}
             alt="로고"
@@ -62,16 +66,10 @@ const MerchantHeader = ({ defaultValue = "" }) => {
         <button className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
           내 공모전
         </button>
-        <Link
-          to="/project-register"
-          className="w-[106px] h-[32px] px-[14px] py-[7px] text-[#4C4C4C] font-medium border-[1px] border-[#4C4C4C] rounded-[6px] text-[12px] cursor-pointer hover:bg-[#2FD8F6]"
-        >
-          공모전 등록하기
-        </Link>
         <IoPersonCircle className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer" />
       </div>
     </div>
   );
 };
 
-export default MerchantHeader;
+export default ParticipantHeader;
