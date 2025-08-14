@@ -200,14 +200,12 @@ const ProjectRegister = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // api.js 인스턴스를 사용하여 GET 요청
         const categoriesResponse = await api.get("enums/categories");
         setCategories(categoriesResponse.data);
 
         const businessTypesResponse = await api.get("enums/businessTypes");
         setBusinesstypes(businessTypesResponse.data);
       } catch (error) {
-        // 오류 처리 로직 추가
         console.error("Failed to fetch data:", error);
       }
     };
@@ -217,21 +215,18 @@ const ProjectRegister = () => {
 
   // 뒤로가기 모달을 위한 useEffect 추가
   useEffect(() => {
-    // 현재 페이지 상태를 기록하여 뒤로가기 버튼 감지
     window.history.pushState(null, "", window.location.href);
 
     const handlePopstate = () => {
-      // 뒤로가기 버튼이 눌렸을 때 모달을 띄웁니다.
       setIsBackModalOpen(true);
     };
 
     window.addEventListener("popstate", handlePopstate);
 
-    // 컴포넌트 언마운트 시 이벤트 리스너 제거
     return () => {
       window.removeEventListener("popstate", handlePopstate);
     };
-  }, []); // 빈 배열은 컴포넌트가 처음 마운트될 때만 실행됨
+  }, []);
 
   // 모든 약관 동의 핸들러
   const handleAgreeAllChange = (e) => {
@@ -358,13 +353,6 @@ const ProjectRegister = () => {
               <p className="text-sm text-[#828282]">
                 마음에 드는 수상작을 직접 선택할 수 있습니다.
               </p>
-              {/* 뒤로가기 버튼 추가 */}
-              <button
-                className="mt-4 py-2 px-4 border border-[#E1E1E1] rounded-lg text-[12px] text-gray-700 hover:bg-gray-100 transition"
-                onClick={handleOpenBackModal}
-              >
-                뒤로가기
-              </button>
             </section>
             <div className="flex justify-between">
               <h1 className="text-xl font-semibold text-[#000000] mb-2">
@@ -374,7 +362,6 @@ const ProjectRegister = () => {
                 <span className="text-[#2FD8F6]">*</span>필수입력
               </label>
             </div>
-
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
             {/* Basic Info Section */}
             <section className="my-10">
@@ -399,7 +386,7 @@ const ProjectRegister = () => {
                     </p>
                   )}
                 </div>
-                {/* ProjectFormInput for "가게명" */}
+                {/*  "가게명" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center justify-between space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
@@ -446,7 +433,7 @@ const ProjectRegister = () => {
                     </p>
                   )}
                 </div>
-                {/* ProjectFormInput for "업종" */}
+                {/* "업종" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center justify-between space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
@@ -475,12 +462,10 @@ const ProjectRegister = () => {
                 </div>
               </div>
             </section>
-
             <h2 className="text-xl font-semibold mb-2 text-[#000000]">
               공모전 내용 입력
             </h2>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
-
             {/* Contest Content Section */}
             <section className="my-10">
               <div className="space-y-7">
@@ -521,7 +506,7 @@ const ProjectRegister = () => {
                     AI가 내용을 분석 중입니다...
                   </p>
                 )}
-                {/* Textarea for "내용" */}
+                {/*  "내용" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-start space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121] pt-2">
@@ -529,7 +514,6 @@ const ProjectRegister = () => {
                     </label>
                     <div className="flex-grow">
                       {" "}
-                      {/* 텍스트아레아를 감싸는 div 추가 */}
                       <textarea
                         className="w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs text-[#212121] placeholder:text-gray-400"
                         placeholder="어떤 도움이 필요한지 자세히 적을수록 좋아요."
@@ -547,7 +531,7 @@ const ProjectRegister = () => {
                   )}
                 </div>
 
-                {/* ProjectFormInput for "상금" */}
+                {/*  "상금" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
@@ -569,11 +553,8 @@ const ProjectRegister = () => {
                       {aiResult.prize && (
                         <div className="relative group">
                           {" "}
-                          {/* 여기에 group 클래스를 추가합니다. */}
-                          <span
-                            className="flex-shrink-0 text-xs rounded-3xl text-[#2AC2DD] pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]"
-                            // onMouseEnter, onMouseLeave는 모달 자체에서 처리되도록 제거
-                          >
+                          {}
+                          <span className="flex-shrink-0 text-xs rounded-3xl text-[#2AC2DD] pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]">
                             상금의 약 77%인{" "}
                             {(
                               parseInt(aiResult.prize.replace(/,/g, ""), 10) *
@@ -592,7 +573,7 @@ const ProjectRegister = () => {
                     </p>
                   )}
                 </div>
-                {/* ProjectFormInput for "기간" */}
+                {/*  "기간" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
@@ -623,7 +604,7 @@ const ProjectRegister = () => {
                   )}
                 </div>
 
-                {/* ProjectFormInput for "한 줄 소개" */}
+                {/*  "한 줄 소개" */}
                 <div className="flex items-center justify-between space-x-2">
                   <label className="w-44 text-sm font-normal text-[#212121]">
                     한 줄 소개
@@ -663,12 +644,10 @@ const ProjectRegister = () => {
                 </div>
               </div>
             </section>
-
             <h2 className="text-xl font-semibold mb-4 text-[#000000]">
               선호하는 스타일 선택
             </h2>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
-
             {/* Style Section */}
             <section className="my-10">
               <div className="space-y-7">
@@ -773,71 +752,152 @@ const ProjectRegister = () => {
               </label>
             </div>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
-
-            {/* Terms Agreement Section */}
             <section className="my-10">
               <div className="flex flex-col space-y-3 text-sm text-gray-600">
                 <label className="flex items-center text-[#000000] gap-2">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 text-[#000000] rounded"
-                    checked={agreeAll}
-                    onChange={handleAgreeAllChange}
-                  />
+                  {/* 커스텀 체크박스 */}
+                  <div
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                      agreeAll
+                        ? "bg-[#2FD8F6] border-[#2FD8F6]"
+                        : "bg-white border-[#E0E0E0]"
+                    }`}
+                    onClick={() =>
+                      handleAgreeAllChange({ target: { checked: !agreeAll } })
+                    }
+                  >
+                    {agreeAll && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-3 h-3"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    )}
+                  </div>
                   약관 전체에 동의합니다.
                 </label>
                 <hr className="border border-gray-200" />
                 <div className="space-y-3">
+                  {/* 체크리스트 */}
                   <div className="flex items-center justify-between">
                     <label className="flex items-center text-[#000000] gap-2">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-[#000000] rounded"
-                        checked={agreeChecklist}
-                        onChange={(e) => setAgreeChecklist(e.target.checked)}
-                      />
+                      <div
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                          agreeChecklist
+                            ? "bg-[#2FD8F6] border-[#2FD8F6]"
+                            : "bg-white border-[#E0E0E0]"
+                        }`}
+                        onClick={() => setAgreeChecklist(!agreeChecklist)}
+                      >
+                        {agreeChecklist && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-3 h-3"
+                          >
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </div>
                       (필수) 공모전 등록 체크리스트
                     </label>
                     <a
                       href="#"
                       className="text-sm text-[#A3A3A3] underline hover:text-[#828282]"
-                      onClick={() => handleOpenTermsModal("checklist")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleOpenTermsModal("checklist");
+                      }}
                     >
                       자세히 보기
                     </a>
                   </div>
+                  {/* 이용 약관 */}
                   <div className="flex items-center justify-between">
                     <label className="flex items-center text-[#000000] gap-2">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-[#000000] rounded"
-                        checked={agreeTerms}
-                        onChange={(e) => setAgreeTerms(e.target.checked)}
-                      />
+                      <div
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                          agreeTerms
+                            ? "bg-[#2FD8F6] border-[#2FD8F6]"
+                            : "bg-white border-[#E0E0E0]"
+                        }`}
+                        onClick={() => setAgreeTerms(!agreeTerms)}
+                      >
+                        {agreeTerms && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-3 h-3"
+                          >
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </div>
                       (필수) 공모전 이용 약관
                     </label>
                     <a
                       href="#"
                       className="text-sm text-[#A3A3A3] underline hover:text-[#828282]"
-                      onClick={() => handleOpenTermsModal("terms")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleOpenTermsModal("terms");
+                      }}
                     >
                       자세히 보기
                     </a>
                   </div>
+                  {/* 주의사항 */}
                   <div className="flex items-center justify-between">
                     <label className="flex items-center text-[#000000] gap-2">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-[#000000] rounded"
-                        checked={agreeCaution}
-                        onChange={(e) => setAgreeCaution(e.target.checked)}
-                      />
+                      <div
+                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                          agreeCaution
+                            ? "bg-[#2FD8F6] border-[#2FD8F6]"
+                            : "bg-white border-[#E0E0E0]"
+                        }`}
+                        onClick={() => setAgreeCaution(!agreeCaution)}
+                      >
+                        {agreeCaution && (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="w-3 h-3"
+                          >
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        )}
+                      </div>
                       (필수) 공모전 이용 주의사항
                     </label>
                     <a
                       href="#"
                       className="text-sm text-[#A3A3A3] underline hover:text-[#828282]"
-                      onClick={() => handleOpenTermsModal("caution")}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleOpenTermsModal("caution");
+                      }}
                     >
                       자세히 보기
                     </a>
@@ -845,7 +905,6 @@ const ProjectRegister = () => {
                 </div>
               </div>
             </section>
-
             {/* Button Section */}
             <div className="flex justify-center gap-4 pt-4">
               <button
