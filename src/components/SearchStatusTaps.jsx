@@ -16,7 +16,7 @@ const SearchStatusTabs = ({ activeTab, setActiveTab }) => {
         return (
           <button
             key={k}
-            onClick={() => setActiveTab((prev) => (prev === k ? null : k))}
+            onClick={() => setActiveTab(k)}
             className={`
               w-[74px] h-[40px] px-[20px] rounded-[20px]
               text-[12px] font-medium font-pretendard whitespace-nowrap cursor-pointer
