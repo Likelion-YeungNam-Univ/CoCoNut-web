@@ -73,21 +73,20 @@ const ProjectList = ({
 
     const byStatus = activeTab
       ? projects.filter((p) => p.status === activeTab)
-      : projects.slice(); // 전체
+      : projects.slice();
 
-    const byCategory =
-      selectedCategories.length === 0
+    const byCategoryOrBusiness =
+      selectedCategories.length === 0 && selectedBusinesses.length === 0
         ? byStatus
-        : byStatus.filter((p) => selectedCategories.includes(p.category));
-
-    const byBusiness =
-      selectedBusinesses.length === 0
-        ? byCategory
-        : byCategory.filter((p) => selectedBusinesses.includes(p.businessType));
+        : byStatus.filter((p) => {
+            const categoryMatch = selectedCategories.includes(p.category);
+            const businessMatch = selectedBusinesses.includes(p.businessType);
+            return categoryMatch || businessMatch;
+          });
 
     const byTitle = rx
-      ? byBusiness.filter((p) => rx.test(p.title ?? ""))
-      : byBusiness;
+      ? byCategoryOrBusiness.filter((p) => rx.test(p.title ?? ""))
+      : byCategoryOrBusiness;
 
     return byTitle;
   }, [q, activeTab, selectedCategories, selectedBusinesses, projects]);
