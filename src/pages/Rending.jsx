@@ -11,8 +11,14 @@ const Rending = () => {
     <span className='text-[#626262]'>브릿지는 경산의 소상공인과 지역 주민이 연결될 수 있도록 돕는 B2P 공모 플랫폼입니다.</span>
     <div className='flex gap-3 mt-4'>
 
-        <Link className='border border-[#2FD8F6] bg-[#EAFBFE] hover:bg-[#E0F9FE] rounded-xl w-[140px] h-[45px] flex items-center justify-center text-[#2FD8F6]' to="/signup">공모전 참여하기</Link>
-        <Link className='border rounded-xl bg-[#2FD8F6] hover:bg-[#2AC2DD] w-[140px] h-[45px] text-[#FFFFFF] flex items-center justify-center' to="/signup">도움 요청하기</Link>
+        <Link className='border border-[#2FD8F6] bg-[#EAFBFE] hover:bg-[#E0F9FE] rounded-xl w-[140px] h-[45px] flex items-center justify-center text-[#2FD8F6]'
+       to="/signup" state={{ presetRole: "참가자" }}>
+        공모전 참여하기
+      </Link>
+       <Link className='border rounded-xl bg-[#2FD8F6] hover:bg-[#2AC2DD] w-[140px] h-[45px] text-[#FFFFFF] flex items-center justify-center'
+       to="/signup" state={{ presetRole: "소상공인" }}>
+       도움 요청하기
+       </Link>
    
     </div>
     <Link className='text-[#A3A3A3] underline text-sm' to="/main">지금 올라온 공모전 둘러보기</Link>
