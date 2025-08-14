@@ -1,11 +1,11 @@
 import React from "react";
 
 const tabLabels = {
-  in_progress: "진행 중",
-  voting: "투표 중",
-  closed: "완료",
+  IN_PROGRESS: "진행 중",
+  VOTING: "투표 중",
+  CLOSED: "완료",
 };
-const tabs = ["in_progress", "voting", "closed"];
+const tabs = ["IN_PROGRESS", "VOTING", "CLOSED"];
 
 const SearchStatusTabs = ({ activeTab, setActiveTab }) => {
   return (

@@ -3,11 +3,11 @@ import React from "react";
 // 프로젝트 상태 탭 - 진행중, 투표중, 완료
 const ProjectStatusTabs = ({ activeTab, setActiveTab }) => {
   const tabLabels = {
-    in_progress: "진행 중",
-    voting: "투표 중",
-    closed: "완료",
+    IN_PROGRESS: "진행 중",
+    VOTING: "투표 중",
+    CLOSED: "완료",
   };
-  const tabs = ["in_progress", "voting", "closed"];
+  const tabs = ["IN_PROGRESS", "VOTING", "CLOSED"];
 
   return (
     <div className="flex gap-4 pl-[416px] pt-[40px] pb-[32px]">
