@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+
 import { FaCheckCircle } from "react-icons/fa";
 import ScriptModal from '../components/ScriptModal';
 import PolicyContent from '../components/PolicyContent';
 import { IoEyeSharp } from "react-icons/io5";
 import { BsFillEyeSlashFill } from "react-icons/bs";
 import signUpApi from "../apis/signUpApi";
+import ptlogo from "../assets/ptlogo.png"
+import mclogo from "../assets/mclogo.png"
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import emailcheckApi from "../apis/emailcheckApi";
+import nicknameApi from "../apis/nicknameApi";
 
 const Signup = () => {
-const checkEmailApi = async () => ({ exists: false });
-const checkNicknameApi = async () => ({ exists: false });
 
   const [name, setName] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
+
+
+ const [emailChecked, setEmailChecked] = useState(false);
+ const [nicknameChecked, setNicknameChecked] = useState(false);
+
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -29,7 +37,7 @@ const [termsAgreed2, setTermsAgreed2] = useState(false);
   const [checkingNickname, setCheckingNickname] = useState(false);
 
   const [currentStep, setCurrentStep] = useState(1);
-
+  const location = useLocation();
   const [passwordMessage, setPasswordMessage] = useState("");
 
     const [isTermsOpen, setIsTermsOpen] = useState(false);
@@ -44,6 +52,14 @@ const [termsAgreed2, setTermsAgreed2] = useState(false);
       : "영문, 숫자, 특수기호 조합 8자~16자를 입력해 주세요."
   );
 };
+
+ useEffect(() => {
+  const preset = location.state?.presetRole; 
+   if (preset === "참가자" || preset === "소상공인") {
+     setRole(preset);
+   }
+ }, [location.state]);
+
 
 // --- 이메일 중복확인(실제 API 있으면 연동) ---
 const checkEmailDuplicate = async () => {
@@ -61,13 +77,18 @@ const checkEmailDuplicate = async () => {
       return;
     }
 
-    // TODO: 실제 중복확인 API로 교체
-    const res = await (async () => ({ exists: false }))();
+    const res = await emailcheckApi(email)
     setEmailMessage(
       res.exists ? "이미 존재하는 아이디입니다." : "사용 가능한 아이디입니다."
-    );
-  } catch {
-    setEmailMessage("중복 확인 중 오류가 발생했습니다.");
+    ); setEmailChecked(!res.exists);
+  } catch (err) {
+    if (err.response?.status === 409) {
+      setEmailMessage("이미 존재하는 아이디입니다. 다른 아이디를 입력해 주세요.");
+      setEmailChecked(false);
+    } else {
+      setEmailMessage("중복 확인 중 오류가 발생했습니다.");
+      setEmailChecked(false);
+    }
   } finally {
     setCheckingEmail(false);
   }
@@ -75,24 +96,39 @@ const checkEmailDuplicate = async () => {
 
 // --- 닉네임 중복확인(실제 API 있으면 연동) ---
 const checkNicknameDuplicate = async () => {
-  if (!nickname) {
-    setNicknameMessage("닉네임을 입력하세요.");
-    return;
-  }
-  try {
-    setCheckingNickname(true);
+   if (!nickname) {
+     setNicknameMessage("닉네임을 입력하세요.");
+     return;
+   }
+   // (선택) 클라이언트 유효성 검사: 10자 제한
+   if (nickname.length > 10) {
+     setNicknameMessage("닉네임은 10자 이내로 입력해 주세요.");
+     setNicknameChecked(false);
+     return;
+   }
+   try {
+     setCheckingNickname(true);
+     const res = await nicknameApi(nickname); 
+     if (res?.exists) {
+       setNicknameMessage("이미 존재하는 닉네임입니다.");
+       setNicknameChecked(false);
+     } else {
+       setNicknameMessage("사용 가능한 닉네임입니다.");
+       setNicknameChecked(true);
+     }
+   } catch (err) {
+     if (err?.response?.status === 409) {
+       setNicknameMessage("이미 존재하는 닉네임입니다. 다른 닉네임을 입력해 주세요.");
+       setNicknameChecked(false);
+     } else {
+       setNicknameMessage("중복 확인 중 오류가 발생했습니다.");
+       setNicknameChecked(false);
+     }
+   } finally {
+     setCheckingNickname(false);
+   }
+ };
 
-    // TODO: 실제 중복확인 API로 교체
-    const res = await (async () => ({ exists: false }))();
-    setNicknameMessage(
-      res.exists ? "이미 존재하는 닉네임입니다." : "사용 가능한 닉네임입니다."
-    );
-  } catch {
-    setNicknameMessage("중복 확인 중 오류가 발생했습니다.");
-  } finally {
-    setCheckingNickname(false);
-  }
-};
 
 // --- 회원가입 제출 ---
 const signUpHandler = async (e) => {
@@ -111,15 +147,15 @@ const signUpHandler = async (e) => {
   // 🔸 role 매핑 (서버 스펙에 맞게 조정)
   const roleMap = {
     "참가자": "ROLE_USER",
-    "소상공인": "ROLE_MERCHANT", // 서버에서 요구하는 값으로 바꾸세요
+    "소상공인": "ROLE_MERCHANT", 
   };
   const mappedRole = roleMap[role] ?? role;
 
   const body = { email, name, nickname, password, role: mappedRole };
 
   try {
-    await signUpApi(body);        // 실제 API 호출
-    setCurrentStep(3);            // 완료 스텝으로 이동
+    await signUpApi(body);        
+    setCurrentStep(3);       
   } catch (err) {
     console.error("회원가입 실패:", {
       message: err.message,
@@ -163,12 +199,13 @@ const signUpHandler = async (e) => {
             <div
               onClick={() => setRole("참가자")}
               role='button'
-              className={`flex flex-col w-[200px] h-[220px] border rounded-[8px] cursor-pointer
+              className={`flex flex-col items-center w-[200px] h-[220px] border rounded-[8px] cursor-pointer
                 ${role === "참가자" 
                   ? "bg-[#EAFBFE] border-[#2FD8F6]" 
                   : "border-[#F3F3F3] hover:bg-[#EAFBFE] hover:border-[#2FD8F6]"}`}
             >
-              <button className='font-semibold text-[20px] text-[#212121] mt-30' type='button'>
+              <img className='w-[80px] h-[80px] mt-[32px]' src= {ptlogo} alt='participantlogo'/>
+              <button className='mt-[12px] font-semibold text-[20px] text-[#212121] ' type='button'>
                 참가자
               </button>
               <span className='text-[14px] text-[#828282]'>
@@ -179,12 +216,13 @@ const signUpHandler = async (e) => {
             <div
               onClick={() => setRole("소상공인")}
               role='button'
-              className={`flex flex-col w-[200px] h-[220px] border rounded-[8px] cursor-pointer
+              className={`flex flex-col items-center w-[200px] h-[220px] border rounded-[8px] cursor-pointer
                 ${role === "소상공인" 
                   ? "bg-[#EAFBFE] border-[#2FD8F6]" 
                   : "border-[#F3F3F3] hover:bg-[#EAFBFE] hover:border-[#2FD8F6]"}`}
             >
-              <button className='font-semibold text-[20px] text-[#212121] mt-30' type='button'>
+               <img className='w-[80px] h-[80px] mt-[32px]' src= {mclogo} alt='merchantlogo'/>
+              <button className='font-semibold text-[20px] mt-[12px] text-[#212121]' type='button'>
                 소상공인
               </button>
               <span className='text-[14px] text-[#828282]'>
@@ -216,7 +254,11 @@ const signUpHandler = async (e) => {
                     <input
                       className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] text-[14px] border rounded-[6px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
                       value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailMessage("");
+                        setEmailChecked(false);
+                      }}
                       placeholder='이메일을 입력해 주세요.'
                     />
                   <button
@@ -255,7 +297,11 @@ const signUpHandler = async (e) => {
       <input
         className='pt-[15px] pr-[16px] pb-[15px] pl-[16px] border rounded-[6px] text-[14px] border-[#F3F3F3] w-[321px] h-[48px] focus:outline-none'
         value={nickname}
-        onChange={(e) => setNickname(e.target.value)}
+       onChange={(e) => {
+        setNickname(e.target.value);
+        setNicknameMessage("");
+        setNicknameChecked(false);
+      }}
         placeholder='10자 이내로 작성해 주세요.'
       />
       <button
@@ -277,7 +323,7 @@ const signUpHandler = async (e) => {
           className={`text-[12px] ${
             nicknameMessage.includes("사용 가능한")
               ? "text-[#2CCC41]"
-              : nicknameMessage.includes("이미 사용 중")
+              : nicknameMessage.includes("이미")
               ? "text-[#EE4343]"
               : "text-[#828282]"
           }`}
@@ -426,7 +472,7 @@ const signUpHandler = async (e) => {
                   type='submit'
                   disabled={!(termsAgreed1 && termsAgreed2)}
                   className={` mt-[38px] w-[180px] h-[45px] border rounded-[8px] pt-[12px] pr-[20px] pb-[12px] pl-[20px] border-[#E1E1E1] text-white 
-                    ${termsAgreed1 && termsAgreed2 ? 'bg-[#2FD8F6]' : 'bg-[#E1E1E1]'}`}
+                    ${termsAgreed1 && termsAgreed2 ? 'bg-[#2FD8F6] hover:bg-[#2AC2DD]' : 'bg-[#E1E1E1]'}`}
                 >
                   다음
                 </button>
