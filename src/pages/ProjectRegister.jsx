@@ -8,8 +8,10 @@ import PreviewModal from "../modal/PreviewModal";
 import ConfirmModal from "../modal/ConfirmModal";
 import EasyHelpModal from "../modal/EasyHelpModal";
 import ConfirmBackModal from "../modal/ConfirmBackModal";
+import PrizeInfoModal from "../modal/PrizeInfoModal";
 
 import axios from "axios";
+
 const api = axios.create({
   baseURL: "http://13.209.41.51:8080/api/v1/",
   headers: { "Content-Type": "application/json" },
@@ -57,6 +59,7 @@ const ProjectRegister = () => {
   const [modalContent, setModalContent] = useState("");
   const [previewData, setPreviewData] = useState(null);
   const [isEasyHelpModalOpen, setIsEasyHelpModalOpen] = useState(false);
+  const [isPrizeInfoModalOpen, setIsPrizeInfoModalOpen] = useState(false);
 
   // 뒤로가기 모달을 위한 상태 추가
   const [isBackModalOpen, setIsBackModalOpen] = useState(false);
@@ -427,7 +430,7 @@ const ProjectRegister = () => {
                       value={category}
                       onChange={(e) => setCategory(e.target.value)}
                     >
-                      <option className="" value="" disabled>
+                      <option className="text-[#F3F3F3]" value="" disabled>
                         공모전의 카테고리를 선택해 주세요
                       </option>
                       {categories.map((cat) => (
@@ -454,7 +457,7 @@ const ProjectRegister = () => {
                       value={businesstype}
                       onChange={(e) => setBusinesstype(e.target.value)}
                     >
-                      <option value="" disabled>
+                      <option className="text-[#F3F3F3]" value="" disabled>
                         가게(상호)의 업종을 선택해 주세요
                       </option>
                       {businesstypes.map((bus) => (
@@ -488,9 +491,9 @@ const ProjectRegister = () => {
                     </label>
                     <a
                       href="#"
-                      className="w-40 text-xs rounded-3xl text-[#FFFFFF] pt-2 pb-2 text-center bg-[#2FD8F6]"
+                      className="w-40 text-xs rounded-3xl text-[#2AC2DD] pt-2 pb-2 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]"
                       onClick={(e) => {
-                        e.preventDefault(); // 링크 이동 방지
+                        e.preventDefault();
                       }}
                     >
                       Tip. 도움받는 법 알아보기
@@ -520,18 +523,22 @@ const ProjectRegister = () => {
                 )}
                 {/* Textarea for "내용" */}
                 <div className="flex flex-col space-y-1">
-                  <div className="flex items-start justify-between space-x-2">
+                  <div className="flex items-start space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121] pt-2">
                       내용<span className="text-[#2FD8F6]">*</span>
                     </label>
-                    <textarea
-                      className="flex-grow border border-[#F3F3F3] rounded p-2 h-24 text-xs text-[#212121] placeholder:text-gray-400"
-                      placeholder="어떤 도움이 필요한지 자세히 적을수록 좋아요."
-                      value={aiResult.content}
-                      onChange={(e) =>
-                        setAiResult({ ...aiResult, content: e.target.value })
-                      }
-                    />
+                    <div className="flex-grow">
+                      {" "}
+                      {/* 텍스트아레아를 감싸는 div 추가 */}
+                      <textarea
+                        className="w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs text-[#212121] placeholder:text-gray-400"
+                        placeholder="어떤 도움이 필요한지 자세히 적을수록 좋아요."
+                        value={aiResult.content}
+                        onChange={(e) =>
+                          setAiResult({ ...aiResult, content: e.target.value })
+                        }
+                      />
+                    </div>
                   </div>
                   {isSubmitted && errors.content && (
                     <p className="text-red-500 text-xs text-right mt-1">
@@ -539,13 +546,14 @@ const ProjectRegister = () => {
                     </p>
                   )}
                 </div>
+
                 {/* ProjectFormInput for "상금" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
                       상금<span className="text-[#2FD8F6]">*</span>
                     </label>
-                    <div className="flex items-center space-x-2 w-[247px]">
+                    <div className="flex flex-grow items-center space-x-2">
                       <input
                         type="text"
                         className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs text-[#212121] placeholder:text-gray-400"
@@ -555,7 +563,27 @@ const ProjectRegister = () => {
                           setAiResult({ ...aiResult, prize: e.target.value })
                         }
                       />
-                      <span className="text-gray-500 text-xs">원</span>
+                      <span className="flex-shrink-0 text-gray-500 text-xs">
+                        원
+                      </span>
+                      {aiResult.prize && (
+                        <div className="relative group">
+                          {" "}
+                          {/* 여기에 group 클래스를 추가합니다. */}
+                          <span
+                            className="flex-shrink-0 text-xs rounded-3xl text-[#2AC2DD] pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]"
+                            // onMouseEnter, onMouseLeave는 모달 자체에서 처리되도록 제거
+                          >
+                            상금의 약 77%인{" "}
+                            {(
+                              parseInt(aiResult.prize.replace(/,/g, ""), 10) *
+                              0.77
+                            ).toLocaleString()}
+                            원만 내면 돼요.
+                          </span>
+                          <PrizeInfoModal />{" "}
+                        </div>
+                      )}
                     </div>
                   </div>
                   {isSubmitted && errors.prize && (
@@ -668,7 +696,7 @@ const ProjectRegister = () => {
                         >
                           {c.code === "color_free" && (
                             <span
-                              className={`text-xs font-normal text-gray-400`}
+                              className={`text-xs font-normal text-[#A3A3A3]`}
                             >
                               {c.label}
                             </span>
@@ -695,7 +723,7 @@ const ProjectRegister = () => {
                               : "border border-[#F3F3F3]"
                           } ${
                             s.value === "style_free"
-                              ? "text-gray-200"
+                              ? "text-[#A3A3A3]"
                               : "text-black"
                           }`}
                           onClick={() => setStyle(s.value)}
@@ -723,7 +751,7 @@ const ProjectRegister = () => {
                               : "border border-[#F3F3F3]"
                           } ${
                             t.value === "target_free"
-                              ? "text-gray-200"
+                              ? "text-[#A3A3A3]"
                               : "text-black"
                           }`}
                           onClick={() => setTarget(t.value)}
