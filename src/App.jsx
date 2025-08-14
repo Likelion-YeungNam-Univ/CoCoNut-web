@@ -1,14 +1,23 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+// App.jsx
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./pages/Layout";
 import Rending from "./pages/Rending";
+import Signup from "./pages/Signup";
+import Signin from "./pages/Signin";
+import AuthProvider from "./contexts/AuthProvider";
 
-const App = () => {
+export default function App() {
   return (
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Rending />}></Route>
+        <Route element={<Layout />}>
+          <Route index element={<Rending />} />
+          <Route path="signup" element={<Signup />} />
+          <Route path="signin" element={<Signin />} />
+        </Route>
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   );
-};
-
-export default App;
+}
