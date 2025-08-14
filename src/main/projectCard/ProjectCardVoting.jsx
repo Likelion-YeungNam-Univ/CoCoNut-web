@@ -3,6 +3,7 @@ import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
+import { formatDate } from "../../utils/dateUtils";
 
 const ProjectCardVoting = ({
   project,
@@ -14,14 +15,6 @@ const ProjectCardVoting = ({
   const businessTypeObj = businessTypes.find(
     (b) => b.code === project.businessType
   );
-
-  const formatDate = (isoString) => {
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}.${month}.${day}`;
-  };
 
   return (
     <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">

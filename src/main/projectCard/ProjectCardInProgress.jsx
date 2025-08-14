@@ -4,6 +4,7 @@ import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
 import { PiLineVertical } from "react-icons/pi";
+import { formatDate } from "../../utils/dateUtils";
 
 const ProjectCardInProgress = ({
   project,
@@ -28,14 +29,6 @@ const ProjectCardInProgress = ({
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // 일 단위로 변환
 
     return diffDays;
-  };
-
-  const formatDate = (isoString) => {
-    const date = new Date(isoString);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}.${month}.${day}`;
   };
 
   return (
@@ -71,7 +64,9 @@ const ProjectCardInProgress = ({
           </span>
         </div>
 
-        {/* 참여작 */}
+        {/* 참여작 
+            -> 추후 백엔드가 참여작 개수 받아올 것 
+        */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 w-[60px]">
             <img
