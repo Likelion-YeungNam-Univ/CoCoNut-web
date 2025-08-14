@@ -251,21 +251,22 @@ const ProjectRegister = () => {
   const analyzeWithAI = async () => {
     setLoading(true);
     try {
-      const aiData = {
-        created_at: "2024.08.01",
-        deadline: "2024.09.30",
-        prize: "총 상금 1000만원 (대상 500만원)",
-        content:
-          "새로운 로고 디자인 공모전입니다. 혁신적이고 창의적인 아이디어를 기다립니다.",
-        summary: "새로운 로고를 위한 창의적인 디자인 공모전",
-      };
+      const response = await api.post("/projects/assist", {
+        prompt: assistanceText,
+      });
+      const aiData = response.data;
       setAiResult({
         prize: aiData.prize,
-        content: aiData.content,
+        content: aiData.description,
         summary: aiData.summary,
       });
-      setCreatedAt(aiData.created_at);
-      setDeadline(aiData.deadline);
+      // createdAt과 deadline은 백엔드에서 받아온 데이터에 따라 설정
+      // 현재 백엔드 응답 예시에는 없으므로, 로컬에서 처리하거나 백엔드에 필드 추가 요청 필요
+      setCreatedAt(
+        aiData.created_at ||
+          new Date().toISOString().slice(0, 10).replace(/-/g, ".")
+      );
+      setDeadline(aiData.deadline || "");
     } catch (error) {
       console.error("AI analysis error:", error);
       alert("AI 분석 중 오류가 발생했습니다. 다시 시도해 주세요.");
@@ -300,8 +301,8 @@ const ProjectRegister = () => {
     setIsConfirmModalOpen(true);
   };
 
-  // 제출 확인 핸들러 (유효성 검사 추가)
-  const handleConfirmSubmit = () => {
+  // 제출 확인 핸들러 (유효성 검사 및 API 전송 로직 추가)
+  const handleConfirmSubmit = async () => {
     setIsSubmitted(true);
 
     const newErrors = {};
@@ -318,8 +319,56 @@ const ProjectRegister = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      console.log("공모전 등록이 완료되었습니다.");
-      setIsConfirmModalOpen(false);
+      // 기간 계산
+      const startDate = new Date(createdAt.replace(/\./g, "-"));
+      const deadlineDate = new Date(deadline.replace(/\./g, "-"));
+      const timeDiff = deadlineDate.getTime() - startDate.getTime();
+      const durationInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+      // FormData 객체 생성
+      const formData = new FormData();
+      formData.append("title", projectTitle);
+      formData.append("merchantName", merchantName);
+      formData.append("category", category);
+      formData.append("businessType", businesstype);
+      formData.append("description", aiResult.content);
+      formData.append("durationInDays", durationInDays);
+      formData.append(
+        "rewardAmount",
+        parseInt(aiResult.prize.replace(/,/g, ""), 10)
+      );
+      formData.append("summary", aiResult.summary);
+
+      if (color && color !== "color_free") {
+        formData.append("colors[]", color);
+      }
+      if (style && style !== "style_free") {
+        formData.append("styles[]", style);
+      }
+      if (target && target !== "target_free") {
+        formData.append("targets[]", target);
+      }
+
+      if (uploadedImage) {
+        formData.append("image", uploadedImage);
+      }
+
+      // axios 인터셉터가 토큰을 자동으로 추가하므로,
+      // 여기서 headers에 Authorization을 명시할 필요 없음.
+      try {
+        const response = await api.post("/projects", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log("공모전 등록 완료:", response.data);
+        alert("공모전 등록이 완료되었습니다.");
+        setIsConfirmModalOpen(false);
+      } catch (error) {
+        console.error("공모전 등록 실패:", error);
+        alert("공모전 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
+        setIsConfirmModalOpen(false);
+      }
     } else {
       console.log("필수 입력 필드가 비어있습니다.");
       setIsConfirmModalOpen(false);
@@ -502,9 +551,11 @@ const ProjectRegister = () => {
                   </div>
                 </div>
                 {loading && (
-                  <p className="text-center text-gray-500">
-                    AI가 내용을 분석 중입니다...
-                  </p>
+                  <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-50 rounded-xl shadow-lg py-4 px-6 z-50">
+                    <p className="text-white text-lg text-center">
+                      AI가 내용을 불러오는 중이에요...
+                    </p>
+                  </div>
                 )}
                 {/*  "내용" */}
                 <div className="flex flex-col space-y-1">
