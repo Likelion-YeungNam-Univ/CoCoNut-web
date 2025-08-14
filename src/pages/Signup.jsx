@@ -147,7 +147,7 @@ const signUpHandler = async (e) => {
   // 🔸 role 매핑 (서버 스펙에 맞게 조정)
   const roleMap = {
     "참가자": "ROLE_USER",
-    "소상공인": "ROLE_MERCHANT", 
+    "소상공인": "ROLE_BUSINESS", 
   };
   const mappedRole = roleMap[role] ?? role;
 
