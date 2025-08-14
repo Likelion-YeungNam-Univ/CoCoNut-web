@@ -5,18 +5,18 @@ import ProjectCardClosed from "./projectCard/ProjectCardClosed";
 import Pagination from "../components/Pagination";
 import noProjectIcon from "../assets/noProjectIcon.png";
 import magnifierIcon from "../assets/magnifierIcon.png";
-import { fetchProjects } from "../apis/projectApi.js";
+import { fetchProjects } from "../apis/getProjectsApi";
 
 const headerText = {
-  in_progress: "필요한 도움을 지금 요청해 보세요 🔎",
-  voting: "마음에 드는 참여작에 투표해 주세요 🗳️",
-  closed: "최근 수상작들을 구경해 보세요 🏆",
+  IN_PROGRESS: "필요한 도움을 지금 요청해 보세요 🔎",
+  VOTING: "마음에 드는 참여작에 투표해 주세요 🗳️",
+  CLOSED: "최근 수상작들을 구경해 보세요 🏆",
 };
 
 const CardByStatus = {
-  in_progress: ProjectCardInProgress,
-  voting: ProjectCardVoting,
-  closed: ProjectCardClosed,
+  IN_PROGRESS: ProjectCardInProgress,
+  VOTING: ProjectCardVoting,
+  CLOSED: ProjectCardClosed,
 };
 
 const PAGE_SIZE = 10; // 페이지 당 최대 카드 수
