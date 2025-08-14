@@ -19,7 +19,7 @@ const ProjectCardClosed = ({
 
   return (
     <div className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
-      {/* 수상작 대표 이미지 */}
+      {/* 수상작 대표 이미지 -> 작품 선정 기능이 완료되면 선정된 작품 API에서 이미지 받아올 것 */}
       <img
         src={projectImgExample}
         className="w-[228px] h-[228px] mt-[12px] ml-[12px] rounded-[8px]"
