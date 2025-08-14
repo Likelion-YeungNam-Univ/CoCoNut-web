@@ -10,34 +10,10 @@ import EasyHelpModal from "../modal/EasyHelpModal";
 import ConfirmBackModal from "../modal/ConfirmBackModal";
 import PrizeInfoModal from "../modal/PrizeInfoModal";
 import FooterRegister from "../components/FooterRegister";
-
-// 약관 데이터 (Terms Data)
-const TERMS_DATA = {
-  checklist: {
-    title: "공모전 등록 체크리스트",
-    content: `
-      공모전 등록 체크리스트 내용입니다.
-      `,
-  },
-  terms: {
-    title: "공모전 이용 약관",
-    content: `
-      공모전 이용 약관 내용입니다.
-      `,
-  },
-  caution: {
-    title: "공모전 이용 주의사항",
-    content: `
-      공모전 이용 주의사항 내용입니다.
-      `,
-  },
-  easyhelp: {
-    title: "쉽게 도움 받는 법",
-    content: `
-      AI 도움을 받는 방법에 대한 내용입니다.
-      `,
-  },
-};
+import { TERMS_DATA } from "../utils/termsData";
+import { STYLES_DATA } from "../utils/stylesData";
+import { TARGETS_DATA } from "../utils/targetData";
+import { COLORS_DATA } from "../utils/colorData";
 
 const ProjectRegister = () => {
   // 약관 동의 관련 상태
@@ -88,97 +64,6 @@ const ProjectRegister = () => {
   // 에러 메시지 상태
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  // 이미지에 나타난 스타일 및 타겟 데이터
-  const STYLES_DATA = [
-    { value: "simple", label: "심플한" },
-    { value: "modern", label: "모던한" },
-    { value: "retro", label: "레트로" },
-    { value: "cute", label: "귀여운" },
-    { value: "luxurious", label: "고급스러운" },
-    { value: "warm", label: "따뜻한" },
-    { value: "bold", label: "강렬한" },
-    { value: "natural", label: "자연스러운" },
-    { value: "traditional", label: "전통적인" },
-    { value: "trendy", label: "트렌디한" },
-    { value: "emotional", label: "감성적인" },
-    { value: "style_free", label: "스타일 자유" },
-  ];
-
-  const TARGETS_DATA = [
-    { value: "all_ages", label: "전 연령층" },
-    { value: "children_family", label: "어린이/가족" },
-    { value: "teenagers", label: "청소년" },
-    { value: "youth", label: "청년" },
-    { value: "middle_aged", label: "중장년층" },
-    { value: "elderly", label: "노년층" },
-    { value: "tourist", label: "관광객" },
-    { value: "office_worker", label: "직장인" },
-    { value: "target_free", label: "타겟 자유" },
-  ];
-
-  // COLORS_DATA의 color_free에 '색상 자유' label 추가
-  const COLORS_DATA = [
-    {
-      hex: "linear-gradient(to right, #FF91DC 0%, #FF00AE 100%)",
-      code: "pink",
-      label: "핑크",
-    },
-    {
-      hex: "linear-gradient(to right, #9FFF98 0%, #4DF041 100%)",
-      code: "green",
-      label: "초록",
-    },
-    {
-      hex: "linear-gradient(to right, #F0DB64 0%, #BFA200 100%)",
-      code: "gold",
-      label: "골드",
-    },
-    {
-      hex: "linear-gradient(to right, #FF9E9E 0%, #FF0000 100%)",
-      code: "red",
-      label: "빨강",
-    },
-    {
-      hex: "linear-gradient(to right, #85C6FF 0%, #0088FF 100%)",
-      code: "blue",
-      label: "파랑",
-    },
-    {
-      hex: "linear-gradient(to right, #AA8F7E 0%, #6D3615 100%)",
-      code: "brown",
-      label: "브라운",
-    },
-    {
-      hex: "linear-gradient(to right, #FFC096 0%, #FF6600 100%)",
-      code: "orange",
-      label: "주황",
-    },
-    {
-      hex: "linear-gradient(to right, #858BD2 0%, #181F7A 100%)",
-      code: "navy",
-      label: "네이비",
-    },
-    {
-      hex: "linear-gradient(to right, #868686 0%, #212121 100%)",
-      code: "black",
-      label: "블랙",
-    },
-    {
-      hex: "linear-gradient(to right, #FFF1A2 0%, #FFD900 100%)",
-      code: "yellow",
-      label: "노랑",
-    },
-    {
-      hex: "linear-gradient(to right, #BE7AFF 0%, #8400FF 100%)",
-      code: "purple",
-      label: "보라",
-    },
-    {
-      code: "color_free",
-      label: "색상 자유",
-    },
-  ];
 
   // 등록하기 버튼 활성화 로직
   useEffect(() => {
@@ -1016,7 +901,7 @@ const ProjectRegister = () => {
       {/* 모달 컴포넌트들 */}
       {isTermsModalOpen && (
         <TermsModal
-          isOpen={isTermsModalOpen} // isTermsModalOpen 상태를 isOpen prop으로 전달합니다.
+          isOpen={isTermsModalOpen}
           title={modalTitle}
           content={modalContent}
           onClose={() => setIsTermsModalOpen(false)}
@@ -1024,6 +909,7 @@ const ProjectRegister = () => {
       )}
       {isPreviewModalOpen && (
         <PreviewModal
+          isOpen={isPreviewModalOpen}
           data={previewData}
           onClose={() => setIsPreviewModalOpen(false)}
         />
