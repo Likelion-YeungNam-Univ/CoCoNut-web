@@ -3,13 +3,13 @@ import { SlArrowUpCircle } from "react-icons/sl";
 import api from "../apis/api";
 
 import MerchantHeader from "../header/MerchantHeader";
-import Footer from "../components/Footer";
 import TermsModal from "../modal/TermsModal";
 import PreviewModal from "../modal/PreviewModal";
 import ConfirmModal from "../modal/ConfirmModal";
 import EasyHelpModal from "../modal/EasyHelpModal";
 import ConfirmBackModal from "../modal/ConfirmBackModal";
 import PrizeInfoModal from "../modal/PrizeInfoModal";
+import FooterRegister from "../components/FooterRegister";
 
 // 약관 데이터 (Terms Data)
 const TERMS_DATA = {
@@ -58,9 +58,10 @@ const ProjectRegister = () => {
   const [isPrizeInfoModalOpen, setIsPrizeInfoModalOpen] = useState(false);
   const [isBackModalOpen, setIsBackModalOpen] = useState(false);
 
-  // AI analysis-related states
+  // AI 분석 관련 상태
   const [assistanceText, setAssistanceText] = useState("");
   const [loading, setLoading] = useState(false);
+
   // AI 분석 결과를 통합적으로 관리하는 새로운 상태 변수
   const [aiProjectData, setAiProjectData] = useState({
     rewardAmount: "",
@@ -239,7 +240,7 @@ const ProjectRegister = () => {
     }
   };
 
-  // AI 분석 핸들러 (Swagger API에 맞게 수정)
+  // AI 분석 핸들러
   const analyzeWithAI = async () => {
     setLoading(true);
 
@@ -249,7 +250,6 @@ const ProjectRegister = () => {
       });
       const aiData = response.data;
 
-      // aiProjectData 상태에 모든 AI 분석 결과를 한 번에 저장
       setAiProjectData({
         rewardAmount: aiData.rewardAmount,
         description: aiData.description,
@@ -276,11 +276,11 @@ const ProjectRegister = () => {
       merchantName,
       category,
       businesstype,
-      createdAt: aiProjectData.createdAt, // aiProjectData 사용
-      deadline: aiProjectData.deadline, // aiProjectData 사용
-      rewardAmount: aiProjectData.rewardAmount, // aiProjectData 사용
-      content: aiProjectData.description, // aiProjectData 사용
-      summary: aiProjectData.summary, // aiProjectData 사용
+      createdAt: aiProjectData.createdAt,
+      deadline: aiProjectData.deadline,
+      rewardAmount: aiProjectData.rewardAmount,
+      content: aiProjectData.description,
+      summary: aiProjectData.summary,
       color,
       style,
       target,
@@ -298,8 +298,8 @@ const ProjectRegister = () => {
   // 제출 확인 핸들러 (유효성 검사 및 API 전송 로직 추가)
   const handleConfirmSubmit = async () => {
     // 기간 계산
-    const startDate = new Date(aiProjectData.createdAt.replace(/\./g, "-")); // aiProjectData 사용
-    const deadlineDate = new Date(aiProjectData.deadline.replace(/\./g, "-")); // aiProjectData 사용
+    const startDate = new Date(aiProjectData.createdAt.replace(/\./g, "-"));
+    const deadlineDate = new Date(aiProjectData.deadline.replace(/\./g, "-"));
     const timeDiff = deadlineDate.getTime() - startDate.getTime();
     const durationInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
@@ -309,13 +309,13 @@ const ProjectRegister = () => {
     formData.append("merchantName", merchantName);
     formData.append("category", category);
     formData.append("businessType", businesstype);
-    formData.append("description", aiProjectData.description); // aiProjectData 사용
+    formData.append("description", aiProjectData.description);
     formData.append("durationInDays", durationInDays);
     formData.append(
       "rewardAmount",
-      parseInt(aiProjectData.rewardAmount.replace(/,/g, ""), 10) // aiProjectData 사용
+      parseInt(aiProjectData.rewardAmount.replace(/,/g, ""), 10)
     );
-    formData.append("summary", aiProjectData.summary); // aiProjectData 사용
+    formData.append("summary", aiProjectData.summary);
 
     if (color && color !== "color_free") {
       formData.append("colors[]", color);
@@ -367,11 +367,11 @@ const ProjectRegister = () => {
     if (!category) newErrors.category = "카테고리가 선택되지 않았습니다.";
     if (!businesstype) newErrors.businesstype = "업종이 선택되지 않았습니다.";
     if (!aiProjectData.description)
-      newErrors.content = "내용이 입력되지 않았습니다."; // aiProjectData 사용
+      newErrors.content = "내용이 입력되지 않았습니다.";
     if (!aiProjectData.rewardAmount)
-      newErrors.rewardAmount = "상금이 입력되지 않았습니다."; // aiProjectData 사용
+      newErrors.rewardAmount = "상금이 입력되지 않았습니다.";
     if (!aiProjectData.createdAt || !aiProjectData.deadline)
-      newErrors.period = "기간이 입력되지 않았습니다."; // aiProjectData 사용
+      newErrors.period = "기간이 입력되지 않았습니다.";
 
     setErrors(newErrors);
 
@@ -386,7 +386,6 @@ const ProjectRegister = () => {
       <div className="bg-[#F8F8F8] flex justify-center py-12 px-4">
         <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-[1032px] min-h-[2408px]">
           <div className="max-w-2xl mx-auto mt-12">
-            {/* Title Section */}
             <section className="flex flex-col mb-12 items-center">
               <h1 className="text-3xl font-semibold mb-3 text-[#000000]">
                 공모전 등록하기
@@ -407,10 +406,10 @@ const ProjectRegister = () => {
               </label>
             </div>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
-            {/* Basic Info Section */}
+
             <section className="my-10">
               <div className="space-y-7">
-                {/* ProjectFormInput for "공모전 제목" */}
+                {/*  "공모전 제목" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
@@ -462,7 +461,7 @@ const ProjectRegister = () => {
                     </div>
                   </div>
                 </div>
-                {/* ProjectFormInput for "카테고리" */}
+                {/* "카테고리" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
@@ -530,7 +529,7 @@ const ProjectRegister = () => {
               공모전 내용 입력
             </h2>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
-            {/* Contest Content Section */}
+
             <section className="my-10">
               <div className="space-y-7">
                 <div className="flex items-start space-x-2">
@@ -989,7 +988,7 @@ const ProjectRegister = () => {
                 </div>
               </div>
             </section>
-            {/* Button Section */}
+
             <div className="flex justify-center gap-4 pt-4">
               <button
                 className="w-56 py-3 border border-[#2FD8F6] rounded-md transition hover:font-bold text-[#2FD8F6] font-medium"
@@ -1003,7 +1002,7 @@ const ProjectRegister = () => {
                     ? "bg-[#2FD8F6] text-white hover:font-bold"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
-                onClick={handleRegisterClick} // 수정된 핸들러 사용
+                onClick={handleRegisterClick}
                 disabled={!isButtonActive}
               >
                 등록하기
@@ -1012,6 +1011,7 @@ const ProjectRegister = () => {
           </div>
         </div>
       </div>
+      <FooterRegister />
 
       {/* 모달 컴포넌트들 */}
       {isTermsModalOpen && (
@@ -1045,7 +1045,6 @@ const ProjectRegister = () => {
           onConfirm={handleConfirmBack}
         />
       )}
-      <Footer />
     </div>
   );
 };
