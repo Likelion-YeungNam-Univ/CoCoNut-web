@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { SlArrowUpCircle } from "react-icons/sl";
 import api from "../apis/api";
+import { analyzeProjectWithAI } from "../apis/analyzeWithAI";
+import { registerProject } from "../apis/registerProject";
+import { fetchCategories } from "../apis/category";
+import { fetchBusinessTypes } from "../apis/businessTypes";
 
 import MerchantHeader from "../header/MerchantHeader";
 import TermsModal from "../modal/TermsModal";
@@ -78,16 +82,16 @@ const ProjectRegister = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoriesResponse = await api.get("enums/categories");
-        setCategories(categoriesResponse.data);
+        const categories = await fetchCategories();
+        setCategories(categories);
 
-        const businessTypesResponse = await api.get("enums/businessTypes");
-        setBusinesstypes(businessTypesResponse.data);
+        const businesstypes = await fetchBusinessTypes();
+        setBusinesstypes(businesstypes);
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("Failed to fetch enum data:", error);
+        alert("데이터를 불러오는 데 실패했습니다. 다시 시도해 주세요.");
       }
     };
-
     fetchData();
   }, []);
 
@@ -130,11 +134,7 @@ const ProjectRegister = () => {
     setLoading(true);
 
     try {
-      const response = await api.post("/projects/assist", {
-        prompt: assistanceText,
-      });
-      const aiData = response.data;
-
+      const aiData = await analyzeProjectWithAI(assistanceText);
       setAiProjectData({
         rewardAmount: aiData.rewardAmount,
         description: aiData.description,
@@ -176,7 +176,7 @@ const ProjectRegister = () => {
   };
 
   // 확인 모달 열기 핸들러
-  const handleOpenConfirmModal = () => {
+  const handleOpenConfirmModal = async () => {
     setIsConfirmModalOpen(true);
   };
 
@@ -217,16 +217,11 @@ const ProjectRegister = () => {
     }
 
     try {
-      const response = await api.post("/projects", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      console.log("공모전 등록 완료:", response.data);
+      await registerProject(formData);
+      console.log("공모전 등록 완료:");
       alert("공모전 등록이 완료되었습니다.");
       setIsConfirmModalOpen(false);
     } catch (error) {
-      console.error("공모전 등록 실패:", error);
       alert("공모전 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
       setIsConfirmModalOpen(false);
     }
