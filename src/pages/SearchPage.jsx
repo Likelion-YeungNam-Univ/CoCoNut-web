@@ -1,16 +1,20 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import MerchantHeader from "../header/MerchantHeader";
 import CategoryFilter from "../main/CategoryFilter";
 import ProjectList from "../main/ProjectList";
 import Footer from "../components/Footer";
 import SearchStatusTabs from "../components/SearchStatusTaps";
-import MainBanner from "../main/MainBanner";
 import { BiSolidPencil } from "react-icons/bi";
+import MerchantBanner from "../main/MerchantBanner";
+import ParticipantHeader from "../header/ParticipantHeader";
+import ParticipantBanner from "../main/ParticipantBanner";
 
 const SearchPage = () => {
   const [params, setParams] = useSearchParams();
   const q = (params.get("q") ?? "").trim();
+  const location = useLocation();
+  const isMerchant = location.pathname.startsWith("/search");
 
   const [activeTab, setActiveTab] = useState("IN_PROGRESS"); // 초기 미선택 = 전체
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -34,8 +38,8 @@ const SearchPage = () => {
 
   return (
     <div>
-      <MerchantHeader />
-      <MainBanner />
+      {isMerchant ? <MerchantHeader /> : <ParticipantHeader />}
+      {isMerchant ? <MerchantBanner /> : <ParticipantBanner />}
       {/* 상단 요약 바 */}
       <div
         id="search-title"
@@ -73,17 +77,19 @@ const SearchPage = () => {
         </div>
       </div>
       <Footer />
-      <Link
-        to="/project-register"
-        className="fixed bottom-[50px] right-[110px] z-[9999]
-             flex items-center gap-[6px] pl-[16px] pr-[20px] py-[12px] w-[157px] h-[45px]
-             rounded-[8px] bg-[#2FD8F6] text-white hover:bg-[#2AC2DD] cursor-pointer"
-      >
-        <BiSolidPencil className="w-[16px] h-[16px]" />
-        <span className="text-[16px] font-medium font-pretendard leading-[130%] tracking-[-0.02em]">
-          공모전 등록하기
-        </span>
-      </Link>
+      {isMerchant && (
+        <Link
+          to="/project-register"
+          className="fixed bottom-[50px] right-[110px] z-[9999]
+                  flex items-center gap-[6px] pl-[16px] pr-[20px] py-[12px] w-[157px] h-[45px]
+                  rounded-[8px] bg-[#2FD8F6] text-white hover:bg-[#2AC2DD] cursor-pointer"
+        >
+          <BiSolidPencil className="w-[16px] h-[16px]" />
+          <span className="text-[16px] font-medium font-pretendard leading-[130%] tracking-[-0.02em]">
+            공모전 등록하기
+          </span>
+        </Link>
+      )}
     </div>
   );
 };

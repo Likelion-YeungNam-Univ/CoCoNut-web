@@ -21,7 +21,7 @@ const Rending = () => {
        </Link>
    
     </div>
-    <Link className='text-[#A3A3A3] underline text-sm' to="/main">지금 올라온 공모전 둘러보기</Link>
+    <Link className='text-[#A3A3A3] underline text-sm' to="/participant-main-page">지금 올라온 공모전 둘러보기</Link>
     </div>
     </>
   )
