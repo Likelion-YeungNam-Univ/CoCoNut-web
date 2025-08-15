@@ -7,30 +7,38 @@ import { FaTimes } from "react-icons/fa";
 import { STYLES_DATA } from "../utils/stylesData";
 import { TARGETS_DATA } from "../utils/targetData";
 import { COLORS_DATA } from "../utils/colorData";
+// import nicknameApi from "../apis/nicknameApi"; // ✨ API 호출 로직 제거로 인해 더 이상 필요하지 않습니다.
 
 const PreviewModal = ({ isOpen, onClose, data }) => {
+  // ✨ 기존 닉네임 상태 관리 및 API 호출 로직을 모두 제거했습니다.
+  // 닉네임은 이제 data.nickname을 통해 직접 전달받습니다.
+
   if (!isOpen) return null;
 
+  // 카테고리 코드와 라벨을 연결하는 매핑 객체
   const CATEGORIES_MAP = {
-    GRAPHIC_EDITING: "그래픽/편집",
-    WEB_APP: "웹/앱",
+    PLANNING_IDEA: "기획/아이디어",
+    ADVERTISING_MARKETING: "광고/마케팅",
     BRANDING_LOGO: "브랜딩/로고",
-    PHOTO_VIDEO: "사진/영상",
-    WRITING_PLANNING: "글쓰기/기획",
-    OTHER: "기타",
+    PACKAGE_DESIGN: "패키지/포장",
+    NAMING_SLOGAN: "네이밍/슬로건",
+    CHARCTER_DESIGN: "캐릭터",
+    PHOTO_VIDEO_UCC: "사진/영상/UCC",
+    INTERIOR_ARCHITECTURE: "인테리어/건축",
+    IT_WEB_MOBILE: "IT/웹/모바일",
+    ETC: "기타",
   };
 
+  // 업종 코드와 라벨을 연결하는 매핑 객체
   const BUSINESSTYPES_MAP = {
-    RESTAURANT_CAFE_PUB: "식당/카페/주점",
-    LEISURE_SPORTS: "레저/스포츠",
-    EDUCATION: "교육",
-    BEAUTY_FASHION: "뷰티/패션",
-    DISTRIBUTION_SALES: "유통/판매",
-    MEDICAL_HEALTH: "의료/건강",
-    SERVICE_PROFESSIONAL: "서비스/전문직",
-    PUBLIC_ORGANIZATION: "공공기관/단체",
-    MANUFACTURE: "제조업",
-    CONSTRUCTION: "건설/부동산",
+    FOOD_BEVERAGE: "식당/카페/주점",
+    LEISURE_SPORTS: "문화/여가",
+    EDUCATION: "교육/학원",
+    BEAUTY_HEALTH: "뷰티/헬스",
+    RETAIL_COMMERCE: "의류/쇼핑몰",
+    MEDICAL: "병원/약국",
+    PROFESSIONAL_SERVICE: "서비스/전문직",
+    ACCOMMAODATION: "숙박/관광",
     ETC: "기타",
   };
 
@@ -88,7 +96,8 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
               </span>
               <span className="text-[#E1E1E1] text-[10px] mx-2">|</span>
               <span className="font-normal text-[#A3A3A3]">
-                {data.submerchantName || "세부 가게명 없음"}
+                {/* ✨ 수정: data.nickname을 직접 사용합니다. */}
+                {data.nickname || "닉네임 없음"}
               </span>
             </p>
           </div>
@@ -102,19 +111,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                 {data.prize || "가격 없음"}
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              <img
-                src={participantIcon}
-                alt="참여작 아이콘"
-                className="h-4 w-4"
-              />
-              <span className="text-[14px] text-[#828282] font-medium w-[80px]">
-                참여작
-              </span>
-              <p className="text-[14px] font-medium text-[#212121]">
-                {data.participants || "참여작 없음"}
-              </p>
-            </div>
+
             <div className="flex items-center space-x-2">
               <img src={calendarIcon} alt="기간 아이콘" className="h-4 w-4" />
               <span className="text-[14px] text-[#828282] font-medium w-[80px]">
@@ -130,17 +127,20 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
           <hr className="text-[#E1E1E1] border-1" />
 
           <div className="space-y-4 mt-16">
-            <div>
-              <h2 className="text-[16px] font-semibold text-[#212121] mb-2">
-                한 줄 소개
-              </h2>
-              <p className="text-[16px] font-normal">
-                {data.summary || "한 줄 소개 정보가 없습니다."}
-              </p>
-            </div>
-
+            {data.summary && (
+              <div>
+                <h2 className="text-[16px] font-semibold text-[#212121] mb-2">
+                  한 줄 소개
+                </h2>
+                <p className="text-[16px] font-normal">{data.summary}</p>
+              </div>
+            )}
             <div className="flex flex-col space-y-4">
-              <h2 className="text-[16px] font-semibold text-[#212121] mt-10">
+              <h2
+                className={`text-[16px] font-semibold text-[#212121] ${
+                  data.summary ? "mt-16" : ""
+                }`}
+              >
                 내용
               </h2>
               {data.image && (
@@ -159,9 +159,8 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
           </div>
 
           <div className="space-y-4 mb-8">
-            {/* 색상 - 그리드 3으로 유지하고 위아래 패딩으로 크기 조절 */}
             <div>
-              <h2 className="text-[16px] font-semibold text-[#212121] mt-10">
+              <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
                 색상
               </h2>
               <div className="grid grid-cols-3 gap-2 mt-2">
@@ -178,7 +177,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                       return colorItem ? (
                         <span
                           key={index}
-                          className="w-full py-5 rounded border border-[#212121] flex items-center justify-center"
+                          className="w-[280px] h-[88px] rounded flex items-center justify-center"
                           style={{ background: colorItem.hex }}
                         ></span>
                       ) : null;
@@ -194,13 +193,13 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
 
             {/* 스타일 - 그리드 6으로 유지하고 패딩으로 크기 조절 */}
             <div>
-              <h2 className="text-[16px] font-semibold text-[#212121] mt-10">
+              <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
                 스타일
               </h2>
               <div className="grid grid-cols-6 gap-2 mt-2">
                 {data.style && data.style.length > 0 ? (
                   data.style[0] === "style_free" ? (
-                    <span className="px-4 py-2 rounded border border-[#F3F3F3] text-sm bg-white text-[#212121] flex items-center justify-center col-span-6">
+                    <span className="w-[130px] h-[48px] rounded border border-[#F3F3F3] text-sm bg-white text-[#212121] flex items-center justify-center col-span-6">
                       스타일 자유
                     </span>
                   ) : (
@@ -211,7 +210,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                       return styleItem ? (
                         <span
                           key={index}
-                          className="px-4 py-2 rounded border border-[#212121] text-sm bg-white text-black flex items-center justify-center text-center"
+                          className="w-[130px] h-[48px] rounded border border-[#212121] text-sm bg-white text-black flex items-center justify-center text-center"
                         >
                           {styleItem.label}
                         </span>
@@ -228,13 +227,13 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
 
             {/* 타겟 - 그리드 6으로 유지하고 패딩으로 크기 조절 */}
             <div>
-              <h2 className="text-[16px] font-semibold text-[#212121] mt-10">
+              <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
                 타겟
               </h2>
               <div className="grid grid-cols-6 gap-2 mt-2">
                 {data.target && data.target.length > 0 ? (
                   data.target[0] === "target_free" ? (
-                    <span className="px-4 py-2 rounded border border-[#F3F3F3] text-sm bg-white text-[#212121] flex items-center justify-center col-span-6">
+                    <span className="w-[130px] h-[48px] rounded border border-[#F3F3F3] text-sm bg-white text-[#212121] flex items-center justify-center col-span-6">
                       타겟 자유
                     </span>
                   ) : (
@@ -245,7 +244,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                       return targetItem ? (
                         <span
                           key={index}
-                          className="px-4 py-2 rounded border border-[#212121] text-sm bg-white text-black flex items-center justify-center text-center"
+                          className="w-[130px] h-[48px] rounded border border-[#212121] text-sm bg-white text-black flex items-center justify-center text-center"
                         >
                           {targetItem.label}
                         </span>

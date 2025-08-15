@@ -1,25 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { SlArrowUpCircle } from "react-icons/sl";
-import api from "../apis/api";
+import { useNavigate } from "react-router-dom";
+
 import { analyzeProjectWithAI } from "../apis/analyzeWithAI";
 import { registerProject } from "../apis/registerProject";
 import { fetchCategories } from "../apis/category";
-import { fetchBusinessTypes } from "../apis/businessTypes";
+import { getBusinessTypes } from "../apis/businessTypes";
+import getNickname from "../apis/getNickname";
 
 import MerchantHeader from "../header/MerchantHeader";
-import TermsModal from "../modal/TermsModal";
-import PreviewModal from "../modal/PreviewModal";
-import ConfirmModal from "../modal/ConfirmModal";
-import EasyHelpModal from "../modal/EasyHelpModal";
-import ConfirmBackModal from "../modal/ConfirmBackModal";
-import PrizeInfoModal from "../modal/PrizeInfoModal";
+
+import CustomDropdown from "../components/CustomDropdown";
+import TermsModal from "../components/TermsModal";
+import PreviewModal from "../components/PreviewModal";
+import ConfirmModal from "../components/ConfirmModal";
+import EasyHelpModal from "../components/EasyHelpModal";
+import ConfirmBackModal from "../components/ConfirmBackModal";
+import PrizeInfoModal from "../components/PrizeInfoModal";
 import FooterRegister from "../components/FooterRegister";
+
 import { TERMS_DATA } from "../utils/termsData";
 import { STYLES_DATA } from "../utils/stylesData";
 import { TARGETS_DATA } from "../utils/targetData";
 import { COLORS_DATA } from "../utils/colorData";
 
 const ProjectRegister = () => {
+  const navigate = useNavigate();
   // 약관 동의 관련 상태
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeChecklist, setAgreeChecklist] = useState(false);
@@ -56,18 +62,35 @@ const ProjectRegister = () => {
   const [merchantName, setMerchantName] = useState("");
   const [category, setCategory] = useState("");
   const [businesstype, setBusinesstype] = useState("");
-  const [color, setColor] = useState("");
-  const [style, setStyle] = useState("");
-  const [target, setTarget] = useState("");
+
+  // 색상, 스타일, 타겟을 여러 개 선택 가능하도록 상태를 배열로 변경
+  const [colors, setColors] = useState([]);
+  const [styles, setStyles] = useState([]);
+  const [targets, setTargets] = useState([]);
+
   const [uploadedImage, setUploadedImage] = useState(null);
 
-  // API에서 받아올 카테고리 및 업종 상태
+  // API에서 받아올 카테고리 및 업종, 닉네임
   const [categories, setCategories] = useState([]);
   const [businesstypes, setBusinesstypes] = useState([]);
+  const [merchantNickname, setMerchantNickname] = useState(null);
 
   // 에러 메시지 상태
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // ✨ 추가: 폼 내용이 변경되었는지 추적하는 상태
+  const [isFormDirty, setIsFormDirty] = useState(false);
+  const initialFormState = useRef({
+    projectTitle: "",
+    merchantName: "",
+    category: "",
+    businesstype: "",
+    description: "",
+    rewardAmount: "",
+    createdAt: "",
+    deadline: "",
+  });
 
   // 등록하기 버튼 활성화 로직
   useEffect(() => {
@@ -85,30 +108,61 @@ const ProjectRegister = () => {
         const categories = await fetchCategories();
         setCategories(categories);
 
-        const businesstypes = await fetchBusinessTypes();
+        const businesstypes = await getBusinessTypes();
         setBusinesstypes(businesstypes);
+
+        // 닉네임 데이터 불러오기
+        const fetchedNicknameData = await getNickname();
+        if (fetchedNicknameData && fetchedNicknameData.nickname) {
+          setMerchantNickname(fetchedNicknameData.nickname);
+        } else {
+          setMerchantNickname("닉네임 없음");
+        }
       } catch (error) {
-        console.error("Failed to fetch enum data:", error);
-        alert("데이터를 불러오는 데 실패했습니다. 다시 시도해 주세요.");
+        console.error("Failed to fetch data:", error);
+        setMerchantNickname("닉네임 없음");
       }
     };
     fetchData();
   }, []);
 
-  // 뒤로가기 모달을 위한 useEffect 추가
+  // ✨ 수정: 폼 내용 변경 시 isFormDirty 상태 업데이트 및 popstate 이벤트 리스너 등록
   useEffect(() => {
-    window.history.pushState(null, "", window.location.href);
-
-    const handlePopstate = () => {
-      setIsBackModalOpen(true);
+    // 현재 폼 상태를 초기 상태와 비교합니다.
+    const currentFormState = {
+      projectTitle,
+      merchantName,
+      category,
+      businesstype,
+      description: aiProjectData.description,
+      rewardAmount: aiProjectData.rewardAmount,
+      createdAt: aiProjectData.createdAt,
+      deadline: aiProjectData.deadline,
     };
+    // 폼 내용이 변경되었는지 확인하는 로직
+    const isAnyFieldChanged = Object.keys(currentFormState).some(
+      (key) => currentFormState[key] !== initialFormState.current[key]
+    );
+    setIsFormDirty(isAnyFieldChanged);
 
-    window.addEventListener("popstate", handlePopstate);
+    // 폼이 변경되었을 때만 뒤로가기 이벤트를 감지합니다.
+    if (isAnyFieldChanged) {
+      // 뒤로가기 이벤트를 감지하기 위해 히스토리 스택에 가짜 상태를 추가
+      window.history.pushState(null, "", window.location.href);
 
-    return () => {
-      window.removeEventListener("popstate", handlePopstate);
-    };
-  }, []);
+      const handlePopstate = () => {
+        // 뒤로가기 이벤트 감지 시 모달을 엽니다.
+        setIsBackModalOpen(true);
+      };
+
+      window.addEventListener("popstate", handlePopstate);
+
+      // 클린업 함수: 컴포넌트 언마운트 시 또는 isFormDirty가 false로 바뀔 때 이벤트 리스너 제거
+      return () => {
+        window.removeEventListener("popstate", handlePopstate);
+      };
+    }
+  }, [projectTitle, merchantName, category, businesstype, aiProjectData]);
 
   // 모든 약관 동의 핸들러
   const handleAgreeAllChange = (e) => {
@@ -145,12 +199,68 @@ const ProjectRegister = () => {
     } catch (error) {
       console.error("AI analysis error:", error);
       if (error.response && error.response.status === 401) {
-        alert("인증 오류가 발생했습니다. 로그인 상태를 확인해 주세요.");
+        // alert("인증 오류가 발생했습니다. 로그인 상태를 확인해 주세요.");
       } else {
-        alert("AI 분석 중 오류가 발생했습니다. 다시 시도해 주세요.");
+        // alert("AI 분석 중 오류가 발생했습니다. 다시 시도해 주세요.");
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 다중 선택을 위한 색상 클릭 핸들러
+  const handleColorClick = (code) => {
+    if (code === "color_free") {
+      setColors((prev) => (prev.includes("color_free") ? [] : ["color_free"]));
+    } else {
+      setColors((prev) => {
+        if (prev.includes("color_free")) {
+          return [code];
+        }
+        if (prev.includes(code)) {
+          return prev.filter((c) => c !== code);
+        } else {
+          return [...prev, code];
+        }
+      });
+    }
+  };
+
+  // 다중 선택을 위한 스타일 클릭 핸들러
+  const handleStyleClick = (value) => {
+    if (value === "style_free") {
+      setStyles((prev) => (prev.includes("style_free") ? [] : ["style_free"]));
+    } else {
+      setStyles((prev) => {
+        if (prev.includes("style_free")) {
+          return [value];
+        }
+        if (prev.includes(value)) {
+          return prev.filter((s) => s !== value);
+        } else {
+          return [...prev, value];
+        }
+      });
+    }
+  };
+
+  // 다중 선택을 위한 타겟 클릭 핸들러
+  const handleTargetClick = (value) => {
+    if (value === "target_free") {
+      setTargets((prev) =>
+        prev.includes("target_free") ? [] : ["target_free"]
+      );
+    } else {
+      setTargets((prev) => {
+        if (prev.includes("target_free")) {
+          return [value];
+        }
+        if (prev.includes(value)) {
+          return prev.filter((t) => t !== value);
+        } else {
+          return [...prev, value];
+        }
+      });
     }
   };
 
@@ -163,13 +273,16 @@ const ProjectRegister = () => {
       businesstype,
       createdAt: aiProjectData.createdAt,
       deadline: aiProjectData.deadline,
-      rewardAmount: aiProjectData.rewardAmount,
+      // ✨ 수정: aiProjectData.rewardAmount를 data.prize로 전달
+      prize: aiProjectData.rewardAmount,
       content: aiProjectData.description,
       summary: aiProjectData.summary,
-      color,
-      style,
-      target,
+      // 이제 배열을 넘겨줍니다.
+      color: colors,
+      style: styles,
+      target: targets,
       image: uploadedImage ? URL.createObjectURL(uploadedImage) : null,
+      nickname: merchantNickname,
     };
     setPreviewData(data);
     setIsPreviewModalOpen(true);
@@ -182,12 +295,6 @@ const ProjectRegister = () => {
 
   // 제출 확인 핸들러 (유효성 검사 및 API 전송 로직 추가)
   const handleConfirmSubmit = async () => {
-    // 기간 계산
-    const startDate = new Date(aiProjectData.createdAt.replace(/\./g, "-"));
-    const deadlineDate = new Date(aiProjectData.deadline.replace(/\./g, "-"));
-    const timeDiff = deadlineDate.getTime() - startDate.getTime();
-    const durationInDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
     // FormData 객체 생성
     const formData = new FormData();
     formData.append("title", projectTitle);
@@ -195,21 +302,23 @@ const ProjectRegister = () => {
     formData.append("category", category);
     formData.append("businessType", businesstype);
     formData.append("description", aiProjectData.description);
-    formData.append("durationInDays", durationInDays);
+    formData.append("createdAt", aiProjectData.createdAt);
+    formData.append("deadline", aiProjectData.deadline);
     formData.append(
       "rewardAmount",
       parseInt(aiProjectData.rewardAmount.replace(/,/g, ""), 10)
     );
     formData.append("summary", aiProjectData.summary);
 
-    if (color && color !== "color_free") {
-      formData.append("colors[]", color);
+    // 배열 데이터를 FormData에 추가 (여러 개 선택 가능)
+    if (colors && colors.length > 0 && !colors.includes("color_free")) {
+      colors.forEach((c) => formData.append("colors[]", c));
     }
-    if (style && style !== "style_free") {
-      formData.append("styles[]", style);
+    if (styles && styles.length > 0 && !styles.includes("style_free")) {
+      styles.forEach((s) => formData.append("styles[]", s));
     }
-    if (target && target !== "target_free") {
-      formData.append("targets[]", target);
+    if (targets && targets.length > 0 && !targets.includes("target_free")) {
+      targets.forEach((t) => formData.append("targets[]", t));
     }
 
     if (uploadedImage) {
@@ -219,24 +328,25 @@ const ProjectRegister = () => {
     try {
       await registerProject(formData);
       console.log("공모전 등록 완료:");
-      alert("공모전 등록이 완료되었습니다.");
+      // alert("공모전 등록이 완료되었습니다."); // 사용자에게 모달 UI를 보여주는 것이 좋습니다.
       setIsConfirmModalOpen(false);
+      // ✨ 수정: 폼이 저장되었으니 isFormDirty를 false로 리셋합니다.
+      setIsFormDirty(false);
+      // ✨ 추가: 등록 완료 후 /register-result 페이지로 이동
+      navigate("/register-result");
     } catch (error) {
-      alert("공모전 등록 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      // alert("공모전 등록 중 오류가 발생했습니다. 다시 시도해 주세요."); // 사용자에게 모달 UI를 보여주는 것이 좋습니다.
       setIsConfirmModalOpen(false);
     }
   };
 
-  // 뒤로가기 모달 관련 핸들러
-  const handleOpenBackModal = () => {
-    setIsBackModalOpen(true);
-  };
-
+  // ✨ 수정: 뒤로가기 모달에서 "네, 돌아갈래요" 클릭 시
   const handleConfirmBack = () => {
     setIsBackModalOpen(false);
+    // ✨ 수정: 폼 상태를 리셋하여 뒤로가기 모달이 다시 뜨지 않도록 합니다.
+    setIsFormDirty(false);
     window.history.back();
   };
-
   // 새로운 등록 버튼 클릭 핸들러: 유효성 검사 후 모달 오픈
   const handleRegisterClick = () => {
     setIsSubmitted(true);
@@ -289,7 +399,7 @@ const ProjectRegister = () => {
 
             <section className="my-10">
               <div className="space-y-7">
-                {/*  "공모전 제목" */}
+                {/* "공모전 제목" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
@@ -305,7 +415,15 @@ const ProjectRegister = () => {
                         }`}
                         placeholder="공모전 제목을 지어주세요."
                         value={projectTitle}
-                        onChange={(e) => setProjectTitle(e.target.value)}
+                        onChange={(e) => {
+                          setProjectTitle(e.target.value);
+                          if (isSubmitted) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              projectTitle: "",
+                            }));
+                          }
+                        }}
                       />
                       {isSubmitted && errors.projectTitle && (
                         <p className="text-red-500 text-xs text-left mt-1">
@@ -325,13 +443,21 @@ const ProjectRegister = () => {
                       <input
                         type="text"
                         className={`w-full rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
-                          isSubmitted && errors.projectTitle
+                          isSubmitted && errors.merchantName
                             ? "border border-red-500"
                             : "border border-[#F3F3F3]"
                         }`}
                         placeholder="정확한 가게명(상호명)을 입력해 주세요."
                         value={merchantName}
-                        onChange={(e) => setMerchantName(e.target.value)}
+                        onChange={(e) => {
+                          setMerchantName(e.target.value);
+                          if (isSubmitted) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              merchantName: "",
+                            }));
+                          }
+                        }}
                       />
                       {isSubmitted && errors.merchantName && (
                         <p className="text-red-500 text-xs text-left mt-1">
@@ -348,22 +474,19 @@ const ProjectRegister = () => {
                       카테고리<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
-                      <select
-                        className={`w-full border border-[#F3F3F3] rounded p-2 h-10 text-xs bg-white ${
-                          !category ? "text-[#C3C3C3]" : "text-[#212121]"
-                        }`}
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                      >
-                        <option value="" disabled>
-                          공모전의 카테고리를 선택해 주세요
-                        </option>
-                        {categories.map((cat) => (
-                          <option key={cat.code} value={cat.code}>
-                            {cat.description}
-                          </option>
-                        ))}
-                      </select>
+                      <CustomDropdown
+                        label="공모전의 카테고리를 선택해 주세요"
+                        options={categories}
+                        selected={category}
+                        onSelect={(value) => {
+                          setCategory(value);
+                          if (isSubmitted) {
+                            setErrors((prev) => ({ ...prev, category: "" }));
+                          }
+                        }}
+                        error={errors.category}
+                        isSubmitted={isSubmitted}
+                      />
                       {isSubmitted && errors.category && (
                         <p className="text-red-500 text-xs text-left mt-1">
                           {errors.category}
@@ -379,22 +502,22 @@ const ProjectRegister = () => {
                       업종<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
-                      <select
-                        className={`w-full border border-[#F3F3F3] rounded p-2 h-10 text-xs bg-white ${
-                          !businesstype ? "text-[#C3C3C3]" : "text-[#212121]"
-                        }`}
-                        value={businesstype}
-                        onChange={(e) => setBusinesstype(e.target.value)}
-                      >
-                        <option value="" disabled>
-                          가게(상호)의 업종을 선택해 주세요
-                        </option>
-                        {businesstypes.map((bus) => (
-                          <option key={bus.code} value={bus.code}>
-                            {bus.description}
-                          </option>
-                        ))}
-                      </select>
+                      <CustomDropdown
+                        label="가게(상호)의 업종을 선택해 주세요"
+                        options={businesstypes}
+                        selected={businesstype}
+                        onSelect={(value) => {
+                          setBusinesstype(value);
+                          if (isSubmitted) {
+                            setErrors((prev) => ({
+                              ...prev,
+                              businesstype: "",
+                            }));
+                          }
+                        }}
+                        error={errors.businesstype}
+                        isSubmitted={isSubmitted}
+                      />
                       {isSubmitted && errors.businesstype && (
                         <p className="text-red-500 text-xs text-left mt-1">
                           {errors.businesstype}
@@ -426,7 +549,7 @@ const ProjectRegister = () => {
                     >
                       Tip. 도움받는 법 알아보기
                     </a>
-                    {/* EasyHelpModal 컴포넌트를 렌더링합니다 */}
+
                     <EasyHelpModal />
                   </div>
 
@@ -467,12 +590,15 @@ const ProjectRegister = () => {
                         }`}
                         placeholder="어떤 도움이 필요한지 자세히 적을수록 좋아요."
                         value={aiProjectData.description}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setAiProjectData({
                             ...aiProjectData,
                             description: e.target.value,
-                          })
-                        }
+                          });
+                          if (isSubmitted) {
+                            setErrors((prev) => ({ ...prev, content: "" }));
+                          }
+                        }}
                       />
                       {isSubmitted && errors.content && (
                         <p className="text-red-500 text-xs text-left mt-1">
@@ -482,100 +608,120 @@ const ProjectRegister = () => {
                     </div>
                   </div>
                 </div>
-
                 {/* "상금" */}
-                <div className="flex flex-col space-y-1">
+                <div className="flex-grow flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
                       상금<span className="text-[#2FD8F6]">*</span>
                     </label>
-                    <div className="flex-grow flex flex-col">
-                      <div className="flex items-center space-x-2">
+                    <div className="flex-grow flex items-center space-x-2">
+                      <div className="w-[231px] flex items-center space-x-2">
                         <input
                           type="text"
-                          className={`flex-grow rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
+                          className={`rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] flex-grow ${
                             isSubmitted && errors.rewardAmount
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
                           }`}
                           placeholder="공모전의 상금을 책정해 주세요."
                           value={aiProjectData.rewardAmount}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setAiProjectData({
                               ...aiProjectData,
                               rewardAmount: e.target.value,
-                            })
-                          }
+                            });
+                            if (isSubmitted) {
+                              setErrors((prev) => ({
+                                ...prev,
+                                rewardAmount: "",
+                              }));
+                            }
+                          }}
                         />
                         <span className="flex-shrink-0 text-gray-500 text-xs">
                           원
                         </span>
-                        {aiProjectData.rewardAmount && (
-                          <div className="relative group">
-                            {" "}
-                            {}
-                            <span className="flex-shrink-0 text-xs rounded-3xl text-[#2AC2DD] pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]">
-                              상금의 약 77%인{" "}
-                              {(
-                                parseInt(
-                                  aiProjectData.rewardAmount.replace(/,/g, ""),
-                                  10
-                                ) * 0.77
-                              ).toLocaleString()}
-                              원만 내면 돼요.
-                            </span>
-                            <PrizeInfoModal />{" "}
-                          </div>
-                        )}
                       </div>
-                      {isSubmitted && errors.rewardAmount && (
-                        <p className="text-red-500 text-xs text-left mt-1">
-                          {errors.rewardAmount}
-                        </p>
+                      {aiProjectData.rewardAmount && (
+                        <div className="relative group flex items-center">
+                          <span
+                            className="flex-shrink-0 rounded-3xl text-[#2AC2DD] pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF] max-w-[300px] overflow-hidden whitespace-nowrap overflow-ellipsis"
+                            style={{
+                              fontSize:
+                                (
+                                  parseInt(
+                                    aiProjectData.rewardAmount.replace(
+                                      /,/g,
+                                      ""
+                                    ),
+                                    10
+                                  ) * 0.77
+                                ).toLocaleString().length > 15
+                                  ? "8px"
+                                  : "12px",
+                            }}
+                          >
+                            상금의 약 77%인{" "}
+                            {(
+                              parseInt(
+                                aiProjectData.rewardAmount.replace(/,/g, ""),
+                                10
+                              ) * 0.77
+                            ).toLocaleString()}
+                            원만 내면 돼요.
+                          </span>
+                          <PrizeInfoModal />
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
                 {/* "기간" */}
-                <div className="flex flex-col space-y-1">
+                <div className="flex-grow flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-normal text-[#212121]">
                       기간<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-4">
                         <input
                           type="text"
-                          className={`w-full rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
+                          className={`w-[87px] rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
                             isSubmitted && errors.period
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
                           }`}
                           placeholder="2025.08.08"
                           value={aiProjectData.createdAt}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setAiProjectData({
                               ...aiProjectData,
                               createdAt: e.target.value,
-                            })
-                          }
+                            });
+                            if (isSubmitted) {
+                              setErrors((prev) => ({ ...prev, period: "" }));
+                            }
+                          }}
                         />
                         <span>-</span>
                         <input
                           type="text"
-                          className={`w-full rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
+                          className={`w-[87px] rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
                             isSubmitted && errors.period
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
                           }`}
                           placeholder="2025.08.08"
                           value={aiProjectData.deadline}
-                          onChange={(e) =>
+                          onChange={(e) => {
                             setAiProjectData({
                               ...aiProjectData,
                               deadline: e.target.value,
-                            })
-                          }
+                            });
+                            if (isSubmitted) {
+                              setErrors((prev) => ({ ...prev, period: "" }));
+                            }
+                          }}
                         />
                       </div>
                       {isSubmitted && errors.period && (
@@ -586,7 +732,6 @@ const ProjectRegister = () => {
                     </div>
                   </div>
                 </div>
-
                 {/* "한 줄 소개" */}
                 <div className="flex items-center justify-between space-x-2">
                   <label className="w-44 text-sm font-normal text-[#212121]">
@@ -603,6 +748,27 @@ const ProjectRegister = () => {
                         summary: e.target.value,
                       })
                     }
+                  />
+                </div>
+                {/* 이미지 첨부하기 */}
+                <div className="flex items-center space-x-2">
+                  <label className="w-44 text-sm font-normal text-[#212121]">
+                    이미지 첨부하기
+                  </label>
+                  <label
+                    htmlFor="image-upload"
+                    className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs text-[#C3C3C3] cursor-pointer flex items-center"
+                  >
+                    {uploadedImage
+                      ? uploadedImage.name
+                      : "업로드할 이미지를 선택해 주세요."}
+                  </label>
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => setUploadedImage(e.target.files[0])}
                   />
                 </div>
               </div>
@@ -626,7 +792,8 @@ const ProjectRegister = () => {
                           key={c.code}
                           className={`w-full h-12 rounded transition flex items-center justify-center
                             ${
-                              color === c.code
+                              // 선택된 색상이 배열에 포함되어 있는지 확인
+                              colors.includes(c.code)
                                 ? "border-2 border-[#212121]"
                                 : "border border-[#F3F3F3]"
                             }
@@ -634,7 +801,7 @@ const ProjectRegister = () => {
                           style={
                             c.code !== "color_free" ? { background: c.hex } : {}
                           }
-                          onClick={() => setColor(c.code)}
+                          onClick={() => handleColorClick(c.code)}
                         >
                           {c.code === "color_free" && (
                             <span
@@ -660,7 +827,8 @@ const ProjectRegister = () => {
                         <button
                           key={s.value}
                           className={`w-full py-4 text-xs rounded bg-white transition flex items-center justify-center ${
-                            style === s.value
+                            // 선택된 스타일이 배열에 포함되어 있는지 확인
+                            styles.includes(s.value)
                               ? "border-2 border-[#212121]"
                               : "border border-[#F3F3F3]"
                           } ${
@@ -668,7 +836,7 @@ const ProjectRegister = () => {
                               ? "text-[#A3A3A3]"
                               : "text-black"
                           }`}
-                          onClick={() => setStyle(s.value)}
+                          onClick={() => handleStyleClick(s.value)}
                         >
                           {s.label}
                         </button>
@@ -688,7 +856,8 @@ const ProjectRegister = () => {
                         <button
                           key={t.value}
                           className={`w-full py-4 text-xs rounded bg-white transition flex items-center justify-center ${
-                            target === t.value
+                            // 선택된 타겟이 배열에 포함되어 있는지 확인
+                            targets.includes(t.value)
                               ? "border-2 border-[#212121]"
                               : "border border-[#F3F3F3]"
                           } ${
@@ -696,7 +865,7 @@ const ProjectRegister = () => {
                               ? "text-[#A3A3A3]"
                               : "text-black"
                           }`}
-                          onClick={() => setTarget(t.value)}
+                          onClick={() => handleTargetClick(t.value)}
                         >
                           {t.label}
                         </button>
@@ -871,29 +1040,32 @@ const ProjectRegister = () => {
 
             <div className="flex justify-center gap-4 pt-4">
               <button
-                className="w-56 py-3 border border-[#2FD8F6] rounded-md transition hover:font-bold text-[#2FD8F6] font-medium"
+                className={`w-[180px] h-[45px] rounded-md transition font-medium ${
+                  isButtonActive
+                    ? "bg-white text-[#2FD8F6] border boreder-bg-[#2FD8F6] hover:font-bold"
+                    : "bg-white text-[#E1E1E1] border border-bg-[#E1E1E1] cursor-not-allowed"
+                }`}
                 onClick={handleOpenPreviewModal}
+                disabled={!isButtonActive}
               >
                 미리보기
               </button>
               <button
-                className={`w-56 py-3 rounded-md transition font-medium ${
+                className={`w-[180px] h-[45px] rounded-md transition font-medium ${
                   isButtonActive
                     ? "bg-[#2FD8F6] text-white hover:font-bold"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#E1E1E1] text-white cursor-not-allowed"
                 }`}
                 onClick={handleRegisterClick}
                 disabled={!isButtonActive}
               >
-                등록하기
+                공모전 등록하기
               </button>
             </div>
           </div>
         </div>
       </div>
       <FooterRegister />
-
-      {/* 모달 컴포넌트들 */}
       {isTermsModalOpen && (
         <TermsModal
           isOpen={isTermsModalOpen}
@@ -923,6 +1095,7 @@ const ProjectRegister = () => {
       )}
       {isBackModalOpen && (
         <ConfirmBackModal
+          isOpen={isBackModalOpen}
           onClose={() => setIsBackModalOpen(false)}
           onConfirm={handleConfirmBack}
         />
