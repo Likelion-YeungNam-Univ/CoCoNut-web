@@ -23,6 +23,7 @@ const Signup = () => {
  const [emailChecked, setEmailChecked] = useState(false);
  const [nicknameChecked, setNicknameChecked] = useState(false);
 
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -43,14 +44,14 @@ const [termsAgreed2, setTermsAgreed2] = useState(false);
     const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false); //모달상태
 
- const validatePassword = (value) => {
+const validatePassword = (value) => {
   const passwordRegex =
     /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};':"\\|,.<>/?]).{8,16}$/;
+  const isValid = passwordRegex.test(value);
   setPasswordMessage(
-    passwordRegex.test(value)
-      ? ""
-      : "영문, 숫자, 특수기호 조합 8자~16자를 입력해 주세요."
+    isValid ? "" : "영문, 숫자, 특수기호 조합 8자~16자를 입력해 주세요."
   );
+  setIsPasswordValid(isValid);
 };
 
  useEffect(() => {
@@ -133,6 +134,11 @@ const checkNicknameDuplicate = async () => {
 // --- 회원가입 제출 ---
 const signUpHandler = async (e) => {
   e.preventDefault();
+
+  if (!isPasswordValid) {
+  alert("비밀번호 조건을 확인해 주세요.");
+  return;
+}
 
   if (!(termsAgreed1 && termsAgreed2)) {
     alert("필수 약관에 동의해 주세요.");
@@ -470,9 +476,9 @@ const signUpHandler = async (e) => {
               <div className="flex justify-center">
                 <button
                   type='submit'
-                  disabled={!(termsAgreed1 && termsAgreed2)}
+                  disabled={!(termsAgreed1 && termsAgreed2 && isPasswordValid)}
                   className={` mt-[38px] w-[180px] h-[45px] border rounded-[8px] pt-[12px] pr-[20px] pb-[12px] pl-[20px] border-[#E1E1E1] text-white 
-                    ${termsAgreed1 && termsAgreed2 ? 'bg-[#2FD8F6] hover:bg-[#2AC2DD]' : 'bg-[#E1E1E1]'}`}
+                    ${termsAgreed1 && termsAgreed2 && isPasswordValid ? 'bg-[#2FD8F6] hover:bg-[#2AC2DD]' : 'bg-[#E1E1E1]'}`}
                 >
                   다음
                 </button>
