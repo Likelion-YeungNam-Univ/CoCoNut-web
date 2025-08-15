@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import ParticipantHeader from "../header/ParticipantHeader";
 import Footer from "../components/Footer";
 import { BiSolidImage } from "react-icons/bi";
@@ -6,6 +6,41 @@ import { IoArrowUp } from "react-icons/io5";
 import checkIcon from "../assets/checkIcon.png";
 
 const ProjectSubmissionPage = () => {
+  const [allChecked, setAllChecked] = useState(false);
+  const [checkList, setCheckList] = useState({
+    checklist: false,
+    terms: false,
+    caution: false,
+  });
+
+  const toggleAll = () => {
+    const newValue = !allChecked;
+    setAllChecked(newValue);
+    setCheckList({
+      checklist: newValue,
+      terms: newValue,
+      caution: newValue,
+    });
+  };
+
+  const toggleSingle = (name) => {
+    const newValue = !checkList[name];
+    const newList = { ...checkList, [name]: newValue };
+    setCheckList(newList);
+    setAllChecked(Object.values(newList).every((v) => v));
+  };
+
+  const checkboxStyle = (checked) => ({
+    backgroundImage: checked ? `url(${checkIcon})` : "none",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "20px 20px",
+    border: checked ? "none" : undefined,
+  });
+
+  const isAllRequiredChecked =
+    checkList.checklist && checkList.terms && checkList.caution;
+
   return (
     <div className="bg-[#F3F3F3] font-pretendard">
       <ParticipantHeader />
@@ -22,6 +57,7 @@ const ProjectSubmissionPage = () => {
             </p>
           </div>
 
+          {/* 제목 */}
           <div className="flex justify-between items-center w-[680px] mt-[60px] mx-[176px]">
             <h3 className="text-[16px] font-semibold text-[#212121]">
               작품 정보 입력
@@ -33,7 +69,7 @@ const ProjectSubmissionPage = () => {
           </div>
           <hr className="w-[700px] border-[1px] border-[#A3A3A3] mt-[16px] mb-[40px] ml-[166px]" />
 
-          {/* 작품 제목 영역 */}
+          {/* 작품 제목 */}
           <div className="grid grid-cols-[176px_1fr] items-start gap-4 ml-[176px] mb-[24px]">
             <label className="text-[#212121] text-[14px]">
               작품 제목 <span className="text-[#2FD8F6]">*</span>
@@ -45,7 +81,7 @@ const ProjectSubmissionPage = () => {
             />
           </div>
 
-          {/* 이미지 첨부 영역 */}
+          {/* 이미지 첨부 */}
           <div className="grid grid-cols-[176px_1fr] items-start gap-4 ml-[176px] mb-[24px]">
             <label className="text-[#212121] text-[14px]">
               이미지 첨부하기 <span className="text-[#2FD8F6]">*</span>
@@ -59,7 +95,7 @@ const ProjectSubmissionPage = () => {
             </label>
           </div>
 
-          {/* AI 작성 영역 */}
+          {/* AI 작성 */}
           <div className="grid grid-cols-[184px_1fr] items-start gap-4 ml-[168px] mb-[24px]">
             <div>
               <label className="ml-[8px] text-[#212121] text-[14px]">
@@ -83,20 +119,18 @@ const ProjectSubmissionPage = () => {
             </div>
           </div>
 
-          {/* 설명 영역 */}
+          {/* 설명 */}
           <div className="grid grid-cols-[176px_1fr] items-start gap-4 ml-[176px] mb-[24px]">
-            <div>
-              <label className="text-[#212121] text-[14px]">
-                설명 <span className="text-[#2FD8F6]">*</span>
-              </label>
-            </div>
+            <label className="text-[#212121] text-[14px]">
+              설명 <span className="text-[#2FD8F6]">*</span>
+            </label>
             <textarea
               placeholder="작품의 의미, 목적 등을 자유롭게 작성해 주세요."
               className="w-[504px] h-[93px] border border-[#F3F3F3] rounded-[6px] px-[16px] py-[15px] pr-[40px] text-[14px] text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none resize-none"
             />
           </div>
 
-          {/* 링크 첨부 영역 */}
+          {/* 링크 */}
           <div className="grid grid-cols-[176px_1fr] items-start gap-4 ml-[176px]">
             <label className="text-[#212121] text-[14px]">링크 첨부하기</label>
             <input
@@ -106,7 +140,7 @@ const ProjectSubmissionPage = () => {
             />
           </div>
 
-          {/* 약관 동의 영역 */}
+          {/* 약관 동의 */}
           <div>
             <div className="mx-[176px] mt-[60px]">
               <h3 className="text-[#212121] text-[16px] font-semibold">
@@ -117,64 +151,90 @@ const ProjectSubmissionPage = () => {
               </span>
             </div>
             <hr className="w-[700px] border-[1px] border-[#A3A3A3] mt-[16px] mb-[40px] ml-[166px]" />
-            {/* 개별 항목 */}
+
             <div className="w-[678px] mx-[178px] text-[14px] text-[#212121]">
               <div className="flex items-center gap-[8px] pb-[30px]">
                 <input
                   type="checkbox"
+                  checked={allChecked}
+                  onChange={toggleAll}
                   className="appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3]"
+                  style={checkboxStyle(allChecked)}
                 />
                 약관 전체에 동의합니다.
               </div>
 
               <hr className="w-[678px] border-[1px] border-[#E1E1E1] mb-[27px]" />
 
-              <label className="flex items-center justify-between mb-[22px]">
+              <div className="flex items-center justify-between mb-[22px]">
                 <div className="flex items-center gap-[8px]">
                   <input
                     type="checkbox"
+                    checked={checkList.checklist}
+                    onChange={() => toggleSingle("checklist")}
                     className="appearance-none w-[16px] h-[16px] rounded-[2px] border border-[#F3F3F3]"
+                    style={checkboxStyle(checkList.checklist)}
                   />
                   (필수) 공모전 참가 체크리스트
                 </div>
                 <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
                   자세히 보기
                 </span>
-              </label>
+              </div>
 
-              <label className="flex items-center justify-between mb-[22px]">
+              <div className="flex items-center justify-between mb-[22px]">
                 <div className="flex items-center gap-[8px]">
                   <input
                     type="checkbox"
+                    checked={checkList.terms}
+                    onChange={() => toggleSingle("terms")}
                     className="appearance-none w-[16px] h-[16px] rounded-[2px] border border-[#F3F3F3]"
+                    style={checkboxStyle(checkList.terms)}
                   />
                   (필수) 공모전 이용 약관
                 </div>
                 <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
                   자세히 보기
                 </span>
-              </label>
+              </div>
 
-              <label className="flex items-center justify-between mb-[22px]">
+              <div className="flex items-center justify-between mb-[22px]">
                 <div className="flex items-center gap-[8px]">
                   <input
                     type="checkbox"
+                    checked={checkList.caution}
+                    onChange={() => toggleSingle("caution")}
                     className="appearance-none w-[16px] h-[16px] rounded-[2px] border border-[#F3F3F3]"
+                    style={checkboxStyle(checkList.caution)}
                   />
                   (필수) 공모전 이용 주의사항
                 </div>
                 <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
                   자세히 보기
                 </span>
-              </label>
+              </div>
             </div>
 
-            {/* 버튼 */}
             <div className="flex space-x-[20px] mx-[326px] mt-[62px]">
-              <button className="w-[180px] h-[45px] px-[20px] py-[12px] border border-[#E1E1E1] rounded-[8px] text-[#E1E1E1] text-[16px] font-medium">
+              <button
+                disabled={!isAllRequiredChecked}
+                className={`w-[180px] h-[45px] px-[20px] py-[12px] border-[1px] rounded-[8px] text-[16px] font-medium ${
+                  isAllRequiredChecked
+                    ? "border-[#2FD8F6] text-[#2FD8F6] cursor-pointer"
+                    : "border-[#E1E1E1] text-[#E1E1E1] cursor-not-allowed"
+                }`}
+              >
                 미리보기
               </button>
-              <button className="w-[180px] h-[45px] px-[20px] py-[12px] bg-[#E1E1E1] text-white text-[16px] rounded-[8px] font-medium">
+
+              <button
+                disabled={!isAllRequiredChecked}
+                className={`w-[180px] h-[45px] px-[20px] py-[12px] rounded-[8px] text-[16px] font-medium ${
+                  isAllRequiredChecked
+                    ? "bg-[#2FD8F6] text-white cursor-pointer"
+                    : "bg-[#E1E1E1] text-white cursor-not-allowed"
+                }`}
+              >
                 제출하기
               </button>
             </div>
