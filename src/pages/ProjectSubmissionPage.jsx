@@ -4,6 +4,7 @@ import Footer from "../components/Footer";
 import { BiSolidImage } from "react-icons/bi";
 import { IoArrowUp } from "react-icons/io5";
 import checkIcon from "../assets/checkIcon.png";
+import { fetchAiDescription } from "../apis/submissionAssistApi";
 
 const ProjectSubmissionPage = () => {
   const [allChecked, setAllChecked] = useState(false);
@@ -12,6 +13,10 @@ const ProjectSubmissionPage = () => {
     terms: false,
     caution: false,
   });
+
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [description, setDescription] = useState("");
+  const [loadingAi, setLoadingAi] = useState(false);
 
   const toggleAll = () => {
     const newValue = !allChecked;
@@ -41,11 +46,44 @@ const ProjectSubmissionPage = () => {
   const isAllRequiredChecked =
     checkList.checklist && checkList.terms && checkList.caution;
 
+  // AI 설명 생성 요청
+  const handleAiGenerate = async () => {
+    if (!aiPrompt.trim()) {
+      alert("AI에 보낼 간단한 설명을 입력해주세요.");
+      return;
+    }
+    try {
+      setLoadingAi(true);
+      const result = await fetchAiDescription(aiPrompt);
+      setDescription(result.description || result);
+    } catch (error) {
+      alert("AI 설명 생성 중 오류가 발생했습니다.");
+    } finally {
+      setLoadingAi(false);
+    }
+  };
+
+  // 로딩 토스트 (Tailwind 버전)
+  const AiLoadingToast = () => (
+    <div
+      className="
+      fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+      w-[215px] h-[50px] 
+      bg-[#212121] text-white text-[14px] 
+      pl-[20px] pr-[24px] py-[16px]
+      rounded-[8px] flex items-center justify-center
+      z-[9999] leading-[130%] tracking-[-0.02em]
+    "
+    >
+      AI가 내용을 불러오는 중이에요..
+    </div>
+  );
+
   return (
-    <div className="bg-[#F3F3F3] font-pretendard">
+    <div className="bg-[#F3F3F3] font-pretendard relative">
       <ParticipantHeader />
       <div className="flex justify-center">
-        <div className="w-[1032px] h-[1700px] mt-[60px] bg-white rounded-[12px]">
+        <div className="w-[1032px] min-h-[1700px] mt-[60px] bg-white rounded-[12px]">
           <div className="text-center font-pretendard">
             <h2 className="pt-[60px] text-[24px] font-semibold text-[#212121]">
               공모전 참가하기
@@ -57,7 +95,7 @@ const ProjectSubmissionPage = () => {
             </p>
           </div>
 
-          {/* 제목 */}
+          {/* 작품 정보 입력 */}
           <div className="flex justify-between items-center w-[680px] mt-[60px] mx-[176px]">
             <h3 className="text-[16px] font-semibold text-[#212121]">
               작품 정보 입력
@@ -101,18 +139,21 @@ const ProjectSubmissionPage = () => {
               <label className="ml-[8px] text-[#212121] text-[14px]">
                 AI로 설명 빠르게 작성하기
               </label>
-              <div className=" w-[153px] h-[32px] mt-[8px] bg-[#E0F9FE] px-[16px] py-[8px] text-[12px] text-[#2AC2DD] font-medium rounded-[16px] leading-[130%] tracking-[-0.01em]">
+              <div className="w-[153px] h-[32px] mt-[8px] bg-[#E0F9FE] px-[16px] py-[8px] text-[12px] text-[#2AC2DD] font-medium rounded-[16px] leading-[130%] tracking-[-0.01em]">
                 Tip. 도움받는 법 알아보기
               </div>
             </div>
             <div className="relative w-[504px] h-[93px]">
               <textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
                 placeholder="작품 설명을 간단하게 작성해 주세요. AI가 자세한 내용을 자동으로 생성해줘요."
                 className="w-full h-full border border-[#F3F3F3] rounded-[6px] px-[16px] py-[15px] pr-[40px] text-[14px] text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none resize-none"
               />
               <button
                 type="button"
-                className="absolute bottom-[12px] right-[12px] bg-[#E1E1E1] text-white rounded-full w-[24px] h-[24px] flex items-center justify-center hover:bg-[#4C4C4C]"
+                onClick={handleAiGenerate}
+                className="absolute bottom-[12px] right-[12px] bg-[#E1E1E1] hover:bg-[#4C4C4C] text-white rounded-full w-[24px] h-[24px] flex items-center justify-center"
               >
                 <IoArrowUp className="w-[16px] h-[16px]" />
               </button>
@@ -125,6 +166,8 @@ const ProjectSubmissionPage = () => {
               설명 <span className="text-[#2FD8F6]">*</span>
             </label>
             <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="작품의 의미, 목적 등을 자유롭게 작성해 주세요."
               className="w-[504px] h-[93px] border border-[#F3F3F3] rounded-[6px] px-[16px] py-[15px] pr-[40px] text-[14px] text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none resize-none"
             />
@@ -152,73 +195,49 @@ const ProjectSubmissionPage = () => {
             </div>
             <hr className="w-[700px] border-[1px] border-[#A3A3A3] mt-[16px] mb-[40px] ml-[166px]" />
 
+            <div className="flex items-center w-[678px] mx-[178px] text-[14px] text-[#212121] gap-[8px] pb-[30px]">
+              <input
+                type="checkbox"
+                checked={allChecked}
+                onChange={toggleAll}
+                className="appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3]"
+                style={checkboxStyle(allChecked)}
+              />
+              약관 전체에 동의합니다.
+            </div>
+
+            <hr className="w-[678px] border-[1px] border-[#E1E1E1] mb-[27px] ml-[178px]" />
             <div className="w-[678px] mx-[178px] text-[14px] text-[#212121]">
-              <div className="flex items-center gap-[8px] pb-[30px]">
-                <input
-                  type="checkbox"
-                  checked={allChecked}
-                  onChange={toggleAll}
-                  className="appearance-none w-[16px] h-[16px] rounded-[3px] border border-[#F3F3F3]"
-                  style={checkboxStyle(allChecked)}
-                />
-                약관 전체에 동의합니다.
-              </div>
-
-              <hr className="w-[678px] border-[1px] border-[#E1E1E1] mb-[27px]" />
-
-              <div className="flex items-center justify-between mb-[22px]">
-                <div className="flex items-center gap-[8px]">
-                  <input
-                    type="checkbox"
-                    checked={checkList.checklist}
-                    onChange={() => toggleSingle("checklist")}
-                    className="appearance-none w-[16px] h-[16px] rounded-[2px] border border-[#F3F3F3]"
-                    style={checkboxStyle(checkList.checklist)}
-                  />
-                  (필수) 공모전 참가 체크리스트
+              {[
+                { key: "checklist", label: "(필수) 공모전 참가 체크리스트" },
+                { key: "terms", label: "(필수) 공모전 이용 약관" },
+                { key: "caution", label: "(필수) 공모전 이용 주의사항" },
+              ].map(({ key, label }) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between mb-[22px]"
+                >
+                  <div className="flex items-center gap-[8px]">
+                    <input
+                      type="checkbox"
+                      checked={checkList[key]}
+                      onChange={() => toggleSingle(key)}
+                      className="appearance-none w-[16px] h-[16px] rounded-[2px] border border-[#F3F3F3]"
+                      style={checkboxStyle(checkList[key])}
+                    />
+                    {label}
+                  </div>
+                  <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
+                    자세히 보기
+                  </span>
                 </div>
-                <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
-                  자세히 보기
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between mb-[22px]">
-                <div className="flex items-center gap-[8px]">
-                  <input
-                    type="checkbox"
-                    checked={checkList.terms}
-                    onChange={() => toggleSingle("terms")}
-                    className="appearance-none w-[16px] h-[16px] rounded-[2px] border border-[#F3F3F3]"
-                    style={checkboxStyle(checkList.terms)}
-                  />
-                  (필수) 공모전 이용 약관
-                </div>
-                <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
-                  자세히 보기
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between mb-[22px]">
-                <div className="flex items-center gap-[8px]">
-                  <input
-                    type="checkbox"
-                    checked={checkList.caution}
-                    onChange={() => toggleSingle("caution")}
-                    className="appearance-none w-[16px] h-[16px] rounded-[2px] border border-[#F3F3F3]"
-                    style={checkboxStyle(checkList.caution)}
-                  />
-                  (필수) 공모전 이용 주의사항
-                </div>
-                <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
-                  자세히 보기
-                </span>
-              </div>
+              ))}
             </div>
 
             <div className="flex space-x-[20px] mx-[326px] mt-[62px]">
               <button
                 disabled={!isAllRequiredChecked}
-                className={`w-[180px] h-[45px] px-[20px] py-[12px] border-[1px] rounded-[8px] text-[16px] font-medium ${
+                className={`w-[180px] h-[45px] px-[20px] py-[12px] border-[1px] rounded-[8px] text-[16px] font-medium hover:bg-[#EAFBFE] ${
                   isAllRequiredChecked
                     ? "border-[#2FD8F6] text-[#2FD8F6] cursor-pointer"
                     : "border-[#E1E1E1] text-[#E1E1E1] cursor-not-allowed"
@@ -229,7 +248,7 @@ const ProjectSubmissionPage = () => {
 
               <button
                 disabled={!isAllRequiredChecked}
-                className={`w-[180px] h-[45px] px-[20px] py-[12px] rounded-[8px] text-[16px] font-medium ${
+                className={`w-[180px] h-[45px] px-[20px] py-[12px] rounded-[8px] text-[16px] font-medium hover:bg-[#2AC2DD] ${
                   isAllRequiredChecked
                     ? "bg-[#2FD8F6] text-white cursor-pointer"
                     : "bg-[#E1E1E1] text-white cursor-not-allowed"
@@ -242,6 +261,9 @@ const ProjectSubmissionPage = () => {
         </div>
       </div>
       <Footer />
+
+      {/* 로딩 토스트 */}
+      {loadingAi && <AiLoadingToast />}
     </div>
   );
 };
