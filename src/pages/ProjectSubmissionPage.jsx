@@ -6,6 +6,7 @@ import { IoArrowUp } from "react-icons/io5";
 import checkIcon from "../assets/checkIcon.png";
 import { fetchAiDescription } from "../apis/submissionAssistApi";
 import ScriptModal from "../components/ScriptModal";
+import xIcon from "../assets/xIcon.png";
 
 const ProjectSubmissionPage = () => {
   const [allChecked, setAllChecked] = useState(false);
@@ -23,6 +24,20 @@ const ProjectSubmissionPage = () => {
   const [openModal, setOpenModal] = useState(null);
   const handleOpen = (type) => setOpenModal(type);
   const handleClose = () => setOpenModal(null);
+
+  // 이미지 업로드 상태
+  const [uploadedImage, setUploadedImage] = useState(null);
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadedImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const toggleAll = () => {
     const newValue = !allChecked;
@@ -126,13 +141,50 @@ const ProjectSubmissionPage = () => {
             <label className="text-[#212121] text-[14px]">
               이미지 첨부하기 <span className="text-[#2FD8F6]">*</span>
             </label>
-            <label
-              htmlFor="imageUpload"
-              className="w-[504px] h-[504px] border border-[#F3F3F3] rounded-[6px] flex flex-col items-center justify-center"
-            >
-              <BiSolidImage className="w-[40px] h-[40px] text-[#C3C3C3] mb-[8px]" />
-              <span className="text-[#C3C3C3] text-[14px]">파일 업로드</span>
-            </label>
+            <div className="relative w-[504px] h-[504px] border border-[#F3F3F3] rounded-[6px] flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+              {uploadedImage ? (
+                <div className="relative w-full h-full">
+                  <img
+                    src={uploadedImage}
+                    alt="업로드된 이미지"
+                    className="w-full h-full object-cover rounded-[6px] cursor-default"
+                  />
+                  {/* X 버튼 */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUploadedImage(null);
+                    }}
+                    className="absolute top-[16px] right-[16px] p-[10.04px] bg-black/20 rounded-full w-[32px] h-[32px] flex items-center justify-center text-white text-xltransition cursor-pointer"
+                  >
+                    <img src={xIcon} className="w-[11.93px] h-[11.93px]" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <BiSolidImage className="w-[40px] h-[40px] text-[#C3C3C3] mb-[8px]" />
+                  <span className="text-[#C3C3C3] text-[14px]">
+                    파일 업로드
+                  </span>
+                </>
+              )}
+
+              <input
+                id="imageUpload"
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+
+              {!uploadedImage && (
+                <label
+                  htmlFor="imageUpload"
+                  className="absolute inset-0 cursor-pointer"
+                ></label>
+              )}
+            </div>
           </div>
 
           {/* AI 작성 */}
@@ -247,9 +299,9 @@ const ProjectSubmissionPage = () => {
             <div className="flex space-x-[20px] mx-[326px] mt-[62px]">
               <button
                 disabled={!isAllRequiredChecked}
-                className={`w-[180px] h-[45px] px-[20px] py-[12px] border-[1px] rounded-[8px] text-[16px] font-medium hover:bg-[#EAFBFE] ${
+                className={`w-[180px] h-[45px] px-[20px] py-[12px] border-[1px] rounded-[8px] text-[16px] font-medium ${
                   isAllRequiredChecked
-                    ? "border-[#2FD8F6] text-[#2FD8F6] cursor-pointer"
+                    ? "border-[#2FD8F6] text-[#2FD8F6] cursor-pointer hover:bg-[#EAFBFE]"
                     : "border-[#E1E1E1] text-[#E1E1E1] cursor-not-allowed"
                 }`}
               >
@@ -258,9 +310,9 @@ const ProjectSubmissionPage = () => {
 
               <button
                 disabled={!isAllRequiredChecked}
-                className={`w-[180px] h-[45px] px-[20px] py-[12px] rounded-[8px] text-[16px] font-medium hover:bg-[#2AC2DD] ${
+                className={`w-[180px] h-[45px] px-[20px] py-[12px] rounded-[8px] text-[16px] font-medium ${
                   isAllRequiredChecked
-                    ? "bg-[#2FD8F6] text-white cursor-pointer"
+                    ? "bg-[#2FD8F6] text-white cursor-pointer hover:bg-[#2AC2DD]"
                     : "bg-[#E1E1E1] text-white cursor-not-allowed"
                 }`}
               >
