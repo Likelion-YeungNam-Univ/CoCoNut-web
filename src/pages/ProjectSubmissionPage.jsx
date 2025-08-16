@@ -48,10 +48,6 @@ const ProjectSubmissionPage = () => {
 
   // AI 설명 생성 요청
   const handleAiGenerate = async () => {
-    if (!aiPrompt.trim()) {
-      alert("AI에 보낼 간단한 설명을 입력해주세요.");
-      return;
-    }
     try {
       setLoadingAi(true);
       const result = await fetchAiDescription(aiPrompt);
@@ -153,7 +149,12 @@ const ProjectSubmissionPage = () => {
               <button
                 type="button"
                 onClick={handleAiGenerate}
-                className="absolute bottom-[12px] right-[12px] bg-[#E1E1E1] hover:bg-[#4C4C4C] text-white rounded-full w-[24px] h-[24px] flex items-center justify-center"
+                disabled={!aiPrompt.trim()} // 텍스트 없을 땐 비활성화
+                className={`absolute bottom-[12px] right-[12px] text-white ${
+                  aiPrompt.trim()
+                    ? "bg-[#4C4C4C] hover:bg-[#636161] cursor-pointer"
+                    : "bg-[#E1E1E1] cursor-not-allowed"
+                } rounded-full w-[24px] h-[24px] flex items-center justify-center`}
               >
                 <IoArrowUp className="w-[16px] h-[16px]" />
               </button>
