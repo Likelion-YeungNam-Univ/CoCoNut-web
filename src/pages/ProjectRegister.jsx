@@ -73,6 +73,9 @@ const ProjectRegister = () => {
   const [targets, setTargets] = useState([]);
   const [uploadedImage, setUploadedImage] = useState(null);
 
+  // ✨ 참여작 개수 상태 추가
+  const [submissionsCount, setSubmissionsCount] = useState(0);
+
   // API에서 받아올 카테고리, 업종, 닉네임
   const [categories, setCategories] = useState([]);
   const [businesstypes, setBusinesstypes] = useState([]);
@@ -97,7 +100,7 @@ const ProjectRegister = () => {
   // API 데이터 로딩 상태
   const [isLoading, setIsLoading] = useState(true);
 
-  // 등록하기 버튼 활성화 로직
+  // ✅ 수정된 useEffect: isLoading을 의존성 배열에서 제거하고, 조건에서도 제외
   useEffect(() => {
     if (agreeChecklist && agreeTerms && agreeCaution) {
       setIsButtonActive(true);
@@ -111,13 +114,10 @@ const ProjectRegister = () => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
-
         const businesstypesData = await getBusinessTypes();
         setBusinesstypes(businesstypesData);
-
         const userNickname = await fetchUserNickname();
         if (userNickname) {
           setUserName(userNickname);
@@ -255,35 +255,51 @@ const ProjectRegister = () => {
 
   // 미리보기 모달 열기 핸들러
   const handleOpenPreviewModal = () => {
-    if (isLoading) {
-      console.log("Data is still loading. Cannot open preview.");
-      return;
-    }
-    const data = {
-      projectTitle,
-      merchantName,
-      category,
-      businesstype,
-      createdAt: aiProjectData.createdAt,
-      deadline: aiProjectData.deadline,
-      prize: aiProjectData.rewardAmount,
-      content: aiProjectData.description,
-      summary: aiProjectData.summary,
-      color: colors,
-      style: styles,
-      target: targets,
-      image: uploadedImage ? URL.createObjectURL(uploadedImage) : null,
-      nickname: userName,
-    };
-    setPreviewData(data);
-    setIsPreviewModalOpen(true);
-  };
+    // ✅ 유효성 검사 로직 추가
+    setIsSubmitted(true);
+    const newErrors = {};
+    if (!projectTitle)
+      newErrors.projectTitle = "공모전 제목이 입력되지 않았습니다.";
+    if (!merchantName) newErrors.merchantName = "가게명이 입력되지 않았습니다.";
+    if (!category) newErrors.category = "카테고리가 선택되지 않았습니다.";
+    if (!businesstype) newErrors.businesstype = "업종이 선택되지 않았습니다.";
+    if (!aiProjectData.description)
+      newErrors.content = "내용이 입력되지 않았습니다.";
+    if (!aiProjectData.rewardAmount)
+      newErrors.rewardAmount = "상금이 입력되지 않았습니다.";
+    if (!aiProjectData.createdAt || !aiProjectData.deadline)
+      newErrors.period = "기간이 입력되지 않았습니다.";
 
+    setErrors(newErrors);
+
+    // ✅ 유효성 검사 통과 시에만 모달 열기
+    if (Object.keys(newErrors).length === 0) {
+      const data = {
+        projectTitle,
+        merchantName,
+        category,
+        businesstype,
+        createdAt: aiProjectData.createdAt,
+        deadline: aiProjectData.deadline,
+        rewardAmount: aiProjectData.rewardAmount,
+        content: aiProjectData.description,
+        summary: aiProjectData.summary,
+        color: colors,
+        style: styles,
+        target: targets,
+        image: uploadedImage ? URL.createObjectURL(uploadedImage) : null,
+        writerNickname: userName,
+        submissionsCount: submissionsCount,
+      };
+      setPreviewData(data);
+      setIsPreviewModalOpen(true);
+    }
+  };
   // 제출 확인 핸들러 (유효성 검사 및 API 전송 로직 추가)
   const handleConfirmSubmit = async () => {
     const formData = new FormData();
     formData.append("title", projectTitle);
-    formData.append("merchantName", userName);
+    formData.append("merchantName", merchantName);
     formData.append("category", category);
     formData.append("businessType", businesstype);
     formData.append("description", aiProjectData.description);
@@ -314,17 +330,16 @@ const ProjectRegister = () => {
       console.log("공모전 등록 완료:");
       setIsConfirmModalOpen(false);
       setIsFormDirty(false);
-      navigate("/register-result");
+      navigate("/project-detail");
     } catch (error) {
       setIsConfirmModalOpen(false);
     }
   };
 
-  // 뒤로가기 모달 핸들러
+  //뒤로가기 모달
   const handleConfirmBack = () => {
     setIsBackModalOpen(false);
     setIsFormDirty(false);
-    window.history.back();
   };
 
   // 등록 버튼 클릭 핸들러: 유효성 검사
@@ -334,7 +349,7 @@ const ProjectRegister = () => {
     if (!projectTitle)
       newErrors.projectTitle = "공모전 제목이 입력되지 않았습니다.";
     // ✨ 수정: userName으로 변경
-    if (!userName) newErrors.userName = "가게명이 입력되지 않았습니다.";
+    if (!merchantName) newErrors.merchantName = "가게명이 입력되지 않았습니다.";
     if (!category) newErrors.category = "카테고리가 선택되지 않았습니다.";
     if (!businesstype) newErrors.businesstype = "업종이 선택되지 않았습니다.";
     if (!aiProjectData.description)
@@ -597,32 +612,44 @@ const ProjectRegister = () => {
                       상금<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex items-center space-x-2">
-                      <div className="w-[231px] flex items-center space-x-2">
-                        <input
-                          type="text"
-                          className={`rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] flex-grow ${
-                            isSubmitted && errors.rewardAmount
-                              ? "border border-red-500"
-                              : "border border-[#F3F3F3]"
-                          }`}
-                          placeholder="공모전의 상금을 책정해 주세요."
-                          value={aiProjectData.rewardAmount}
-                          onChange={(e) => {
-                            setAiProjectData({
-                              ...aiProjectData,
-                              rewardAmount: e.target.value,
-                            });
-                            if (isSubmitted) {
-                              setErrors((prev) => ({
-                                ...prev,
-                                rewardAmount: "",
-                              }));
-                            }
-                          }}
-                        />
-                        <span className="flex-shrink-0 text-gray-500 text-xs font-pretendard">
-                          원
-                        </span>
+                      <div className="w-[231px] flex flex-col space-y-1">
+                        {" "}
+                        {/* ✅ Flexbox 방향을 column으로 변경 */}
+                        <div className="flex items-center space-x-2">
+                          {" "}
+                          {/* ✅ 기존 Input 필드를 감싸는 div 추가 */}
+                          <input
+                            type="text"
+                            className={`rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] flex-grow ${
+                              isSubmitted && errors.rewardAmount
+                                ? "border border-red-500"
+                                : "border border-[#F3F3F3]"
+                            }`}
+                            placeholder="공모전의 상금을 책정해 주세요."
+                            value={aiProjectData.rewardAmount}
+                            onChange={(e) => {
+                              setAiProjectData({
+                                ...aiProjectData,
+                                rewardAmount: e.target.value,
+                              });
+                              if (isSubmitted) {
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  rewardAmount: "",
+                                }));
+                              }
+                            }}
+                          />
+                          <span className="flex-shrink-0 text-gray-500 text-xs font-pretendard">
+                            원
+                          </span>
+                        </div>
+                        {/* ✅ 에러 메시지 렌더링 로직 추가 */}
+                        {isSubmitted && errors.rewardAmount && (
+                          <p className="text-red-500 text-xs font-pretendard text-left mt-1">
+                            {errors.rewardAmount}
+                          </p>
+                        )}
                       </div>
                       {aiProjectData.rewardAmount && (
                         <div className="relative group flex items-center">
