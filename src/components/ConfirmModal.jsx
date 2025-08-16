@@ -1,6 +1,5 @@
 import React from "react";
 
-// Modal is no longer using the Link component to prevent premature navigation.
 const ConfirmModal = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
 

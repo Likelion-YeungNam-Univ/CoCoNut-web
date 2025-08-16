@@ -84,8 +84,10 @@ const ProjectRegister = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // 폼 내용이 변경되었는지 추적하는 상태
+  // ✅ 폼 내용이 변경되었는지 추적하는 상태 및 Ref
   const [isFormDirty, setIsFormDirty] = useState(false);
+  const isFormDirtyRef = useRef(false); // 폼 변경 상태를 추적하는 Ref
+  const isBackModalOpenRef = useRef(false); // 모달 상태를 추적하는 Ref
   const initialFormState = useRef({
     projectTitle: "",
     userName: "",
@@ -100,7 +102,23 @@ const ProjectRegister = () => {
   // API 데이터 로딩 상태
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ 수정된 useEffect: isLoading을 의존성 배열에서 제거하고, 조건에서도 제외
+  // ✅ 유효성 검사 로직을 별도 함수로 분리
+  const validateForm = () => {
+    const newErrors = {};
+    if (!projectTitle)
+      newErrors.projectTitle = "공모전 제목이 입력되지 않았습니다.";
+    if (!merchantName) newErrors.merchantName = "가게명이 입력되지 않았습니다.";
+    if (!category) newErrors.category = "카테고리가 선택되지 않았습니다.";
+    if (!businesstype) newErrors.businesstype = "업종이 선택되지 않았습니다.";
+    if (!aiProjectData.description)
+      newErrors.content = "내용이 입력되지 않았습니다.";
+    if (!aiProjectData.rewardAmount)
+      newErrors.rewardAmount = "상금이 입력되지 않았습니다.";
+    if (!aiProjectData.createdAt || !aiProjectData.deadline)
+      newErrors.period = "기간이 입력되지 않았습니다.";
+    return newErrors;
+  };
+
   useEffect(() => {
     if (agreeChecklist && agreeTerms && agreeCaution) {
       setIsButtonActive(true);
@@ -109,7 +127,10 @@ const ProjectRegister = () => {
     }
   }, [agreeChecklist, agreeTerms, agreeCaution]);
 
-  // API에서 카테고리, 업종, 닉네임 데이터 가져오기
+  useEffect(() => {
+    console.log("isConfirmModalOpen 상태 변경:", isConfirmModalOpen);
+  }, [isConfirmModalOpen]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -132,7 +153,7 @@ const ProjectRegister = () => {
     fetchData();
   }, []);
 
-  // 폼 내용 변경 시 isFormDirty 상태 업데이트 및 popstate 이벤트 리스너 등록
+  // ✅ 폼 변경 상태를 isFormDirtyRef에 업데이트하는 useEffect (기존 코드 유지)
   useEffect(() => {
     const currentFormState = {
       projectTitle,
@@ -148,20 +169,41 @@ const ProjectRegister = () => {
       (key) => currentFormState[key] !== initialFormState.current[key]
     );
     setIsFormDirty(isAnyFieldChanged);
-
-    if (isAnyFieldChanged) {
-      window.history.pushState(null, "", window.location.href);
-      const handlePopstate = () => {
-        setIsBackModalOpen(true);
-      };
-      window.addEventListener("popstate", handlePopstate);
-      return () => {
-        window.removeEventListener("popstate", handlePopstate);
-      };
-    }
+    isFormDirtyRef.current = isAnyFieldChanged; // Ref에 최신 상태 저장
   }, [projectTitle, userName, category, businesstype, aiProjectData]);
 
-  // 모든 약관 동의 핸들러
+  // ✅ 뒤로가기 모달을 위한 useEffect
+  useEffect(() => {
+    // 폼이 변경될 때만 히스토리 스택에 가상의 항목을 추가합니다.
+    if (isFormDirty) {
+      window.history.pushState(null, "", window.location.href);
+    }
+
+    const handlePopstate = (e) => {
+      // 폼이 변경된 상태에서 뒤로가기 이벤트가 발생하면 모달을 띄웁니다.
+      if (isFormDirtyRef.current) {
+        setIsBackModalOpen(true);
+      } else {
+        // 폼이 변경되지 않았으면 기본 뒤로가기 동작을 수행합니다.
+        navigate(-1);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopstate);
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+    };
+  }, [isFormDirty]);
+
+  // 모달이 열릴 때 body에 클래스 추가, 닫힐 때 제거
+  useEffect(() => {
+    if (isBackModalOpen) {
+      document.body.classList.add("modal-open");
+    } else {
+      document.body.classList.remove("modal-open");
+    }
+  }, [isBackModalOpen]);
+
   const handleAgreeAllChange = (e) => {
     const isChecked = e.target.checked;
     setAgreeAll(isChecked);
@@ -170,7 +212,6 @@ const ProjectRegister = () => {
     setAgreeCaution(isChecked);
   };
 
-  // 약관 모달 열기 핸들러
   const handleOpenTermsModal = (termType) => {
     const data = TERMS_DATA[termType];
     if (data) {
@@ -180,7 +221,6 @@ const ProjectRegister = () => {
     }
   };
 
-  // AI 분석 핸들러
   const analyzeWithAI = async () => {
     setLoading(true);
     try {
@@ -199,7 +239,6 @@ const ProjectRegister = () => {
     }
   };
 
-  // 다중 선택 핸들러들...
   const handleColorClick = (code) => {
     if (code === "color_free") {
       setColors((prev) => (prev.includes("color_free") ? [] : ["color_free"]));
@@ -253,26 +292,12 @@ const ProjectRegister = () => {
     }
   };
 
-  // 미리보기 모달 열기 핸들러
+  // ✅ 유효성 검사 로직을 분리하여 간소화된 미리보기 핸들러
   const handleOpenPreviewModal = () => {
-    // ✅ 유효성 검사 로직 추가
     setIsSubmitted(true);
-    const newErrors = {};
-    if (!projectTitle)
-      newErrors.projectTitle = "공모전 제목이 입력되지 않았습니다.";
-    if (!merchantName) newErrors.merchantName = "가게명이 입력되지 않았습니다.";
-    if (!category) newErrors.category = "카테고리가 선택되지 않았습니다.";
-    if (!businesstype) newErrors.businesstype = "업종이 선택되지 않았습니다.";
-    if (!aiProjectData.description)
-      newErrors.content = "내용이 입력되지 않았습니다.";
-    if (!aiProjectData.rewardAmount)
-      newErrors.rewardAmount = "상금이 입력되지 않았습니다.";
-    if (!aiProjectData.createdAt || !aiProjectData.deadline)
-      newErrors.period = "기간이 입력되지 않았습니다.";
-
+    const newErrors = validateForm();
     setErrors(newErrors);
 
-    // ✅ 유효성 검사 통과 시에만 모달 열기
     if (Object.keys(newErrors).length === 0) {
       const data = {
         projectTitle,
@@ -295,77 +320,60 @@ const ProjectRegister = () => {
       setIsPreviewModalOpen(true);
     }
   };
-  // 제출 확인 핸들러 (유효성 검사 및 API 전송 로직 추가)
+
   const handleConfirmSubmit = async () => {
-    const formData = new FormData();
-    formData.append("title", projectTitle);
-    formData.append("merchantName", merchantName);
-    formData.append("category", category);
-    formData.append("businessType", businesstype);
-    formData.append("description", aiProjectData.description);
-    formData.append("createdAt", aiProjectData.createdAt);
-    formData.append("deadline", aiProjectData.deadline);
-    formData.append(
-      "rewardAmount",
-      parseInt(aiProjectData.rewardAmount.replace(/,/g, ""), 10)
-    );
-    formData.append("summary", aiProjectData.summary);
+    // 1. FormData 대신 JavaScript 객체(JSON) 생성
+    const projectData = {
+      title: projectTitle,
+      merchantName: merchantName,
+      category: category,
+      businessType: businesstype,
+      description: aiProjectData.description,
 
-    if (colors && colors.length > 0 && !colors.includes("color_free")) {
-      colors.forEach((c) => formData.append("colors[]", c));
-    }
-    if (styles && styles.length > 0 && !styles.includes("style_free")) {
-      styles.forEach((s) => formData.append("styles[]", s));
-    }
-    if (targets && targets.length > 0 && !targets.includes("target_free")) {
-      targets.forEach((t) => formData.append("targets[]", t));
-    }
+      deadline: aiProjectData.deadline,
+      rewardAmount: parseInt(aiProjectData.rewardAmount.replace(/,/g, ""), 10),
 
-    if (uploadedImage) {
-      formData.append("image", uploadedImage);
-    }
+      summary: aiProjectData.summary,
+      colors: colors.length > 0 && !colors.includes("color_free") ? colors : [],
+      styles: styles.length > 0 && !styles.includes("style_free") ? styles : [],
+      targets:
+        targets.length > 0 && !targets.includes("target_free") ? targets : [],
+      // ✅ 이미지 파일은 FormData를 사용해야 하므로, 이 API로는 직접 보낼 수 없습니다.
+      // 백엔드에 이미지 파일 업로드용 별도 API가 있는지 확인해야 합니다.
+    };
 
     try {
-      await registerProject(formData);
-      console.log("공모전 등록 완료:");
+      // 2. Axios 요청 시 JSON 객체를 직접 전달
+      const response = await registerProject(projectData);
+      console.log("공모전 등록 완료:", response);
+
       setIsConfirmModalOpen(false);
       setIsFormDirty(false);
       navigate("/project-detail");
     } catch (error) {
+      console.error("Failed to register project:", error);
       setIsConfirmModalOpen(false);
     }
   };
-
-  //뒤로가기 모달
-  const handleConfirmBack = () => {
-    setIsBackModalOpen(false);
-    setIsFormDirty(false);
-  };
-
-  // 등록 버튼 클릭 핸들러: 유효성 검사
+  // ✅ 유효성 검사 로직을 분리하여 간소화된 등록 핸들러
   const handleRegisterClick = () => {
     setIsSubmitted(true);
-    const newErrors = {};
-    if (!projectTitle)
-      newErrors.projectTitle = "공모전 제목이 입력되지 않았습니다.";
-    // ✨ 수정: userName으로 변경
-    if (!merchantName) newErrors.merchantName = "가게명이 입력되지 않았습니다.";
-    if (!category) newErrors.category = "카테고리가 선택되지 않았습니다.";
-    if (!businesstype) newErrors.businesstype = "업종이 선택되지 않았습니다.";
-    if (!aiProjectData.description)
-      newErrors.content = "내용이 입력되지 않았습니다.";
-    if (!aiProjectData.rewardAmount)
-      newErrors.rewardAmount = "상금이 입력되지 않았습니다.";
-    if (!aiProjectData.createdAt || !aiProjectData.deadline)
-      newErrors.period = "기간이 입력되지 않았습니다.";
-
+    const newErrors = validateForm();
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
+    if (Object.keys(newErrors).length === 0 && isButtonActive) {
+      setModalTitle("등록 확인");
+      setModalContent("입력하신 내용으로 공모전을 등록하시겠습니까?");
       setIsConfirmModalOpen(true);
     }
   };
 
+  // ✅ 변경된 뒤로가기 모달 핸들러
+  const handleConfirmBack = () => {
+    setIsBackModalOpen(false); // 모달 닫기
+    setIsFormDirty(false); // 폼 상태 초기화
+    navigate(-1); // 이전 페이지로 이동
+  };
   return (
     <div className="flex flex-col">
       <MerchantHeader />
@@ -767,18 +775,28 @@ const ProjectRegister = () => {
                       이미지 첨부하기
                     </label>
                     <div className="flex-grow">
-                      {" "}
-                      {/* ✨ 추가: 부모 div에 flex-grow 적용 */}
                       <label
                         htmlFor="image-upload"
-                        className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard text-[#C3C3C3] cursor-pointer flex items-center bg-[#F3F3F3]"
-                      ></label>
+                        className={`flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard ${
+                          uploadedImage ? "text-[#212121]" : "text-[#C3C3C3]"
+                        } cursor-pointer flex items-center bg-[#F3F3F3]`}
+                      >
+                        {uploadedImage
+                          ? uploadedImage.name
+                          : "클릭하여 파일을 첨부하거나 드래그하세요."}
+                      </label>
                       <input
                         id="image-upload"
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={(e) => setUploadedImage(e.target.files[0])}
+                        onChange={(e) =>
+                          setUploadedImage(
+                            e.target.files && e.target.files.length > 0
+                              ? e.target.files[0]
+                              : null
+                          )
+                        }
                       />
                     </div>
                   </div>
@@ -1068,6 +1086,7 @@ const ProjectRegister = () => {
                     ? "bg-[#2FD8F6] text-white hover:font-bold"
                     : "bg-[#E1E1E1] text-white cursor-not-allowed"
                 }`}
+                // ✅ 여기에 onClick 이벤트 핸들러를 추가했습니다.
                 onClick={handleRegisterClick}
                 disabled={!isButtonActive}
               >
@@ -1093,12 +1112,13 @@ const ProjectRegister = () => {
           onClose={() => setIsPreviewModalOpen(false)}
         />
       )}
-      {isConfirmModalOpen && (
-        <ConfirmModal
-          onClose={() => setIsConfirmModalOpen(false)}
-          onConfirm={handleConfirmSubmit}
-        />
-      )}
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title={modalTitle}
+        content={modalContent}
+        onConfirm={handleConfirmSubmit}
+        onClose={() => setIsConfirmModalOpen(false)}
+      />
       {isEasyHelpModalOpen && (
         <EasyHelpModal onClose={() => setIsEasyHelpModalOpen(false)} />
       )}
