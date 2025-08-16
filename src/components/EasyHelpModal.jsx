@@ -3,7 +3,7 @@ import { IoIosCloseCircle, IoIosCheckmarkCircle } from "react-icons/io";
 
 const EasyHelpModal = () => {
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 top-[100%] mt-2 z-10 w-[440px] rounded-lg shadow-xl bg-white p-6 opacity-0 invisible transition-opacity duration-300 group-hover:opacity-100 group-hover:visible">
+    <div className="absolute left-1/2 -translate-x-1/2 top-[100%] mt-2 z-10 w-[440px] rounded-lg shadow-xl bg-white p-6 opacity-0 invisible transition-opacity duration-300 group-hover:opacity-100 group-hover:visible font-pretendard">
       <div className="text-left">
         <h2 className="text-[14px] font-medium text-[#212121] mb-2">
           AI로 더 빠르고 정확하게 요청하세요!

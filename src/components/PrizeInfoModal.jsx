@@ -2,7 +2,7 @@ import React from "react";
 
 const PrizeInfoModal = () => {
   return (
-    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-10 w-[360px] rounded-lg shadow-xl bg-white p-6 opacity-0 invisible transition-opacity duration-300 group-hover:opacity-100 group-hover:visible">
+    <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-10 w-[360px] rounded-lg shadow-xl bg-white p-6 opacity-0 invisible transition-opacity duration-300 group-hover:opacity-100 group-hover:visible font-pretendard">
       <div className="text-left">
         <h2 className="text-[14px] text-[#212121]">
           브릿지가 상금의 약 23%를 지역 화폐로 부담해 드려요.

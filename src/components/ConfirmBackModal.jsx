@@ -4,7 +4,7 @@ const ConfirmBackModal = ({ isOpen, onClose, onConfirm }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-18">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/80 p-18 font-pretendard">
       {/* 모달 콘텐츠를 Flexbox 컨테이너로 만들어 상하 정렬 */}
       <div className="bg-white rounded-xl max-w-md w-full m-4 mt-10 p-4 flex flex-col justify-between min-h-[200px]">
         {/* 텍스트를 왼쪽 정렬 */}

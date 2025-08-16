@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { SlArrowUpCircle } from "react-icons/sl";
 import { useNavigate } from "react-router-dom";
 
+// API 함수들
 import { analyzeProjectWithAI } from "../apis/analyzeWithAI";
 import { registerProject } from "../apis/registerProject";
 import { fetchCategories } from "../apis/category";
 import { getBusinessTypes } from "../apis/businessTypes";
-import getNickname from "../apis/getNickname";
+import fetchUserNickname from "../apis/fetchUserNickname";
 
+// 컴포넌트들
 import MerchantHeader from "../header/MerchantHeader";
-
 import CustomDropdown from "../components/CustomDropdown";
 import TermsModal from "../components/TermsModal";
 import PreviewModal from "../components/PreviewModal";
@@ -19,6 +20,7 @@ import ConfirmBackModal from "../components/ConfirmBackModal";
 import PrizeInfoModal from "../components/PrizeInfoModal";
 import FooterRegister from "../components/FooterRegister";
 
+// 상수 데이터
 import { TERMS_DATA } from "../utils/termsData";
 import { STYLES_DATA } from "../utils/stylesData";
 import { TARGETS_DATA } from "../utils/targetData";
@@ -26,6 +28,7 @@ import { COLORS_DATA } from "../utils/colorData";
 
 const ProjectRegister = () => {
   const navigate = useNavigate();
+
   // 약관 동의 관련 상태
   const [agreeAll, setAgreeAll] = useState(false);
   const [agreeChecklist, setAgreeChecklist] = useState(false);
@@ -60,6 +63,7 @@ const ProjectRegister = () => {
   // 프로젝트 등록 폼 관련 상태
   const [projectTitle, setProjectTitle] = useState("");
   const [merchantName, setMerchantName] = useState("");
+  const [userName, setUserName] = useState("");
   const [category, setCategory] = useState("");
   const [businesstype, setBusinesstype] = useState("");
 
@@ -67,23 +71,21 @@ const ProjectRegister = () => {
   const [colors, setColors] = useState([]);
   const [styles, setStyles] = useState([]);
   const [targets, setTargets] = useState([]);
-
   const [uploadedImage, setUploadedImage] = useState(null);
 
-  // API에서 받아올 카테고리 및 업종, 닉네임
+  // API에서 받아올 카테고리, 업종, 닉네임
   const [categories, setCategories] = useState([]);
   const [businesstypes, setBusinesstypes] = useState([]);
-  const [merchantNickname, setMerchantNickname] = useState(null);
 
   // 에러 메시지 상태
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // ✨ 추가: 폼 내용이 변경되었는지 추적하는 상태
+  // 폼 내용이 변경되었는지 추적하는 상태
   const [isFormDirty, setIsFormDirty] = useState(false);
   const initialFormState = useRef({
     projectTitle: "",
-    merchantName: "",
+    userName: "",
     category: "",
     businesstype: "",
     description: "",
@@ -91,6 +93,9 @@ const ProjectRegister = () => {
     createdAt: "",
     deadline: "",
   });
+
+  // API 데이터 로딩 상태
+  const [isLoading, setIsLoading] = useState(true);
 
   // 등록하기 버튼 활성화 로직
   useEffect(() => {
@@ -101,37 +106,37 @@ const ProjectRegister = () => {
     }
   }, [agreeChecklist, agreeTerms, agreeCaution]);
 
-  // API에서 카테고리 및 업종 데이터 가져오기
+  // API에서 카테고리, 업종, 닉네임 데이터 가져오기
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categories = await fetchCategories();
-        setCategories(categories);
+        setIsLoading(true);
 
-        const businesstypes = await getBusinessTypes();
-        setBusinesstypes(businesstypes);
+        const categoriesData = await fetchCategories();
+        setCategories(categoriesData);
 
-        // 닉네임 데이터 불러오기
-        const fetchedNicknameData = await getNickname();
-        if (fetchedNicknameData && fetchedNicknameData.nickname) {
-          setMerchantNickname(fetchedNicknameData.nickname);
-        } else {
-          setMerchantNickname("닉네임 없음");
+        const businesstypesData = await getBusinessTypes();
+        setBusinesstypes(businesstypesData);
+
+        const userNickname = await fetchUserNickname();
+        if (userNickname) {
+          setUserName(userNickname);
+          initialFormState.current.userName = userNickname;
         }
       } catch (error) {
-        console.error("Failed to fetch data:", error);
-        setMerchantNickname("닉네임 없음");
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  // ✨ 수정: 폼 내용 변경 시 isFormDirty 상태 업데이트 및 popstate 이벤트 리스너 등록
+  // 폼 내용 변경 시 isFormDirty 상태 업데이트 및 popstate 이벤트 리스너 등록
   useEffect(() => {
-    // 현재 폼 상태를 초기 상태와 비교합니다.
     const currentFormState = {
       projectTitle,
-      merchantName,
+      userName,
       category,
       businesstype,
       description: aiProjectData.description,
@@ -139,30 +144,22 @@ const ProjectRegister = () => {
       createdAt: aiProjectData.createdAt,
       deadline: aiProjectData.deadline,
     };
-    // 폼 내용이 변경되었는지 확인하는 로직
     const isAnyFieldChanged = Object.keys(currentFormState).some(
       (key) => currentFormState[key] !== initialFormState.current[key]
     );
     setIsFormDirty(isAnyFieldChanged);
 
-    // 폼이 변경되었을 때만 뒤로가기 이벤트를 감지합니다.
     if (isAnyFieldChanged) {
-      // 뒤로가기 이벤트를 감지하기 위해 히스토리 스택에 가짜 상태를 추가
       window.history.pushState(null, "", window.location.href);
-
       const handlePopstate = () => {
-        // 뒤로가기 이벤트 감지 시 모달을 엽니다.
         setIsBackModalOpen(true);
       };
-
       window.addEventListener("popstate", handlePopstate);
-
-      // 클린업 함수: 컴포넌트 언마운트 시 또는 isFormDirty가 false로 바뀔 때 이벤트 리스너 제거
       return () => {
         window.removeEventListener("popstate", handlePopstate);
       };
     }
-  }, [projectTitle, merchantName, category, businesstype, aiProjectData]);
+  }, [projectTitle, userName, category, businesstype, aiProjectData]);
 
   // 모든 약관 동의 핸들러
   const handleAgreeAllChange = (e) => {
@@ -186,7 +183,6 @@ const ProjectRegister = () => {
   // AI 분석 핸들러
   const analyzeWithAI = async () => {
     setLoading(true);
-
     try {
       const aiData = await analyzeProjectWithAI(assistanceText);
       setAiProjectData({
@@ -198,17 +194,12 @@ const ProjectRegister = () => {
       });
     } catch (error) {
       console.error("AI analysis error:", error);
-      if (error.response && error.response.status === 401) {
-        // alert("인증 오류가 발생했습니다. 로그인 상태를 확인해 주세요.");
-      } else {
-        // alert("AI 분석 중 오류가 발생했습니다. 다시 시도해 주세요.");
-      }
     } finally {
       setLoading(false);
     }
   };
 
-  // 다중 선택을 위한 색상 클릭 핸들러
+  // 다중 선택 핸들러들...
   const handleColorClick = (code) => {
     if (code === "color_free") {
       setColors((prev) => (prev.includes("color_free") ? [] : ["color_free"]));
@@ -226,7 +217,6 @@ const ProjectRegister = () => {
     }
   };
 
-  // 다중 선택을 위한 스타일 클릭 핸들러
   const handleStyleClick = (value) => {
     if (value === "style_free") {
       setStyles((prev) => (prev.includes("style_free") ? [] : ["style_free"]));
@@ -244,7 +234,6 @@ const ProjectRegister = () => {
     }
   };
 
-  // 다중 선택을 위한 타겟 클릭 핸들러
   const handleTargetClick = (value) => {
     if (value === "target_free") {
       setTargets((prev) =>
@@ -266,6 +255,10 @@ const ProjectRegister = () => {
 
   // 미리보기 모달 열기 핸들러
   const handleOpenPreviewModal = () => {
+    if (isLoading) {
+      console.log("Data is still loading. Cannot open preview.");
+      return;
+    }
     const data = {
       projectTitle,
       merchantName,
@@ -273,32 +266,24 @@ const ProjectRegister = () => {
       businesstype,
       createdAt: aiProjectData.createdAt,
       deadline: aiProjectData.deadline,
-      // ✨ 수정: aiProjectData.rewardAmount를 data.prize로 전달
       prize: aiProjectData.rewardAmount,
       content: aiProjectData.description,
       summary: aiProjectData.summary,
-      // 이제 배열을 넘겨줍니다.
       color: colors,
       style: styles,
       target: targets,
       image: uploadedImage ? URL.createObjectURL(uploadedImage) : null,
-      nickname: merchantNickname,
+      nickname: userName,
     };
     setPreviewData(data);
     setIsPreviewModalOpen(true);
   };
 
-  // 확인 모달 열기 핸들러
-  const handleOpenConfirmModal = async () => {
-    setIsConfirmModalOpen(true);
-  };
-
   // 제출 확인 핸들러 (유효성 검사 및 API 전송 로직 추가)
   const handleConfirmSubmit = async () => {
-    // FormData 객체 생성
     const formData = new FormData();
     formData.append("title", projectTitle);
-    formData.append("merchantName", merchantName);
+    formData.append("merchantName", userName);
     formData.append("category", category);
     formData.append("businessType", businesstype);
     formData.append("description", aiProjectData.description);
@@ -310,7 +295,6 @@ const ProjectRegister = () => {
     );
     formData.append("summary", aiProjectData.summary);
 
-    // 배열 데이터를 FormData에 추가 (여러 개 선택 가능)
     if (colors && colors.length > 0 && !colors.includes("color_free")) {
       colors.forEach((c) => formData.append("colors[]", c));
     }
@@ -328,32 +312,29 @@ const ProjectRegister = () => {
     try {
       await registerProject(formData);
       console.log("공모전 등록 완료:");
-      // alert("공모전 등록이 완료되었습니다."); // 사용자에게 모달 UI를 보여주는 것이 좋습니다.
       setIsConfirmModalOpen(false);
-      // ✨ 수정: 폼이 저장되었으니 isFormDirty를 false로 리셋합니다.
       setIsFormDirty(false);
-      // ✨ 추가: 등록 완료 후 /register-result 페이지로 이동
       navigate("/register-result");
     } catch (error) {
-      // alert("공모전 등록 중 오류가 발생했습니다. 다시 시도해 주세요."); // 사용자에게 모달 UI를 보여주는 것이 좋습니다.
       setIsConfirmModalOpen(false);
     }
   };
 
-  // ✨ 수정: 뒤로가기 모달에서 "네, 돌아갈래요" 클릭 시
+  // 뒤로가기 모달 핸들러
   const handleConfirmBack = () => {
     setIsBackModalOpen(false);
-    // ✨ 수정: 폼 상태를 리셋하여 뒤로가기 모달이 다시 뜨지 않도록 합니다.
     setIsFormDirty(false);
     window.history.back();
   };
-  // 새로운 등록 버튼 클릭 핸들러: 유효성 검사 후 모달 오픈
+
+  // 등록 버튼 클릭 핸들러: 유효성 검사
   const handleRegisterClick = () => {
     setIsSubmitted(true);
     const newErrors = {};
     if (!projectTitle)
       newErrors.projectTitle = "공모전 제목이 입력되지 않았습니다.";
-    if (!merchantName) newErrors.merchantName = "가게명이 입력되지 않았습니다.";
+    // ✨ 수정: userName으로 변경
+    if (!userName) newErrors.userName = "가게명이 입력되지 않았습니다.";
     if (!category) newErrors.category = "카테고리가 선택되지 않았습니다.";
     if (!businesstype) newErrors.businesstype = "업종이 선택되지 않았습니다.";
     if (!aiProjectData.description)
@@ -366,7 +347,7 @@ const ProjectRegister = () => {
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
-      handleOpenConfirmModal();
+      setIsConfirmModalOpen(true);
     }
   };
 
@@ -377,22 +358,23 @@ const ProjectRegister = () => {
         <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-[1032px] min-h-[2408px]">
           <div className="max-w-2xl mx-auto mt-12">
             <section className="flex flex-col mb-12 items-center">
-              <h1 className="text-3xl font-semibold mb-3 text-[#000000]">
+              <h1 className="text-3xl font-pretendard font-semibold mb-3 text-[#000000]">
                 공모전 등록하기
               </h1>
-              <p className="text-sm text-[#828282]">
+              <p className="text-sm font-pretendard text-[#828282]">
                 필요한 홍보물, 메뉴판 등 어떤 요청이든 쉽게 등록하세요.
               </p>
-              <p className="text-sm text-[#828282]">
+              <p className="text-sm font-pretendard text-[#828282]">
                 마음에 드는 수상작을 직접 선택할 수 있습니다.
               </p>
             </section>
             <div className="flex justify-between">
-              <h1 className="text-xl font-semibold text-[#000000] mb-2">
+              <h1 className="text-xl font-pretendard font-semibold text-[#000000] mb-2">
                 기본정보 입력
               </h1>
               <label className="text-sm font-normal text-[#626262]">
-                <span className="text-[#2FD8F6]">*</span>필수입력
+                <span className="font-pretendard text-[#2FD8F6]">*</span>
+                필수입력
               </label>
             </div>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
@@ -402,13 +384,13 @@ const ProjectRegister = () => {
                 {/* "공모전 제목" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-normal text-[#212121]">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                       공모전 제목<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       <input
                         type="text"
-                        className={`w-full rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
+                        className={`w-full rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
                           isSubmitted && errors.projectTitle
                             ? "border border-red-500"
                             : "border border-[#F3F3F3]"
@@ -426,7 +408,7 @@ const ProjectRegister = () => {
                         }}
                       />
                       {isSubmitted && errors.projectTitle && (
-                        <p className="text-red-500 text-xs text-left mt-1">
+                        <p className="text-red-500 text-xs font-pretendard text-left mt-1">
                           {errors.projectTitle}
                         </p>
                       )}
@@ -436,13 +418,13 @@ const ProjectRegister = () => {
                 {/* "가게명" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-normal text-[#212121]">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                       가게명<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       <input
                         type="text"
-                        className={`w-full rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
+                        className={`w-full rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
                           isSubmitted && errors.merchantName
                             ? "border border-red-500"
                             : "border border-[#F3F3F3]"
@@ -460,7 +442,7 @@ const ProjectRegister = () => {
                         }}
                       />
                       {isSubmitted && errors.merchantName && (
-                        <p className="text-red-500 text-xs text-left mt-1">
+                        <p className="text-red-500  text-xs font-pretendard text-left mt-1">
                           {errors.merchantName}
                         </p>
                       )}
@@ -470,7 +452,7 @@ const ProjectRegister = () => {
                 {/* "카테고리" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-normal text-[#212121]">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                       카테고리<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
@@ -488,7 +470,7 @@ const ProjectRegister = () => {
                         isSubmitted={isSubmitted}
                       />
                       {isSubmitted && errors.category && (
-                        <p className="text-red-500 text-xs text-left mt-1">
+                        <p className="text-red-500 text-xs font-pretendard text-left mt-1">
                           {errors.category}
                         </p>
                       )}
@@ -498,7 +480,7 @@ const ProjectRegister = () => {
                 {/* "업종" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-normal text-[#212121]">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                       업종<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
@@ -519,7 +501,7 @@ const ProjectRegister = () => {
                         isSubmitted={isSubmitted}
                       />
                       {isSubmitted && errors.businesstype && (
-                        <p className="text-red-500 text-xs text-left mt-1">
+                        <p className="text-red-500 text-xs font-pretendard text-left mt-1">
                           {errors.businesstype}
                         </p>
                       )}
@@ -528,7 +510,7 @@ const ProjectRegister = () => {
                 </div>
               </div>
             </section>
-            <h2 className="text-xl font-semibold mb-2 text-[#000000]">
+            <h2 className="text-xl font-pretendard font-semibold mb-2 text-[#000000]">
               공모전 내용 입력
             </h2>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
@@ -537,12 +519,12 @@ const ProjectRegister = () => {
               <div className="space-y-7">
                 <div className="flex items-start space-x-2">
                   <div className="group w-44 flex flex-col space-y-1 justify-center items-center pr-7 relative">
-                    <label className="text-sm font-normal text-[#212121] pt-2">
+                    <label className="text-sm font-pretendard font-normal text-[#212121] pt-2">
                       AI로 공모전 쉽게 작성하기
                     </label>
                     <a
                       href="#"
-                      className="w-40 text-xs rounded-3xl text-[#2AC2DD] pt-2 pb-2 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]"
+                      className="w-40 text-xs rounded-3xl text-[#2AC2DD] font-pretendard pt-2 pb-2 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]"
                       onClick={(e) => {
                         e.preventDefault();
                       }}
@@ -555,7 +537,7 @@ const ProjectRegister = () => {
 
                   <div className="flex-grow justify-between relative">
                     <textarea
-                      className="w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs text-[#212121] placeholder:text-[#C3C3C3] pr-10"
+                      className="w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] pr-10"
                       placeholder="어떤 도움이 필요한지 작성해 주세요. AI가 내용, 기간, 상금 등을 자동으로 생성해줘요."
                       value={assistanceText}
                       onChange={(e) => setAssistanceText(e.target.value)}
@@ -569,7 +551,7 @@ const ProjectRegister = () => {
                 </div>
                 {loading && (
                   <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-50 rounded-xl shadow-lg py-4 px-6 z-50">
-                    <p className="text-white text-lg text-center">
+                    <p className="text-white font-pretendard text-lg text-center">
                       AI가 내용을 불러오는 중이에요...
                     </p>
                   </div>
@@ -577,13 +559,13 @@ const ProjectRegister = () => {
                 {/* "내용" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-start space-x-2">
-                    <label className="w-44 text-sm font-normal text-[#212121] pt-2">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121] pt-2">
                       내용<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       {" "}
                       <textarea
-                        className={`w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs text-[#212121] placeholder:text-[#C3C3C3] pr-10 ${
+                        className={`w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] pr-10 ${
                           isSubmitted && errors.content
                             ? "border border-red-500"
                             : "border border-[#F3F3F3]"
@@ -601,7 +583,7 @@ const ProjectRegister = () => {
                         }}
                       />
                       {isSubmitted && errors.content && (
-                        <p className="text-red-500 text-xs text-left mt-1">
+                        <p className="text-red-500 text-xs font-pretendard text-left mt-1">
                           {errors.content}
                         </p>
                       )}
@@ -611,14 +593,14 @@ const ProjectRegister = () => {
                 {/* "상금" */}
                 <div className="flex-grow flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-normal text-[#212121]">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                       상금<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex items-center space-x-2">
                       <div className="w-[231px] flex items-center space-x-2">
                         <input
                           type="text"
-                          className={`rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] flex-grow ${
+                          className={`rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] flex-grow ${
                             isSubmitted && errors.rewardAmount
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
@@ -638,14 +620,14 @@ const ProjectRegister = () => {
                             }
                           }}
                         />
-                        <span className="flex-shrink-0 text-gray-500 text-xs">
+                        <span className="flex-shrink-0 text-gray-500 text-xs font-pretendard">
                           원
                         </span>
                       </div>
                       {aiProjectData.rewardAmount && (
                         <div className="relative group flex items-center">
                           <span
-                            className="flex-shrink-0 rounded-3xl text-[#2AC2DD] pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF] max-w-[300px] overflow-hidden whitespace-nowrap overflow-ellipsis"
+                            className="flex-shrink-0 rounded-3xl text-[#2AC2DD] font-pretendard pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF] max-w-[300px] overflow-hidden whitespace-nowrap overflow-ellipsis"
                             style={{
                               fontSize:
                                 (
@@ -679,14 +661,14 @@ const ProjectRegister = () => {
                 {/* "기간" */}
                 <div className="flex-grow flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-normal text-[#212121]">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                       기간<span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       <div className="flex items-center space-x-4">
                         <input
                           type="text"
-                          className={`w-[87px] rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
+                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
                             isSubmitted && errors.period
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
@@ -706,7 +688,7 @@ const ProjectRegister = () => {
                         <span>-</span>
                         <input
                           type="text"
-                          className={`w-[87px] rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3] ${
+                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
                             isSubmitted && errors.period
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
@@ -725,55 +707,58 @@ const ProjectRegister = () => {
                         />
                       </div>
                       {isSubmitted && errors.period && (
-                        <p className="text-red-500 text-xs text-left mt-1">
+                        <p className="text-red-500 text-xs font-pretendard text-left mt-1">
                           {errors.period}
                         </p>
                       )}
                     </div>
                   </div>
                 </div>
-                {/* "한 줄 소개" */}
-                <div className="flex items-center justify-between space-x-2">
-                  <label className="w-44 text-sm font-normal text-[#212121]">
-                    한 줄 소개
-                  </label>
-                  <input
-                    type="text"
-                    className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs text-[#212121] placeholder:text-[#C3C3C3]"
-                    placeholder="공모전의 한 줄 소개를 작성해 주세요."
-                    value={aiProjectData.summary}
-                    onChange={(e) =>
-                      setAiProjectData({
-                        ...aiProjectData,
-                        summary: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-                {/* 이미지 첨부하기 */}
-                <div className="flex items-center space-x-2">
-                  <label className="w-44 text-sm font-normal text-[#212121]">
-                    이미지 첨부하기
-                  </label>
-                  <label
-                    htmlFor="image-upload"
-                    className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs text-[#C3C3C3] cursor-pointer flex items-center"
-                  >
-                    {uploadedImage
-                      ? uploadedImage.name
-                      : "업로드할 이미지를 선택해 주세요."}
-                  </label>
-                  <input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => setUploadedImage(e.target.files[0])}
-                  />
+                <div className="flex flex-col space-y-7">
+                  {/* "한 줄 소개" */}
+                  <div className="flex items-center justify-between space-x-2">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
+                      한 줄 소개
+                    </label>
+                    <input
+                      type="text"
+                      className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3]"
+                      placeholder="공모전의 한 줄 소개를 작성해 주세요."
+                      value={aiProjectData.summary}
+                      onChange={(e) =>
+                        setAiProjectData({
+                          ...aiProjectData,
+                          summary: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+
+                  {/* 이미지 첨부하기 */}
+                  <div className="flex items-center justify-between space-x-2">
+                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
+                      이미지 첨부하기
+                    </label>
+                    <div className="flex-grow">
+                      {" "}
+                      {/* ✨ 추가: 부모 div에 flex-grow 적용 */}
+                      <label
+                        htmlFor="image-upload"
+                        className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard text-[#C3C3C3] cursor-pointer flex items-center bg-[#F3F3F3]"
+                      ></label>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => setUploadedImage(e.target.files[0])}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>
-            <h2 className="text-xl font-semibold mb-4 text-[#000000]">
+            <h2 className="text-xl font-pretendard font-semibold mb-4 text-[#000000]">
               선호하는 스타일 선택
             </h2>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
@@ -782,7 +767,7 @@ const ProjectRegister = () => {
               <div className="space-y-7">
                 {/* "색상" */}
                 <div className="flex items-center justify-between space-x-2">
-                  <label className="w-44 text-sm font-normal text-[#212121]">
+                  <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                     색상
                   </label>
                   <div className="flex-grow">
@@ -805,7 +790,7 @@ const ProjectRegister = () => {
                         >
                           {c.code === "color_free" && (
                             <span
-                              className={`text-xs font-normal text-[#A3A3A3]`}
+                              className={`text-xs font-pretendard font-normal text-[#A3A3A3]`}
                             >
                               {c.label}
                             </span>
@@ -818,7 +803,7 @@ const ProjectRegister = () => {
 
                 {/* "스타일" */}
                 <div className="flex items-center justify-between space-x-2">
-                  <label className="w-44 text-sm font-normal text-[#212121]">
+                  <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                     스타일
                   </label>
                   <div className="flex-grow">
@@ -826,15 +811,15 @@ const ProjectRegister = () => {
                       {STYLES_DATA.map((s) => (
                         <button
                           key={s.value}
-                          className={`w-full py-4 text-xs rounded bg-white transition flex items-center justify-center ${
+                          className={`w-full py-4 text-xs font-pretendard rounded bg-white transition flex items-center justify-center ${
                             // 선택된 스타일이 배열에 포함되어 있는지 확인
                             styles.includes(s.value)
                               ? "border-2 border-[#212121]"
                               : "border border-[#F3F3F3]"
                           } ${
                             s.value === "style_free"
-                              ? "text-[#A3A3A3]"
-                              : "text-black"
+                              ? "font-pretendard text-[#A3A3A3]"
+                              : "font-pretendard text-black"
                           }`}
                           onClick={() => handleStyleClick(s.value)}
                         >
@@ -847,7 +832,7 @@ const ProjectRegister = () => {
 
                 {/* "타겟" */}
                 <div className="flex items-center justify-between space-x-2">
-                  <label className="w-44 text-sm font-normal text-[#212121]">
+                  <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                     타겟
                   </label>
                   <div className="flex-grow">
@@ -855,15 +840,15 @@ const ProjectRegister = () => {
                       {TARGETS_DATA.map((t) => (
                         <button
                           key={t.value}
-                          className={`w-full py-4 text-xs rounded bg-white transition flex items-center justify-center ${
+                          className={`w-full py-4 text-xs font-pretendard rounded bg-white transition flex items-center justify-center ${
                             // 선택된 타겟이 배열에 포함되어 있는지 확인
                             targets.includes(t.value)
                               ? "border-2 border-[#212121]"
                               : "border border-[#F3F3F3]"
                           } ${
                             t.value === "target_free"
-                              ? "text-[#A3A3A3]"
-                              : "text-black"
+                              ? "font-pretendard text-[#A3A3A3]"
+                              : "font-pretendard text-black"
                           }`}
                           onClick={() => handleTargetClick(t.value)}
                         >
@@ -876,10 +861,10 @@ const ProjectRegister = () => {
               </div>
             </section>
             <div className="flex flex-col">
-              <h2 className="text-xl font-semibold text-[#000000]">
+              <h2 className="text-xl font-pretendard font-semibold text-[#000000]">
                 공모전 등록 약관 동의
               </h2>
-              <label className="text-xs text-[#828282] mb-4">
+              <label className="text-xs font-pretendard text-[#828282] mb-4">
                 공모전 등록을 위해 아래 내용을 꼭 확인해 주세요.
               </label>
             </div>
