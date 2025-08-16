@@ -16,4 +16,4 @@ const VoteTitle = () => {
   )
 }
 
-export default VoteTitle
+export default VoteTitle;
