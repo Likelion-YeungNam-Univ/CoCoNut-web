@@ -3,9 +3,9 @@ import vote1 from "../assets/vote1.png";
 import vote2 from "../assets/vote2.png";
 import vote3 from "../assets/vote3.png";
 import { BsCheckCircleFill } from "react-icons/bs";
-import Footer from "./Footer";
+
 import VoteModal from "./VoteModal";
-import VoteTitle from './VoteTitle';
+
 import { useNavigate } from "react-router-dom"; 
 
 const MerchantVote = () => {
