@@ -291,10 +291,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
             ) : (
               <div className="flex flex-col items-center justify-center h-[300px] mt-16">
                 <CgMenuBoxed size={120} className="text-[#E1E1E1]" />
-                <div className="flex flex-col items-center mt-15">
-                  <p className="text-[#212121] text-center text-[16px] font-semibold text-base">
-                    참여작이 없어요.
-                  </p>
+                <div className="flex flex-col items-center mt-10">
                   <label className="text-[#A3A3A3] text-[12px] font-medium">
                     조금만 기다려주세요.
                   </label>
