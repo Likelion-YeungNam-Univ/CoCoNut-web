@@ -5,6 +5,7 @@ import { BiSolidImage } from "react-icons/bi";
 import { IoArrowUp } from "react-icons/io5";
 import checkIcon from "../assets/checkIcon.png";
 import { fetchAiDescription } from "../apis/submissionAssistApi";
+import ScriptModal from "../components/ScriptModal";
 
 const ProjectSubmissionPage = () => {
   const [allChecked, setAllChecked] = useState(false);
@@ -17,6 +18,11 @@ const ProjectSubmissionPage = () => {
   const [aiPrompt, setAiPrompt] = useState("");
   const [description, setDescription] = useState("");
   const [loadingAi, setLoadingAi] = useState(false);
+
+  // 모달창 상태 관리
+  const [openModal, setOpenModal] = useState(null);
+  const handleOpen = (type) => setOpenModal(type);
+  const handleClose = () => setOpenModal(null);
 
   const toggleAll = () => {
     const newValue = !allChecked;
@@ -59,7 +65,7 @@ const ProjectSubmissionPage = () => {
     }
   };
 
-  // 로딩 토스트 (Tailwind 버전)
+  // 로딩 토스트
   const AiLoadingToast = () => (
     <div
       className="
@@ -228,7 +234,10 @@ const ProjectSubmissionPage = () => {
                     />
                     {label}
                   </div>
-                  <span className="text-[12px] text-[#A3A3A3] cursor-pointer underline">
+                  <span
+                    className="text-[12px] text-[#A3A3A3] cursor-pointer underline"
+                    onClick={() => handleOpen(key)}
+                  >
                     자세히 보기
                   </span>
                 </div>
@@ -265,6 +274,27 @@ const ProjectSubmissionPage = () => {
 
       {/* 로딩 토스트 */}
       {loadingAi && <AiLoadingToast />}
+
+      {/* 약관 모달 */}
+      <ScriptModal
+        isOpen={!!openModal}
+        onClose={handleClose}
+        title={
+          openModal === "checklist"
+            ? "공모전 참가 체크리스트"
+            : openModal === "terms"
+            ? "공모전 이용 약관"
+            : openModal === "caution"
+            ? "공모전 이용 주의사항"
+            : ""
+        }
+      >
+        {openModal === "checklist" && (
+          <p>공모전 참가 체크리스트 약관 동의 내용....</p>
+        )}
+        {openModal === "terms" && <p>공모전 이용 약관 동의 내용....</p>}
+        {openModal === "caution" && <p>공모전 이용 주의사항 동의 내용....</p>}
+      </ScriptModal>
     </div>
   );
 };
