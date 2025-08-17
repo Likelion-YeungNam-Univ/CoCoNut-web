@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+
+// 아이콘
 import { SlArrowUpCircle } from "react-icons/sl";
 import { useNavigate } from "react-router-dom";
 
@@ -9,8 +11,10 @@ import { fetchCategories } from "../apis/category";
 import { getBusinessTypes } from "../apis/businessTypes";
 import fetchUserNickname from "../apis/fetchUserNickname";
 
-// 컴포넌트들
+// 헤더
 import MerchantHeader from "../header/MerchantHeader";
+
+// 컴포넌트들
 import CustomDropdown from "../components/CustomDropdown";
 import TermsModal from "../components/TermsModal";
 import PreviewModal from "../components/PreviewModal";
@@ -20,7 +24,7 @@ import ConfirmBackModal from "../components/ConfirmBackModal";
 import PrizeInfoModal from "../components/PrizeInfoModal";
 import FooterRegister from "../components/FooterRegister";
 
-// 상수 데이터
+// 데이터
 import { TERMS_DATA } from "../utils/termsData";
 import { STYLES_DATA } from "../utils/stylesData";
 import { TARGETS_DATA } from "../utils/targetData";
@@ -66,14 +70,16 @@ const ProjectRegister = () => {
   const [userName, setUserName] = useState("");
   const [category, setCategory] = useState("");
   const [businesstype, setBusinesstype] = useState("");
+  const [createdAt, setCreatedAt] = useState("");
 
   // 색상, 스타일, 타겟을 여러 개 선택 가능하도록 상태를 배열로 변경
   const [colors, setColors] = useState([]);
   const [styles, setStyles] = useState([]);
   const [targets, setTargets] = useState([]);
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
 
-  // ✨ 참여작 개수 상태 추가
+  // 참여작 개수 상태 추가
   const [submissionsCount, setSubmissionsCount] = useState(0);
 
   // API에서 받아올 카테고리, 업종, 닉네임
@@ -84,10 +90,9 @@ const ProjectRegister = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // ✅ 폼 내용이 변경되었는지 추적하는 상태 및 Ref
+  // 폼 내용이 변경되었는지 추적하는 상태 및 Ref
   const [isFormDirty, setIsFormDirty] = useState(false);
-  const isFormDirtyRef = useRef(false); // 폼 변경 상태를 추적하는 Ref
-  const isBackModalOpenRef = useRef(false); // 모달 상태를 추적하는 Ref
+  const isFormDirtyRef = useRef(false);
   const initialFormState = useRef({
     projectTitle: "",
     userName: "",
@@ -102,7 +107,22 @@ const ProjectRegister = () => {
   // API 데이터 로딩 상태
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ 유효성 검사 로직을 별도 함수로 분리
+  // YYYY-MM-DD 형식의 날짜 유효성을 검사하는 함수
+  const isValidDate = (dateString) => {
+    // YYYY-MM-DD 정규식
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateString.match(regex)) {
+      return false;
+    }
+    const date = new Date(dateString);
+    const timestamp = date.getTime();
+    if (typeof timestamp !== "number" || Number.isNaN(timestamp)) {
+      return false;
+    }
+    return date.toISOString().slice(0, 10) === dateString;
+  };
+
+  // 유효성 검사 로직
   const validateForm = () => {
     const newErrors = {};
     if (!projectTitle)
@@ -114,11 +134,18 @@ const ProjectRegister = () => {
       newErrors.content = "내용이 입력되지 않았습니다.";
     if (!aiProjectData.rewardAmount)
       newErrors.rewardAmount = "상금이 입력되지 않았습니다.";
-    if (!aiProjectData.createdAt || !aiProjectData.deadline)
-      newErrors.period = "기간이 입력되지 않았습니다.";
+
+    // 기간 유효성 검사 로직 수정
+    if (!aiProjectData.deadline) {
+      newErrors.period = "마감일이 입력되지 않았습니다.";
+    } else if (!isValidDate(aiProjectData.deadline)) {
+      newErrors.period =
+        "마감일 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.";
+    }
     return newErrors;
   };
 
+  // 약관 동의 상태에 따라 버튼 활성화 여부를 결정
   useEffect(() => {
     if (agreeChecklist && agreeTerms && agreeCaution) {
       setIsButtonActive(true);
@@ -127,18 +154,21 @@ const ProjectRegister = () => {
     }
   }, [agreeChecklist, agreeTerms, agreeCaution]);
 
+  // 컴포넌트가 처음 마운트될 때 (로딩 시) 필요한 데이터를 API에서 가져옵니다.
   useEffect(() => {
-    console.log("isConfirmModalOpen 상태 변경:", isConfirmModalOpen);
-  }, [isConfirmModalOpen]);
-
-  useEffect(() => {
+    const today = new Date();
+    const formattedDate = today.toISOString().split("T")[0];
+    setCreatedAt(formattedDate);
     const fetchData = async () => {
       try {
         setIsLoading(true);
+        // 카테고리 목록 API 호출
         const categoriesData = await fetchCategories();
         setCategories(categoriesData);
+        // 업종 목록 API 호출
         const businesstypesData = await getBusinessTypes();
         setBusinesstypes(businesstypesData);
+        // 사용자 닉네임 API 호출
         const userNickname = await fetchUserNickname();
         if (userNickname) {
           setUserName(userNickname);
@@ -153,7 +183,7 @@ const ProjectRegister = () => {
     fetchData();
   }, []);
 
-  // ✅ 폼 변경 상태를 isFormDirtyRef에 업데이트하는 useEffect (기존 코드 유지)
+  // 폼 변경 상태를 isFormDirtyRef에 업데이트하는 useEffect
   useEffect(() => {
     const currentFormState = {
       projectTitle,
@@ -169,22 +199,19 @@ const ProjectRegister = () => {
       (key) => currentFormState[key] !== initialFormState.current[key]
     );
     setIsFormDirty(isAnyFieldChanged);
-    isFormDirtyRef.current = isAnyFieldChanged; // Ref에 최신 상태 저장
+    isFormDirtyRef.current = isAnyFieldChanged;
   }, [projectTitle, userName, category, businesstype, aiProjectData]);
 
-  // ✅ 뒤로가기 모달을 위한 useEffect
+  // 뒤로가기 모달을 위한 useEffect
   useEffect(() => {
-    // 폼이 변경될 때만 히스토리 스택에 가상의 항목을 추가합니다.
     if (isFormDirty) {
       window.history.pushState(null, "", window.location.href);
     }
 
     const handlePopstate = (e) => {
-      // 폼이 변경된 상태에서 뒤로가기 이벤트가 발생하면 모달을 띄웁니다.
       if (isFormDirtyRef.current) {
         setIsBackModalOpen(true);
       } else {
-        // 폼이 변경되지 않았으면 기본 뒤로가기 동작을 수행합니다.
         navigate(-1);
       }
     };
@@ -204,6 +231,7 @@ const ProjectRegister = () => {
     }
   }, [isBackModalOpen]);
 
+  // '모두 동의' 체크박스 변경 핸들러
   const handleAgreeAllChange = (e) => {
     const isChecked = e.target.checked;
     setAgreeAll(isChecked);
@@ -212,6 +240,7 @@ const ProjectRegister = () => {
     setAgreeCaution(isChecked);
   };
 
+  // 약관 모달을 여는 핸들러
   const handleOpenTermsModal = (termType) => {
     const data = TERMS_DATA[termType];
     if (data) {
@@ -221,6 +250,7 @@ const ProjectRegister = () => {
     }
   };
 
+  // AI 분석을 실행하는 비동기 함수
   const analyzeWithAI = async () => {
     setLoading(true);
     try {
@@ -229,7 +259,6 @@ const ProjectRegister = () => {
         rewardAmount: aiData.rewardAmount,
         description: aiData.description,
         summary: aiData.summary,
-        createdAt: aiData.createdAt,
         deadline: aiData.deadline,
       });
     } catch (error) {
@@ -239,6 +268,7 @@ const ProjectRegister = () => {
     }
   };
 
+  // 색상 클릭을 처리하는 핸들러
   const handleColorClick = (code) => {
     if (code === "color_free") {
       setColors((prev) => (prev.includes("color_free") ? [] : ["color_free"]));
@@ -256,6 +286,7 @@ const ProjectRegister = () => {
     }
   };
 
+  // 스타일 클릭을 처리하는 핸들러
   const handleStyleClick = (value) => {
     if (value === "style_free") {
       setStyles((prev) => (prev.includes("style_free") ? [] : ["style_free"]));
@@ -273,6 +304,7 @@ const ProjectRegister = () => {
     }
   };
 
+  // 타겟 클릭을 처리하는 핸들러
   const handleTargetClick = (value) => {
     if (value === "target_free") {
       setTargets((prev) =>
@@ -292,7 +324,16 @@ const ProjectRegister = () => {
     }
   };
 
-  // ✅ 유효성 검사 로직을 분리하여 간소화된 미리보기 핸들러
+  // 이미지 파일 선택 핸들러
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setUploadedImage(file);
+      setImagePreviewUrl(URL.createObjectURL(file));
+    }
+  };
+
+  // 미리보기 핸들러
   const handleOpenPreviewModal = () => {
     setIsSubmitted(true);
     const newErrors = validateForm();
@@ -304,7 +345,7 @@ const ProjectRegister = () => {
         merchantName,
         category,
         businesstype,
-        createdAt: aiProjectData.createdAt,
+        createdAt: createdAt,
         deadline: aiProjectData.deadline,
         rewardAmount: aiProjectData.rewardAmount,
         content: aiProjectData.description,
@@ -312,7 +353,7 @@ const ProjectRegister = () => {
         color: colors,
         style: styles,
         target: targets,
-        image: uploadedImage ? URL.createObjectURL(uploadedImage) : null,
+        image: imagePreviewUrl,
         writerNickname: userName,
         submissionsCount: submissionsCount,
       };
@@ -321,41 +362,65 @@ const ProjectRegister = () => {
     }
   };
 
+  // 공모전 등록을 최종적으로 처리하는 비동기 핸들러
   const handleConfirmSubmit = async () => {
-    // 1. FormData 대신 JavaScript 객체(JSON) 생성
-    const projectData = {
+    // FormData 객체 생성
+    const formData = new FormData();
+
+    // 서버가 요구하는 `info` 객체 생성
+    const requestData = {
       title: projectTitle,
       merchantName: merchantName,
       category: category,
       businessType: businesstype,
       description: aiProjectData.description,
-
+      createdAt: createdAt,
       deadline: aiProjectData.deadline,
-      rewardAmount: parseInt(aiProjectData.rewardAmount.replace(/,/g, ""), 10),
-
+      rewardAmount: parseInt(aiProjectData.rewardAmount, 10),
       summary: aiProjectData.summary,
       colors: colors.length > 0 && !colors.includes("color_free") ? colors : [],
       styles: styles.length > 0 && !styles.includes("style_free") ? styles : [],
       targets:
         targets.length > 0 && !targets.includes("target_free") ? targets : [],
-      // ✅ 이미지 파일은 FormData를 사용해야 하므로, 이 API로는 직접 보낼 수 없습니다.
-      // 백엔드에 이미지 파일 업로드용 별도 API가 있는지 확인해야 합니다.
     };
 
-    try {
-      // 2. Axios 요청 시 JSON 객체를 직접 전달
-      const response = await registerProject(projectData);
-      console.log("공모전 등록 완료:", response);
+    const infoBlob = new Blob([JSON.stringify(requestData)], {
+      type: "application/json",
+    });
 
-      setIsConfirmModalOpen(false);
-      setIsFormDirty(false);
-      navigate("/project-detail");
+    formData.append("info", infoBlob, "info.json");
+
+    if (uploadedImage) {
+      formData.append("image", uploadedImage);
+    }
+
+    try {
+      const response = await registerProject(formData);
+
+      console.log("공모전 등록 완료 (전체 응답):", response);
+
+      const projectId = response?.data;
+
+      console.log("추출된 projectId:", projectId);
+
+      if (projectId !== null && projectId !== undefined) {
+        setIsConfirmModalOpen(false);
+        setIsFormDirty(false);
+        navigate(`/project-detail/${projectId}`);
+      } else {
+        console.error("서버 응답에 유효한 projectId가 없습니다.", response);
+        setIsConfirmModalOpen(false);
+        setErrors({
+          general: "프로젝트 등록에 실패했습니다. 서버 응답을 확인하세요.",
+        });
+      }
     } catch (error) {
       console.error("Failed to register project:", error);
       setIsConfirmModalOpen(false);
+      setErrors({ general: "프로젝트 등록 중 오류가 발생했습니다." });
     }
   };
-  // ✅ 유효성 검사 로직을 분리하여 간소화된 등록 핸들러
+  // '등록하기' 버튼 클릭을 처리하고 확인 모달을 여는 핸들러
   const handleRegisterClick = () => {
     setIsSubmitted(true);
     const newErrors = validateForm();
@@ -368,12 +433,13 @@ const ProjectRegister = () => {
     }
   };
 
-  // ✅ 변경된 뒤로가기 모달 핸들러
+  // 뒤로가기 모달에서 '확인' 클릭 시 실행되는 핸들러
   const handleConfirmBack = () => {
-    setIsBackModalOpen(false); // 모달 닫기
-    setIsFormDirty(false); // 폼 상태 초기화
-    navigate(-1); // 이전 페이지로 이동
+    setIsBackModalOpen(false);
+    setIsFormDirty(false);
+    navigate(-1);
   };
+
   return (
     <div className="flex flex-col">
       <MerchantHeader />
@@ -566,7 +632,7 @@ const ProjectRegister = () => {
                       onChange={(e) => setAssistanceText(e.target.value)}
                     />
                     <SlArrowUpCircle
-                      className="absolute right-2 bottom-3 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      className="absolute right-2 bottom-3 text-gray-400 hover:text-[#212121s] cursor-pointer"
                       size={24}
                       onClick={analyzeWithAI}
                     />
@@ -622,10 +688,8 @@ const ProjectRegister = () => {
                     <div className="flex-grow flex items-center space-x-2">
                       <div className="w-[231px] flex flex-col space-y-1">
                         {" "}
-                        {/* ✅ Flexbox 방향을 column으로 변경 */}
                         <div className="flex items-center space-x-2">
                           {" "}
-                          {/* ✅ 기존 Input 필드를 감싸는 div 추가 */}
                           <input
                             type="text"
                             className={`rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] flex-grow ${
@@ -652,7 +716,6 @@ const ProjectRegister = () => {
                             원
                           </span>
                         </div>
-                        {/* ✅ 에러 메시지 렌더링 로직 추가 */}
                         {isSubmitted && errors.rewardAmount && (
                           <p className="text-red-500 text-xs font-pretendard text-left mt-1">
                             {errors.rewardAmount}
@@ -701,26 +764,15 @@ const ProjectRegister = () => {
                     </label>
                     <div className="flex-grow flex flex-col">
                       <div className="flex items-center space-x-4">
+                        {/* 시작일 */}
                         <input
                           type="text"
-                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
-                            isSubmitted && errors.period
-                              ? "border border-red-500"
-                              : "border border-[#F3F3F3]"
-                          }`}
-                          placeholder="2025.08.08"
-                          value={aiProjectData.createdAt}
-                          onChange={(e) => {
-                            setAiProjectData({
-                              ...aiProjectData,
-                              createdAt: e.target.value,
-                            });
-                            if (isSubmitted) {
-                              setErrors((prev) => ({ ...prev, period: "" }));
-                            }
-                          }}
+                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] bg-[#FFFFFF] border border-[#F3F3F3] cursor-not-allowed`}
+                          value={createdAt}
+                          readOnly
                         />
                         <span>-</span>
+                        {/* 마감일 */}
                         <input
                           type="text"
                           className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
@@ -728,7 +780,7 @@ const ProjectRegister = () => {
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
                           }`}
-                          placeholder="2025.08.08"
+                          placeholder="2025-08-06"
                           value={aiProjectData.deadline}
                           onChange={(e) => {
                             setAiProjectData({
@@ -781,22 +833,14 @@ const ProjectRegister = () => {
                           uploadedImage ? "text-[#212121]" : "text-[#C3C3C3]"
                         } cursor-pointer flex items-center bg-[#F3F3F3]`}
                       >
-                        {uploadedImage
-                          ? uploadedImage.name
-                          : "클릭하여 파일을 첨부하거나 드래그하세요."}
+                        {uploadedImage ? uploadedImage.name : "파일 선택"}
                       </label>
                       <input
                         id="image-upload"
                         type="file"
                         accept="image/*"
                         className="hidden"
-                        onChange={(e) =>
-                          setUploadedImage(
-                            e.target.files && e.target.files.length > 0
-                              ? e.target.files[0]
-                              : null
-                          )
-                        }
+                        onChange={handleImageChange}
                       />
                     </div>
                   </div>
@@ -807,7 +851,7 @@ const ProjectRegister = () => {
               선호하는 스타일 선택
             </h2>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
-            {/* Style Section */}
+
             <section className="my-10">
               <div className="space-y-7">
                 {/* "색상" */}
@@ -822,7 +866,6 @@ const ProjectRegister = () => {
                           key={c.code}
                           className={`w-full h-12 rounded transition flex items-center justify-center
                             ${
-                              // 선택된 색상이 배열에 포함되어 있는지 확인
                               colors.includes(c.code)
                                 ? "border-2 border-[#212121]"
                                 : "border border-[#F3F3F3]"
@@ -857,7 +900,6 @@ const ProjectRegister = () => {
                         <button
                           key={s.value}
                           className={`w-full py-4 text-xs font-pretendard rounded bg-white transition flex items-center justify-center ${
-                            // 선택된 스타일이 배열에 포함되어 있는지 확인
                             styles.includes(s.value)
                               ? "border-2 border-[#212121]"
                               : "border border-[#F3F3F3]"
@@ -886,7 +928,6 @@ const ProjectRegister = () => {
                         <button
                           key={t.value}
                           className={`w-full py-4 text-xs font-pretendard rounded bg-white transition flex items-center justify-center ${
-                            // 선택된 타겟이 배열에 포함되어 있는지 확인
                             targets.includes(t.value)
                               ? "border-2 border-[#212121]"
                               : "border border-[#F3F3F3]"
@@ -917,12 +958,11 @@ const ProjectRegister = () => {
             <section className="my-10">
               <div className="flex flex-col space-y-3 text-sm text-gray-600">
                 <label className="flex items-center text-[#000000] gap-2">
-                  {/* 커스텀 체크박스 */}
                   <div
-                    className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                    className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                       agreeAll
                         ? "bg-[#2FD8F6] border-[#2FD8F6]"
-                        : "bg-white border-[#E0E0E0]"
+                        : "bg-white border-[#F3F3F3]"
                     }`}
                     onClick={() =>
                       handleAgreeAllChange({ target: { checked: !agreeAll } })
@@ -945,16 +985,16 @@ const ProjectRegister = () => {
                   </div>
                   약관 전체에 동의합니다.
                 </label>
-                <hr className="border border-gray-200" />
-                <div className="space-y-3">
+                <hr className="border border-gray-200 mt-4" />
+                <div className="space-y-4 mb-5">
                   {/* 체크리스트 */}
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between mt-5">
                     <label className="flex items-center text-[#000000] gap-2">
                       <div
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                        className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           agreeChecklist
                             ? "bg-[#2FD8F6] border-[#2FD8F6]"
-                            : "bg-white border-[#E0E0E0]"
+                            : "bg-white border-[#F3F3F3]"
                         }`}
                         onClick={() => setAgreeChecklist(!agreeChecklist)}
                       >
@@ -977,7 +1017,7 @@ const ProjectRegister = () => {
                     </label>
                     <a
                       href="#"
-                      className="text-sm text-[#A3A3A3] underline hover:text-[#828282]"
+                      className="text-[12px] text-[#A3A3A3] underline hover:text-[#828282]"
                       onClick={(e) => {
                         e.preventDefault();
                         handleOpenTermsModal("checklist");
@@ -990,10 +1030,10 @@ const ProjectRegister = () => {
                   <div className="flex items-center justify-between">
                     <label className="flex items-center text-[#000000] gap-2">
                       <div
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                        className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           agreeTerms
                             ? "bg-[#2FD8F6] border-[#2FD8F6]"
-                            : "bg-white border-[#E0E0E0]"
+                            : "bg-white border-[#F3F3F3]"
                         }`}
                         onClick={() => setAgreeTerms(!agreeTerms)}
                       >
@@ -1016,7 +1056,7 @@ const ProjectRegister = () => {
                     </label>
                     <a
                       href="#"
-                      className="text-sm text-[#A3A3A3] underline hover:text-[#828282]"
+                      className="text-[12px] text-[#A3A3A3] underline hover:text-[#828282]"
                       onClick={(e) => {
                         e.preventDefault();
                         handleOpenTermsModal("terms");
@@ -1029,10 +1069,10 @@ const ProjectRegister = () => {
                   <div className="flex items-center justify-between">
                     <label className="flex items-center text-[#000000] gap-2">
                       <div
-                        className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer ${
+                        className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           agreeCaution
                             ? "bg-[#2FD8F6] border-[#2FD8F6]"
-                            : "bg-white border-[#E0E0E0]"
+                            : "bg-white border-[#F3F3F3]"
                         }`}
                         onClick={() => setAgreeCaution(!agreeCaution)}
                       >
@@ -1055,7 +1095,7 @@ const ProjectRegister = () => {
                     </label>
                     <a
                       href="#"
-                      className="text-sm text-[#A3A3A3] underline hover:text-[#828282]"
+                      className="text-[12px] text-[#A3A3A3] underline hover:text-[#828282]"
                       onClick={(e) => {
                         e.preventDefault();
                         handleOpenTermsModal("caution");
@@ -1068,6 +1108,7 @@ const ProjectRegister = () => {
               </div>
             </section>
 
+            {/* 하단 미리보기, 등록하기 버튼 */}
             <div className="flex justify-center gap-4 pt-4">
               <button
                 className={`w-[180px] h-[45px] rounded-md transition font-medium ${
@@ -1086,7 +1127,6 @@ const ProjectRegister = () => {
                     ? "bg-[#2FD8F6] text-white hover:font-bold"
                     : "bg-[#E1E1E1] text-white cursor-not-allowed"
                 }`}
-                // ✅ 여기에 onClick 이벤트 핸들러를 추가했습니다.
                 onClick={handleRegisterClick}
                 disabled={!isButtonActive}
               >
@@ -1097,6 +1137,8 @@ const ProjectRegister = () => {
         </div>
       </div>
       <FooterRegister />
+
+      {/* 모달 관리*/}
       {isTermsModalOpen && (
         <TermsModal
           isOpen={isTermsModalOpen}
