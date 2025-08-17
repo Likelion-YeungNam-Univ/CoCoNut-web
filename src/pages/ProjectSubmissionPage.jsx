@@ -8,6 +8,7 @@ import { fetchAiDescription } from "../apis/submissionAssistApi";
 import ScriptModal from "../components/ScriptModal";
 import xIcon from "../assets/xIcon.png";
 import PreviewModal from "../components/PreviewModal";
+import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
 
 const ProjectSubmissionPage = () => {
   const [allChecked, setAllChecked] = useState(false);
@@ -32,6 +33,9 @@ const ProjectSubmissionPage = () => {
 
   // 미리보기 모달 상태
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  // 제출 확인 모달 상태
+  const [isConfirmSubmissionOpen, setIsConfirmSubmissionOpen] = useState(false);
 
   // 이미지 업로드 상태
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -151,7 +155,7 @@ const ProjectSubmissionPage = () => {
             <label className="text-[#212121] text-[14px]">
               이미지 첨부하기 <span className="text-[#2FD8F6]">*</span>
             </label>
-            <div className="relative w-[504px] h-[504px] border border-[#F3F3F3] rounded-[6px] flex flex-col items-center justify-center cursor-pointer overflow-hidden">
+            <div className="relative w-[504px] h-[504px] border border-[#F3F3F3] rounded-[6px] flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-[#F3F3F3] hover:border-[#E1E1E1]">
               {uploadedImage ? (
                 <div className="relative w-full h-full">
                   <img
@@ -323,6 +327,7 @@ const ProjectSubmissionPage = () => {
 
               <button
                 disabled={!isAllRequiredChecked}
+                onClick={() => setIsConfirmSubmissionOpen(true)}
                 className={`w-[180px] h-[45px] px-[20px] py-[12px] rounded-[8px] text-[16px] font-medium ${
                   isAllRequiredChecked
                     ? "bg-[#2FD8F6] text-white cursor-pointer hover:bg-[#2AC2DD]"
@@ -370,6 +375,13 @@ const ProjectSubmissionPage = () => {
         description={description}
         link={link}
       />
+
+      {/* 제출 확인 모달 */}
+      {isConfirmSubmissionOpen && (
+        <ConfirmSubmissionModal
+          onClose={() => setIsConfirmSubmissionOpen(false)}
+        />
+      )}
     </div>
   );
 };
