@@ -8,6 +8,7 @@ import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
+import Merchantmy from "./pages/Merchantmy";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
             path="/participant-search"
             element={<SearchPage showRegisterButton={false} />}
           />
+          <Route path="merchantmy-page" element={<Merchantmy/>}/>
         </Routes>
       </BrowserRouter>
     </AuthProvider>
