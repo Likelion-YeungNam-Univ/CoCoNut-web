@@ -50,7 +50,7 @@ const PreviewModal = ({
           {/* 닫기 버튼 */}
           <button
             onClick={onClose}
-            className="absolute left-[calc(100%+20px)] top-0 rounded-full bg-black/40 text-white"
+            className="absolute left-[calc(100%+20px)] top-0 border rounded-full border-[#F3F3F3] bg-[#F3F3F3]"
           >
             <IoIosClose size={40} />
           </button>
