@@ -11,7 +11,7 @@ const Merchantmy = () => {
     <MerchantHeader/>
     <div className='font-pretendard flex flex-col items-center'>
         <span className='text-[24px] font-semibold mt-[80px]'>내 공모전</span>
-        {/* <ProjectCardClosed/> */}
+        <ProjectCardClosed/> 
     </div>
     </>
   )

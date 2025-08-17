@@ -89,7 +89,7 @@ const handleConfirm = () => {
                 </div>
               )}
             </div>
-            <span className="block mt-[8px] px-[8px] truncate">{title}</span>
+            <span className="block mt-[20px] ml-[16px] epx-[8px] truncat font-semibold">{title}</span>
           </div>
         ))}
       </div>

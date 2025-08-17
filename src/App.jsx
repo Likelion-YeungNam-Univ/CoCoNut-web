@@ -1,4 +1,3 @@
-// App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./pages/Layout";
 import Rending from "./pages/Rending";
@@ -8,7 +7,11 @@ import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
-import Merchantmy from "./pages/Merchantmy";
+import MerchantVote from "./components/MerchantVote";
+import VoteSuccess from "./components/VoteSuccess";
+import ParticipantProfile from "./pages/ParticipantProfile";
+import WinnerProfile from "./pages/WinnerProfile";
+import VoteIng from "./components/VoteIng";
 
 export default function App() {
   return (
@@ -33,7 +36,13 @@ export default function App() {
             path="/participant-search"
             element={<SearchPage showRegisterButton={false} />}
           />
-          <Route path="merchantmy-page" element={<Merchantmy/>}/>
+-
+          <Route path="merchantvote" element={<MerchantVote/>}/> {/*pr보내기전에 확인*/}
+          <Route path="vote-success" element={<VoteSuccess/>}/>
+          <Route path="participant-profile" element={<ParticipantProfile/>}/>
+          <Route path="winner-profile" element={<WinnerProfile/>}/>
+          <Route path="voting" element={<VoteIng/>}/> {/*pr올릴때 수정*/}
+-
         </Routes>
       </BrowserRouter>
     </AuthProvider>
