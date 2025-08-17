@@ -238,7 +238,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                             return styleItem ? (
                               <span
                                 key={index}
-                                className="w-[130px] h-[48px] rounded border border-[#212121] text-sm bg-white text-black flex items-center justify-center text-center font-pretendard"
+                                className="w-[130px] h-[48px] rounded border border-[#F3F3F3] text-sm bg-white text-black flex items-center justify-center text-center font-pretendard"
                               >
                                 {styleItem.label}
                               </span>
@@ -272,7 +272,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                             return targetItem ? (
                               <span
                                 key={index}
-                                className="w-[130px] h-[48px] rounded border border-[#212121] text-sm bg-white text-black flex items-center justify-center text-center font-pretendard"
+                                className="w-[130px] h-[48px] rounded border border-[#F3F3F3] text-sm bg-white text-black flex items-center justify-center text-center font-pretendard"
                               >
                                 {targetItem.label}
                               </span>
