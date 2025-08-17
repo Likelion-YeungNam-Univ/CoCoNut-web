@@ -7,6 +7,7 @@ import checkIcon from "../assets/checkIcon.png";
 import { fetchAiDescription } from "../apis/submissionAssistApi";
 import ScriptModal from "../components/ScriptModal";
 import xIcon from "../assets/xIcon.png";
+import PreviewModal from "../components/PreviewModal";
 
 const ProjectSubmissionPage = () => {
   const [allChecked, setAllChecked] = useState(false);
@@ -16,14 +17,21 @@ const ProjectSubmissionPage = () => {
     caution: false,
   });
 
-  const [aiPrompt, setAiPrompt] = useState("");
+  // 제목, 설명, 링크 상태
+  const [projectTitle, setProjectTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [link, setLink] = useState("");
+  const [aiPrompt, setAiPrompt] = useState("");
+
   const [loadingAi, setLoadingAi] = useState(false);
 
   // 모달창 상태 관리
   const [openModal, setOpenModal] = useState(null);
   const handleOpen = (type) => setOpenModal(type);
   const handleClose = () => setOpenModal(null);
+
+  // 미리보기 모달 상태
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // 이미지 업로드 상태
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -131,6 +139,8 @@ const ProjectSubmissionPage = () => {
             </label>
             <input
               type="text"
+              value={projectTitle}
+              onChange={(e) => setProjectTitle(e.target.value)}
               placeholder="작품의 제목을 지어주세요."
               className="w-[504px] h-[48px] border border-[#F3F3F3] rounded-[6px] px-[16px] py-[15px] text-[14px] text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none"
             />
@@ -156,7 +166,7 @@ const ProjectSubmissionPage = () => {
                       e.stopPropagation();
                       setUploadedImage(null);
                     }}
-                    className="absolute top-[16px] right-[16px] p-[10.04px] bg-black/20 rounded-full w-[32px] h-[32px] flex items-center justify-center text-white text-xltransition cursor-pointer"
+                    className="absolute top-[16px] right-[16px] p-[10.04px] bg-black/20 rounded-full w-[32px] h-[32px] flex items-center justify-center cursor-pointer"
                   >
                     <img src={xIcon} className="w-[11.93px] h-[11.93px]" />
                   </button>
@@ -207,7 +217,7 @@ const ProjectSubmissionPage = () => {
               <button
                 type="button"
                 onClick={handleAiGenerate}
-                disabled={!aiPrompt.trim()} // 텍스트 없을 땐 비활성화
+                disabled={!aiPrompt.trim()}
                 className={`absolute bottom-[12px] right-[12px] text-white ${
                   aiPrompt.trim()
                     ? "bg-[#4C4C4C] hover:bg-[#636161] cursor-pointer"
@@ -237,6 +247,8 @@ const ProjectSubmissionPage = () => {
             <label className="text-[#212121] text-[14px]">링크 첨부하기</label>
             <input
               type="text"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
               placeholder="주소를 입력해 주세요."
               className="w-[504px] h-[48px] border border-[#F3F3F3] rounded-[6px] px-[16px] py-[15px] text-[14px] text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none"
             />
@@ -299,6 +311,7 @@ const ProjectSubmissionPage = () => {
             <div className="flex space-x-[20px] mx-[326px] mt-[62px]">
               <button
                 disabled={!isAllRequiredChecked}
+                onClick={() => setIsPreviewOpen(true)}
                 className={`w-[180px] h-[45px] px-[20px] py-[12px] border-[1px] rounded-[8px] text-[16px] font-medium ${
                   isAllRequiredChecked
                     ? "border-[#2FD8F6] text-[#2FD8F6] cursor-pointer hover:bg-[#EAFBFE]"
@@ -347,6 +360,16 @@ const ProjectSubmissionPage = () => {
         {openModal === "terms" && <p>공모전 이용 약관 동의 내용....</p>}
         {openModal === "caution" && <p>공모전 이용 주의사항 동의 내용....</p>}
       </ScriptModal>
+
+      {/* 미리보기 모달 */}
+      <PreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        projectTitle={projectTitle}
+        uploadedImage={uploadedImage}
+        description={description}
+        link={link}
+      />
     </div>
   );
 };
