@@ -1,13 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../assets/logo.png";
 import { BiSearch } from "react-icons/bi";
 import { IoPersonCircle } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import { IoIosClose } from "react-icons/io";
+import api from "../apis/api";
 
 const MerchantHeader = ({ defaultValue = "" }) => {
-  const [value, setValue] = useState(defaultValue); // value : 검색창에 쓴 글자
+  const [value, setValue] = useState(defaultValue);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await api.get("/users");
+        setUserData(response.data);
+      } catch (err) {
+        console.error("사용자 정보를 가져오는 데 실패했습니다:", err);
+        setUserData(null);
+      }
+    };
+    fetchUserData();
+  }, []);
 
   const submit = (e) => {
     e.preventDefault();
@@ -16,7 +32,7 @@ const MerchantHeader = ({ defaultValue = "" }) => {
   };
 
   return (
-    <div className="w-full h-[60px] flex items-center px-[120px] border-b border-gray-200 font-pretendard">
+    <div className="w-full h-[60px] flex items-center px-[120px] border-b border-[#E1E1E1] font-pretendard">
       {/* 로고 */}
       <div className="flex-1 flex justify-start">
         <Link to="/merchant-main-page">
@@ -43,14 +59,12 @@ const MerchantHeader = ({ defaultValue = "" }) => {
             placeholder="어떤 공모전을 찾고있나요?"
             className="w-full ml-1.5 bg-[#F3F3F3] text-[12px] text-[#212121] placeholder:text-[12px] placeholder:text-[#A3A3A3] placeholder:font-medium focus:bg-[#FBFBFB] focus:outline-none"
           />
-          {/* 입력값이 있을 때만 X 아이콘 표시 */}
           {value && (
             <IoIosClose
               className="text-[#212121] w-[20px] h-[20px] cursor-pointer"
               onClick={() => setValue("")}
             />
           )}
-          {/* 보이지 않는 submit 버튼(엔터 제출용) */}
           <button type="submit" className="hidden">
             검색
           </button>
@@ -59,16 +73,61 @@ const MerchantHeader = ({ defaultValue = "" }) => {
 
       {/* 버튼들 */}
       <div className="flex-1 flex justify-end gap-8">
-        <button onClick={() => navigate("/merchant-mypage")} className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
+        <button
+          onClick={() => navigate("/merchant-mypage")}
+          className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer"
+        >
           내 공모전
-        </button> 
+        </button>
         <Link
           to="/project-register"
           className="w-[106px] h-[32px] px-[14px] py-[7px] text-[#4C4C4C] font-medium border-[1px] border-[#4C4C4C] rounded-[6px] text-[12px] cursor-pointer hover:bg-[#2FD8F6]"
         >
           공모전 등록하기
         </Link>
-        <IoPersonCircle className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer" />
+
+        {/* 사용자 아이콘 및 드롭다운 메뉴 */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsMenuOpen(true)}
+          onMouseLeave={() => setIsMenuOpen(false)}
+        >
+          <IoPersonCircle className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer" />
+
+          {isMenuOpen && (
+            <div className="absolute top-10 right-0 w-[240px] bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4 font-pretendard text-sm">
+              {userData && (
+                <>
+                  <div className="flex items-center gap-2 pb-3 border-b border-[#E1E1E1] mb-3">
+                    <IoPersonCircle className="text-[#B9B9B9] w-[60px] h-[60px]" />
+                    <div className="flex flex-col space-y-1">
+                      <div className="font-semibold text-[14px] text-[#212121]">
+                        {userData.nickname}
+                      </div>
+                      <div className="font-normal text-[12px] text-[#212121]">
+                        {userData.email}
+                      </div>
+                    </div>
+                  </div>
+                  <ul className="space-y-2 text-[#212121] font-normal">
+                    <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
+                      내 프로필
+                    </li>
+                    <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
+                      약관 및 정책
+                    </li>
+                    <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
+                      고객센터
+                    </li>
+                    <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
+                      로그아웃
+                    </li>
+                  </ul>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
