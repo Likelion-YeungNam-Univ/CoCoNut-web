@@ -59,9 +59,9 @@ const MerchantHeader = ({ defaultValue = "" }) => {
 
       {/* 버튼들 */}
       <div className="flex-1 flex justify-end gap-8">
-        <button className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
+        <button onClick={() => navigate("/merchant-mypage")} className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
           내 공모전
-        </button>
+        </button> 
         <Link
           to="/project-register"
           className="w-[106px] h-[32px] px-[14px] py-[7px] text-[#4C4C4C] font-medium border-[1px] border-[#4C4C4C] rounded-[6px] text-[12px] cursor-pointer hover:bg-[#2FD8F6]"

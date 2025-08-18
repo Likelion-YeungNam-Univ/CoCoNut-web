@@ -41,13 +41,26 @@ const SignIn = () => {
     try {
       /** 로그인 API 호출 */
       const result = await SignInApi(body);
-      const accessToken = result?.data?.accessToken ?? result?.accessToken;
+    const accessToken = result?.data?.accessToken ?? result?.accessToken;
+      const role =
+        result?.data?.role ??
+        result?.role ??
+        result?.data?.user?.role ??
+        result?.user?.role;
+
       if (!accessToken) throw new Error("토큰이 응답에 없습니다.");
 
       login(accessToken);
       alert("로그인이 완료되었습니다!");
       /** 성공 시 이동 (role에 따라 분기하면 여기서 처리) */
-      navigate("/merchant-main-page");
+       if (role === "ROLE_BUSINESS") {
+        navigate("/merchant-main-page");
+     } else if (role === "ROLE_USER") {
+        navigate("/participant-main-page");
+      } else {
+        // role이 없거나 예상치 못한 값인 경우 기본 페이지로
+        navigate("/");
+      }
     } catch (err) {
       // 서버 메시지/필드 정보 파싱
       const server = err?.response?.data || {};
