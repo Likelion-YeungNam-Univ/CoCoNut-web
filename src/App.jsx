@@ -9,7 +9,7 @@ import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
-import MerchantMy from "./pages/Merchantmy";
+import MerchantMy from "./pages/MerchantMy";
 import ParticipantMy from "./pages/ParticipantMy.jsx";
 
 export default function App() {
