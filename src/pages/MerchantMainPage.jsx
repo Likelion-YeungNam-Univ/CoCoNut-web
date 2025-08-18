@@ -41,6 +41,7 @@ const MerchantMainPage = () => {
           businessTypes={businessTypes}
           selectedCategories={selectedCategories}
           selectedBusinesses={selectedBusinesses}
+          role="merchant"
         />
       </div>
       <Footer />
