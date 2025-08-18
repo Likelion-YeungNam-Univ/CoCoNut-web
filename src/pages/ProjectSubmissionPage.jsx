@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import ParticipantHeader from "../header/ParticipantHeader";
 import Footer from "../components/Footer";
 import { BiSolidImage } from "react-icons/bi";
@@ -48,16 +48,33 @@ const ProjectSubmissionPage = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  const [errors, setErrors] = useState({}); // 에러 상태
+  const titleRef = useRef(null); // 제목 input 참조
+  const imageRef = useRef(null); // 이미지 영역 참조
+
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setUploadedImage(file); // 서버 전송용
       setPreviewUrl(URL.createObjectURL(file)); // 화면 표시용
+
+      // 에러 해제
+      if (errors.image) {
+        setErrors((prev) => ({ ...prev, image: null }));
+      }
     }
   };
 
   const handleSubmitProject = async () => {
     try {
+      // 유효성 검사
+      if (!projectTitle.trim()) {
+        setErrors({ title: "공모전의 제목을 입력해 주세요." });
+        return;
+      }
+
+      setErrors({}); // 에러 초기화
+
       const projectId = 1; // 임시 값
 
       await submitProject(projectId, {
@@ -116,6 +133,47 @@ const ProjectSubmissionPage = () => {
     }
   };
 
+  // 제출 확인 모달 열기 전에 검사
+  const handleOpenSubmitModal = () => {
+    let newErrors = {};
+
+    if (!projectTitle.trim()) {
+      newErrors.title = "공모전의 제목을 입력해 주세요.";
+    }
+    if (!uploadedImage) {
+      newErrors.image = "작품 이미지를 업로드해 주세요.";
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+
+      if (newErrors.title) {
+        titleRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      } else if (newErrors.image) {
+        imageRef.current?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+      return;
+    }
+
+    setErrors({});
+    setIsConfirmSubmissionOpen(true);
+  };
+
+  // 입력 시 에러 해제
+  const handleTitleChange = (e) => {
+    setProjectTitle(e.target.value);
+
+    if (errors.title && e.target.value.trim() !== "") {
+      setErrors((prev) => ({ ...prev, title: null }));
+    }
+  };
+
   // 로딩 토스트
   const AiLoadingToast = () => (
     <div
@@ -165,62 +223,98 @@ const ProjectSubmissionPage = () => {
             <label className="text-[#212121] text-[14px]">
               작품 제목 <span className="text-[#2FD8F6]">*</span>
             </label>
-            <input
-              type="text"
-              value={projectTitle}
-              onChange={(e) => setProjectTitle(e.target.value)}
-              placeholder="작품의 제목을 지어주세요."
-              className="w-[504px] h-[48px] border border-[#F3F3F3] rounded-[6px] px-[16px] py-[15px] text-[14px] text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none"
-            />
+
+            <div className="flex flex-col">
+              <input
+                ref={titleRef}
+                type="text"
+                value={projectTitle}
+                onChange={handleTitleChange}
+                placeholder="작품의 제목을 지어주세요."
+                className={`w-[504px] h-[48px] rounded-[6px] px-[16px] py-[15px] text-[14px] text-[#212121] placeholder:text-[#C3C3C3] outline-none
+        ${
+          errors.title
+            ? "border border-red-500"
+            : "border border-[#F3F3F3] focus:border-[#E1E1E1]"
+        }`}
+              />
+              {errors.title && (
+                <p className="text-red-500 text-[12px] mt-2 ml-1">
+                  {errors.title}
+                </p>
+              )}
+            </div>
           </div>
 
+          {/* 이미지 첨부 */}
           {/* 이미지 첨부 */}
           <div className="grid grid-cols-[176px_1fr] items-start gap-4 ml-[176px] mb-[24px]">
             <label className="text-[#212121] text-[14px]">
               이미지 첨부하기 <span className="text-[#2FD8F6]">*</span>
             </label>
-            <div className="relative w-[504px] h-[504px] border border-[#F3F3F3] rounded-[6px] flex flex-col items-center justify-center cursor-pointer overflow-hidden hover:bg-[#F3F3F3] hover:border-[#E1E1E1]">
-              {uploadedImage ? (
-                <div className="relative w-full h-full">
-                  <img
-                    src={previewUrl}
-                    alt="업로드된 이미지"
-                    className="w-full h-full object-cover rounded-[6px] cursor-default"
-                  />
-                  {/* X 버튼 */}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setUploadedImage(null);
-                    }}
-                    className="absolute top-[16px] right-[16px] p-[10.04px] bg-black/20 rounded-full w-[32px] h-[32px] flex items-center justify-center cursor-pointer"
-                  >
-                    <img src={xIcon} className="w-[11.93px] h-[11.93px]" />
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <BiSolidImage className="w-[40px] h-[40px] text-[#C3C3C3] mb-[8px]" />
-                  <span className="text-[#C3C3C3] text-[14px]">
-                    파일 업로드
-                  </span>
-                </>
-              )}
+            <div className="flex flex-col">
+              <div
+                ref={imageRef}
+                className={`relative w-[504px] h-[504px] rounded-[6px] flex flex-col items-center justify-center cursor-pointer overflow-hidden
+        ${
+          errors.image
+            ? "border border-red-500"
+            : "border border-[#F3F3F3] hover:bg-[#F3F3F3] hover:border-[#E1E1E1]"
+        }`}
+              >
+                {uploadedImage ? (
+                  <div className="relative w-full h-full">
+                    <img
+                      src={previewUrl}
+                      alt="업로드된 이미지"
+                      className="w-full h-full object-cover rounded-[6px] cursor-default"
+                    />
+                    {/* X 버튼 */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUploadedImage(null);
+                        // ❗ 삭제 시 에러 다시 표시
+                        setErrors((prev) => ({
+                          ...prev,
+                          image: "작품 이미지를 업로드해 주세요.",
+                        }));
+                      }}
+                      className="absolute top-[16px] right-[16px] p-[10.04px] bg-black/20 rounded-full w-[32px] h-[32px] flex items-center justify-center cursor-pointer"
+                    >
+                      <img src={xIcon} className="w-[11.93px] h-[11.93px]" />
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <BiSolidImage className="w-[40px] h-[40px] text-[#C3C3C3] mb-[8px]" />
+                    <span className="text-[#C3C3C3] text-[14px]">
+                      파일 업로드
+                    </span>
+                  </>
+                )}
 
-              <input
-                id="imageUpload"
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-              />
+                <input
+                  id="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
 
-              {!uploadedImage && (
-                <label
-                  htmlFor="imageUpload"
-                  className="absolute inset-0 cursor-pointer"
-                ></label>
+                {!uploadedImage && (
+                  <label
+                    htmlFor="imageUpload"
+                    className="absolute inset-0 cursor-pointer"
+                  ></label>
+                )}
+              </div>
+
+              {errors.image && (
+                <p className="text-red-500 text-[12px] mt-2 ml-1">
+                  {errors.image}
+                </p>
               )}
             </div>
           </div>
@@ -351,7 +445,7 @@ const ProjectSubmissionPage = () => {
 
               <button
                 disabled={!isAllRequiredChecked}
-                onClick={() => setIsConfirmSubmissionOpen(true)}
+                onClick={handleOpenSubmitModal}
                 className={`w-[180px] h-[45px] px-[20px] py-[12px] rounded-[8px] text-[16px] font-medium ${
                   isAllRequiredChecked
                     ? "bg-[#2FD8F6] text-white cursor-pointer hover:bg-[#2AC2DD]"
