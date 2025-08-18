@@ -9,6 +9,7 @@ import ScriptModal from "../components/ScriptModal";
 import xIcon from "../assets/xIcon.png";
 import PreviewModal from "../components/PreviewModal";
 import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
+import { submitProject } from "../apis/projectSubmissionApi";
 
 const ProjectSubmissionPage = () => {
   const [allChecked, setAllChecked] = useState(false);
@@ -39,15 +40,32 @@ const ProjectSubmissionPage = () => {
 
   // 이미지 업로드 상태
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadedImage(reader.result);
-      };
-      reader.readAsDataURL(file);
+      setUploadedImage(file); // 서버 전송용
+      setPreviewUrl(URL.createObjectURL(file)); // 화면 표시용
+    }
+  };
+
+  const handleSubmitProject = async () => {
+    try {
+      const projectId = 1; // 임시 값
+
+      await submitProject(projectId, {
+        title: projectTitle,
+        description,
+        link,
+        image: uploadedImage,
+      });
+
+      alert("제출이 완료되었습니다!");
+      setIsConfirmSubmissionOpen(false);
+    } catch (error) {
+      console.error("제출 실패:", error);
+      alert("제출에 실패했습니다. 다시 시도해주세요.");
     }
   };
 
@@ -159,7 +177,7 @@ const ProjectSubmissionPage = () => {
               {uploadedImage ? (
                 <div className="relative w-full h-full">
                   <img
-                    src={uploadedImage}
+                    src={previewUrl}
                     alt="업로드된 이미지"
                     className="w-full h-full object-cover rounded-[6px] cursor-default"
                   />
@@ -371,7 +389,7 @@ const ProjectSubmissionPage = () => {
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         projectTitle={projectTitle}
-        uploadedImage={uploadedImage}
+        uploadedImage={previewUrl}
         description={description}
         link={link}
       />
@@ -380,6 +398,7 @@ const ProjectSubmissionPage = () => {
       {isConfirmSubmissionOpen && (
         <ConfirmSubmissionModal
           onClose={() => setIsConfirmSubmissionOpen(false)}
+          onSubmit={handleSubmitProject}
         />
       )}
     </div>

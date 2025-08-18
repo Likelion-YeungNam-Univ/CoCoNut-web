@@ -56,7 +56,7 @@ const PreviewModal = ({
           </button>
 
           {/* 모달 박스 */}
-          <div className="bg-white rounded-[12px] w-[1032px] h-[1550px] overflow-y-auto px-[64px] py-[92px]">
+          <div className="bg-white rounded-[12px] max-w-[1032px] max-h-[1550px] overflow-y-auto px-[64px] py-[92px]">
             <div>
               {/* 사용자 닉네임 */}
               <div className="flex space-x-[8px] mb-[11px]">

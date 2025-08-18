@@ -1,4 +1,4 @@
-const ConfirmSubmissionModal = ({ onClose }) => {
+const ConfirmSubmissionModal = ({ onClose, onSubmit }) => {
   return (
     <div
       className="fixed inset-0 z-50 bg-black/50 overflow-y-auto font-pretendard"
@@ -21,7 +21,10 @@ const ConfirmSubmissionModal = ({ onClose }) => {
               >
                 취소하기
               </button>
-              <button className="w-[99px] h-[32px] bg-[#4C4C4C] text-white rounded-[6px] hover:bg-[#212121] cursor-pointer">
+              <button
+                onClick={onSubmit}
+                className="w-[99px] h-[32px] bg-[#4C4C4C] text-white rounded-[6px] hover:bg-[#212121] cursor-pointer"
+              >
                 네, 제출할게요
               </button>
             </div>
