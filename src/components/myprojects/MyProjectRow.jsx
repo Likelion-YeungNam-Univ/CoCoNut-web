@@ -22,19 +22,19 @@ const MyProjectRow = ({ project, getCategoryLabel, getBusinessTypeLabel }) => {
   
     <div className="w-full px-4 py-3">
       {/* ① 카테고리/업종 */}
-      <div className="text-[12px] text-[#8F8F8F]">
+      <div className="text-[12px] text-[#8F8F8F] ">
         {getCategoryLabel(project?.category) || "카테고리 없음"}
         <span className="mx-1.5">·</span>
         {getBusinessTypeLabel(project?.businessType) || "업종 없음"}
       </div>
 
       {/* ② 제목 (줄간격 타이트) */}
-      <h3 className="mt-[2px] text-[16px] font-semibold text-[#212121] leading-[1.2]">
+      <h3 className="text-[16px] font-semibold text-[#212121] leading-[1.2] mt-[16px]">
         {project?.title || "공모전 제목 없음"}
       </h3>
 
       {/* ③ 요약 (한 줄, 말줄임표) */}
-      <p className="mt-[2px] text-[12px] text-[#626262] truncate">
+      <p className="mt-[8px] text-[12px] text-[#626262] truncate">
         {project?.summary || "프로젝트 요약 정보가 없습니다."}
       </p>
 
