@@ -19,7 +19,7 @@ const MyProjectRow = ({ project, getCategoryLabel, getBusinessTypeLabel }) => {
       : "기간 없음";
 
   return (
-    // ▶ 플랫 스타일: 테두리/라운드 제거, 여백만 최소화
+  
     <div className="w-full px-4 py-3">
       {/* ① 카테고리/업종 */}
       <div className="text-[12px] text-[#8F8F8F]">
