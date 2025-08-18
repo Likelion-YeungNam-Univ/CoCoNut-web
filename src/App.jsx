@@ -44,7 +44,7 @@ export default function App() {
             element={<SearchPage showRegisterButton={false} />}
           />
           <Route
-            path="/projects-submission"
+            path="/projects/:projectId/submission"
             element={<ProjectSubmissionPage />}
           />
         </Routes>

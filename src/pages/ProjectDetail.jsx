@@ -300,7 +300,10 @@ const ProjectDetail = ({ role }) => {
 
           {/* 참가자로 로그인한 경우 참가하기 버튼 보이게 */}
           {role === "participant" && (
-            <button className="w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium bg-[#2FD8F6] text-white rounded-[8px] leading-[130%] tracking-[-0.02em] hover:bg-[#2AC2DD] cursor-pointer">
+            <button
+              onClick={() => navigate(`/projects/${projectId}/submission`)}
+              className="w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium bg-[#2FD8F6] text-white rounded-[8px] leading-[130%] tracking-[-0.02em] hover:bg-[#2AC2DD] cursor-pointer"
+            >
               참가하기
             </button>
           )}
