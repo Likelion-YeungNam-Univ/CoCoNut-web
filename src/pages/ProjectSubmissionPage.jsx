@@ -10,6 +10,12 @@ import xIcon from "../assets/xIcon.png";
 import PreviewModal from "../components/PreviewModal";
 import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
 import { submitProject } from "../apis/projectSubmissionApi";
+import checklistIcon1 from "../assets/checklistIcon1.png";
+import checklistIcon2 from "../assets/checklistIcon2.png";
+import checklistIcon3 from "../assets/checklistIcon3.png";
+import checklistIcon4 from "../assets/checklistIcon4.png";
+import checklistIcon5 from "../assets/checklistIcon5.png";
+import checklistIcon6 from "../assets/checklistIcon6.png";
 
 const ProjectSubmissionPage = () => {
   const [allChecked, setAllChecked] = useState(false);
@@ -369,7 +375,7 @@ const ProjectSubmissionPage = () => {
         onClose={handleClose}
         title={
           openModal === "checklist"
-            ? "공모전 참가 체크리스트"
+            ? ""
             : openModal === "terms"
             ? "공모전 이용 약관"
             : openModal === "caution"
@@ -378,10 +384,175 @@ const ProjectSubmissionPage = () => {
         }
       >
         {openModal === "checklist" && (
-          <p>공모전 참가 체크리스트 약관 동의 내용....</p>
+          <div className="text-[#212121]">
+            <h2 className="text-[16px]  ml-[289px] font-semibold mb-[80px] ">
+              공모전 참가 체크리스트
+            </h2>
+            <div className="grid grid-cols-3 gap-y-[80px] gap-x-[8px] ml-[20px] mr-[80px]">
+              <div className="flex flex-col items-center text-center">
+                <img
+                  src={checklistIcon1}
+                  className="w-[120px] h-[120px] mb-[12px]"
+                />
+                <div className="text-[14px] font-semibold mb-2">
+                  참가 대상 확인
+                </div>
+                <div className="text-[12px]">
+                  공모전 참여 조건(참가 대상, 제출 형식,
+                  <br />
+                  제한 사항 등)을 확인하세요.
+                </div>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <img
+                  src={checklistIcon2}
+                  className="w-[120px] h-[120px] mb-[12px]"
+                />
+                <div className="text-[14px] font-semibold mb-2">
+                  작품 규격 확인
+                </div>
+                <div className="text-[12px]">
+                  제출할 작품 형식, 해상도, 크기 등 <br />
+                  규격을 준수했는지 확인합니다.
+                </div>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <img
+                  src={checklistIcon3}
+                  className="w-[120px] h-[120px] mb-[12px]"
+                />
+                <div className="text-[14px] font-semibold mb-2">
+                  저작권 확인
+                </div>
+                <div className="text-[12px]">
+                  작품에 사용된 이미지, 텍스트, 음원 등의 <br />
+                  권리 침해가 없는지 확인하세요.
+                </div>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <img
+                  src={checklistIcon4}
+                  className="w-[120px] h-[120px] mb-[12px]"
+                />
+                <div className="text-[14px] font-semibold mb-2">내용 확인</div>
+                <div className="text-[12px]">
+                  작품 제목, 이미지, 작품 설명 등 모든 내용을
+                  <br /> 올바르게 작성했는지 확인합니다.
+                </div>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <img
+                  src={checklistIcon5}
+                  className="w-[120px] h-[120px] mb-[12px]"
+                />
+                <div className="text-[14px] font-semibold mb-2">
+                  제출 기한 확인
+                </div>
+                <div className="w-[212px] h-[40px] text-[12px]">
+                  공모전 마감일을 확인하고,
+                  <br /> 늦지 않게 제출하세요.
+                </div>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <img
+                  src={checklistIcon6}
+                  className="w-[120px] h-[120px] mb-[12px]"
+                />
+                <div className="text-[14px] font-semibold mb-2">
+                  약관 및 주의사항 동의 확인
+                </div>
+                <div className="w-[212px] h-[40px] text-[12px]">
+                  공모전 이용약관 및 주의사항에 대해 <br />
+                  동의 여부를 확인합니다.
+                </div>
+              </div>
+            </div>
+          </div>
         )}
-        {openModal === "terms" && <p>공모전 이용 약관 동의 내용....</p>}
-        {openModal === "caution" && <p>공모전 이용 주의사항 동의 내용....</p>}
+        {openModal === "terms" && (
+          <div className="text-[#212121] text-[12px] mt-[28px]">
+            <h4 className="font-semibold mb-2">1. 공모전 등록 및 참가</h4>
+            <p>
+              - 소상공인은 디자인, 메뉴판, 홍보물 등 가게에 필요한 도움을 공모
+              형식으로 등록할 수 있습니다. <br />- 참가자는 공모 주제, 제출
+              기한, 작품 형식에 맞게 작품을 제출해야 합니다. <br />- 제출 작품은
+              등록된 목적 외에는 무단 사용, 복제, 배포, 상업적 이용이
+              금지됩니다.
+            </p>
+            <h4 className="font-semibold mt-6 mb-2">2. 작품 제출 및 관리</h4>
+            <p>
+              - 제출 작품의 저작권은 참가자에게 있습니다. <br />- 플랫폼과
+              소상공인은 제출된 작품을 검토, 홍보, 공모전 진행 목적에 한해
+              사용할 수 있습니다. <br />- 참가자는 타인의 저작권, 상표권, 초상권
+              등을 침해하지 않아야 하며, 위반 시 발생하는 모든 책임은 참가자에게
+              있습니다. <br />- 소상공인은 수상작을 가게 홍보, 인테리어, 디자인
+              등 운영 목적에 한해 사용할 수 있습니다.
+            </p>
+            <h4 className="font-semibold mt-6 mb-2">3. 수상 및 보상</h4>
+            <p>
+              - 소상공인은 공모전 마감 후 제출 작품을 확인하고 수상작을
+              선정합니다. <br />- 수상작 선정과 상금 지급은 소상공인이 최종 확정
+              버튼을 누른 후 완료됩니다. <br />- 수상작은 소상공인이 요청한
+              목적에 맞게 활용할 수 있습니다.
+            </p>
+            <h4 className="font-semibold mt-6 mb-2">4. 공모전 삭제 및 환불</h4>
+            <p>
+              - 공모전 삭제 시 환불 규정: <br />
+              (1) 진행 중이고 작품 제출이 없는 경우: 100%(지역화폐 제외) 환불{" "}
+              <br />
+              (2) 진행 중이고 작품이 제출된 경우: 50% 차감 후 환불(50%는
+              참가자에 1/N 지급) <br />
+              (3) 마감 후 작품 제출이 없는 경우: 수수료 12% 차감 후 환불 <br />
+              (4) 마감 후 작품이 제출되어 있는 경우: 환불 불가 <br />- 삭제 및
+              환불 관련 문의는 고객센터를 통해 이용할 수 있습니다.
+            </p>
+            <h4 className="font-semibold mt-6 mb-2">5. 이용자 의무</h4>
+            <p>
+              - 소상공인과 참가자는 정확한 정보를 제공해야 합니다. <br />-
+              소상공인은 허위 정보 등록, 부적절한 주제 등록을 금지합니다. <br />
+              - 작품 제출 및 공모전 진행 중 발생하는 분쟁은 참가자와 소상공인이
+              상호 협의하여 해결해야 합니다.
+            </p>
+            <h4 className="font-semibold mt-6 mb-2">6. 주의사항</h4>
+            <p>
+              - 제출 전 작품 제목, 이미지, 설명을 반드시 확인하세요. <br />-
+              타인 비방, 과도한 광고, 저작권 침해 작품은 제출할 수 없습니다.{" "}
+              <br />- 플랫폼은 작품 품질, 결과물에 대한 책임, 분쟁에 대해
+              책임지지 않습니다.
+            </p>
+          </div>
+        )}
+        {openModal === "caution" && (
+          <div className="text-[#212121] text-[12px] mt-[28px]">
+            <h4 className="font-semibold mb-2">1. 소상공인 주의사항</h4>
+            <p>
+              - 공모전 등록 시 정확한 정보와 목적을 기재해주세요.
+              <br />- 부적절한 내용이나 타인을 비방하는 공모전은 등록할 수
+              없습니다. <br />- 제출된 작품은 공모 목적 외 사용을 금지하며, 상금
+              지급 전 반드시 수상작을 확정해야 합니다. <br />- 환불 규정을
+              확인하고, 삭제 전 상황에 따른 환불 가능 여부를 숙지하세요.
+            </p>
+            <h4 className="font-semibold mt-6 mb-2">2. 참가자 주의사항</h4>
+            <p>
+              - 작품 제출 전 주제, 형식, 기한을 반드시 확인하세요. <br />-
+              타인의 저작권, 초상권, 상표권을 침해하지 않아야 합니다. <br />-
+              비방, 과도한 광고, 불법 콘텐츠는 제출할 수 없습니다. <br />-
+              수상작이 선정되면, 상금 지급 및 거래는 소상공인과 직접 진행됩니다.
+            </p>
+            <h4 className="font-semibold mt-6 mb-2">3. 기타 주의사항</h4>
+            <p>
+              - 폭력적, 선정적, 혐오적, 정치적, 종교적 내용을 담은 공모전 또는
+              작품은 등록할 수 없습니다. <br />- 수상작이 선정되면 공모전
+              작성자가 상금 및 지역화폐 지급을 확정해야 참여자가 보상을 받을 수
+              있습니다. <br />
+              - 공모전 진행 중 발생하는 분쟁은 소상공인과 참가자가 상호 협의하여
+              해결합니다. <br />- 플랫폼은 작품 품질, 결과물, 분쟁에 대한 책임을
+              지지 않습니다. <br />- 공모전 관련 문의는 고객센터를 통해 진행해
+              주세요. <br />- 안전하고 즐거운 공모전 경험을 위해 규칙과 안내를
+              꼭 확인해주세요.
+            </p>
+          </div>
+        )}
       </ScriptModal>
 
       {/* 미리보기 모달 */}
