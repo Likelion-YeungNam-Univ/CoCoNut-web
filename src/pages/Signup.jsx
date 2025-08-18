@@ -1,4 +1,3 @@
-
 import { FaCheckCircle } from "react-icons/fa";
 import ScriptModal from '../components/ScriptModal';
 import PolicyContent from '../components/PolicyContent';
