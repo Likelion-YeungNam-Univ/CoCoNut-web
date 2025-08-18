@@ -3,7 +3,7 @@ import { IoIosClose } from "react-icons/io";
 import { fetchUserInfo } from "../apis/userApi";
 import { IoPersonCircle } from "react-icons/io5";
 
-const PreviewModal = ({
+const SubmissionPreviewModal = ({
   isOpen,
   onClose,
   projectTitle,
@@ -101,4 +101,4 @@ const PreviewModal = ({
   );
 };
 
-export default PreviewModal;
+export default SubmissionPreviewModal;
