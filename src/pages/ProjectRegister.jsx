@@ -157,7 +157,9 @@ const ProjectRegister = () => {
   // 컴포넌트가 처음 마운트될 때 (로딩 시) 필요한 데이터를 API에서 가져옵니다.
   useEffect(() => {
     const today = new Date();
-    const formattedDate = today.toISOString().split("T")[0];
+    const kstOffset = 9 * 60 * 60 * 1000;
+    const kstDate = new Date(today.getTime() + kstOffset);
+    const formattedDate = kstDate.toISOString().split("T")[0];
     setCreatedAt(formattedDate);
     const fetchData = async () => {
       try {

@@ -5,10 +5,8 @@ const TermsModal = ({ isOpen, onClose, title, content }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center font-pretendard">
-      {/* 모달 컨테이너의 flex-col을 추가하여 내부 콘텐츠의 높이가 늘어나도록 설정 */}
       <div className="bg-white rounded-lg shadow-xl p-8 w-full max-w-3xl h-[750px] overflow-y-auto relative flex flex-col">
         <h1 className="text-xl text-center font-bold mb-4">{title}</h1>
-        {/* 'content' 영역이 유연하게 늘어나도록 flex-grow를 추가 */}
         <pre className="text-gray-700 whitespace-pre-wrap flex-grow">
           {content}
         </pre>

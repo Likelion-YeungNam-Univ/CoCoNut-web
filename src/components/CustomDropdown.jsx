@@ -37,7 +37,6 @@ const CustomDropdown = ({
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayLabel}</span>
-        {/* 드롭다운 상태에 따라 아이콘을 변경합니다. */}
         {isOpen ? (
           <IoIosArrowUp className="text-[#828282]" />
         ) : (

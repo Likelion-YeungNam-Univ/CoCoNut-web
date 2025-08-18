@@ -57,9 +57,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
-      {/* ✅ 모달 컨테이너를 하나 더 추가하여 X 버튼을 분리합니다. */}
       <div className="relative w-full max-w-5xl">
-        {/* ✅ X 버튼을 모달 창 바깥으로 옮김 */}
         <button
           onClick={onClose}
           className="absolute top-0 right-[-60px] flex items-center justify-center text-white transition hover:text-[#A3A3A3]"
@@ -67,7 +65,6 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
           <IoIosCloseCircle size={40} />
         </button>
 
-        {/* ✅ 기존의 모달 창을 이 div로 만듭니다. */}
         <div className="bg-white rounded-lg shadow-lg w-full max-h-[85vh] overflow-y-auto font-pretendard">
           <div className="p-15">
             <div className="flex items-center justify-between text-gray-500 text-sm mb-4 font-pretendard">
