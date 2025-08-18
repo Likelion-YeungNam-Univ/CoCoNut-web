@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
+import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
 import MerchantMy from "./pages/MerchantMy";
 import ParticipantMy from "./pages/ParticipantMy.jsx";
 
@@ -24,7 +25,11 @@ export default function App() {
             <Route path="/project-register" element={<ProjectRegister />} />
             <Route
               path="/project-detail/:projectId"
-              element={<ProjectDetail />}
+              element={<ProjectDetail role="merchant" />}
+            />
+            <Route
+              path="/project-detail-participant/:projectId"
+              element={<ProjectDetail role="participant" />}
             />
           </Route>
           <Route path="/merchant-main-page" element={<MerchantMainPage />} />
@@ -40,10 +45,13 @@ export default function App() {
             path="/participant-search"
             element={<SearchPage showRegisterButton={false} />}
           />
+          <Route
+            path="/projects/:projectId/submission"
+            element={<ProjectSubmissionPage />}
+          />
            <Route path="merchant-mypage" element={<MerchantMy/>}/>
             <Route path="participant-mypage" element={<ParticipantMy/>}/>
         </Routes>
-       
       </BrowserRouter>
     </AuthProvider>
   );

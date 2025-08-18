@@ -20,7 +20,7 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
   };
 
   return (
-    <div className="w-full h-[60px] flex items-center px-[120px] border-b border-gray-200 font-pretendard">
+    <div className="w-full h-[60px] flex items-center px-[120px] bg-white border-b border-gray-200 font-pretendard">
       {/* 로고 */}
       <div className="flex-1 flex justify-start">
         <Link to="/participant-main-page">
