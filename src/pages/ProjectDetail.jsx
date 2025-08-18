@@ -61,7 +61,7 @@ const DUMMY_SUBMISSIONS = [
   },
 ];
 
-const ProjectDetail = () => {
+const ProjectDetail = ({ role }) => {
   const [activeTab, setActiveTab] = useState("CONTENT");
   const [projectData, setProjectData] = useState(null);
   const [submissions, setSubmissions] = useState([]);
@@ -297,7 +297,15 @@ const ProjectDetail = () => {
               </p>
             </div>
           </div>
-          <div className="pt-5">
+
+          {/* 참가자로 로그인한 경우 참가하기 버튼 보이게 */}
+          {role === "participant" && (
+            <button className="w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium bg-[#2FD8F6] text-white rounded-[8px] leading-[130%] tracking-[-0.02em] hover:bg-[#2AC2DD] cursor-pointer">
+              참가하기
+            </button>
+          )}
+
+          <div className="pt-[60px]">
             <ContentSubmissionsTabs
               activeTab={activeTab}
               setActiveTab={setActiveTab}

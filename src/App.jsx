@@ -9,6 +9,7 @@ import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
+import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
 
 export default function App() {
   return (
@@ -22,7 +23,11 @@ export default function App() {
             <Route path="/project-register" element={<ProjectRegister />} />
             <Route
               path="/project-detail/:projectId"
-              element={<ProjectDetail />}
+              element={<ProjectDetail role="merchant" />}
+            />
+            <Route
+              path="/project-detail-participant/:projectId"
+              element={<ProjectDetail role="participant" />}
             />
           </Route>
           <Route path="/merchant-main-page" element={<MerchantMainPage />} />
@@ -37,6 +42,10 @@ export default function App() {
           <Route
             path="/participant-search"
             element={<SearchPage showRegisterButton={false} />}
+          />
+          <Route
+            path="/projects-submission"
+            element={<ProjectSubmissionPage />}
           />
         </Routes>
       </BrowserRouter>

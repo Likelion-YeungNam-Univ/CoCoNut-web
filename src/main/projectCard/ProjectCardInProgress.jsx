@@ -106,9 +106,13 @@ const ProjectCardInProgress = ({
     </div>
   );
 
-  // role이 merchant -> 소상공인 공모전 상세 페이지 이동
+  // role이 merchant -> 소상공인 공모전 상세 페이지 이동, participant -> 참가자 공모전 상세 페이지 이동
   return role === "merchant" ? (
     <Link to={`/project-detail/${project.projectId}`}>{cardContent}</Link>
+  ) : role === "participant" ? (
+    <Link to={`/project-detail-participant/${project.projectId}`}>
+      {cardContent}
+    </Link>
   ) : (
     cardContent
   );

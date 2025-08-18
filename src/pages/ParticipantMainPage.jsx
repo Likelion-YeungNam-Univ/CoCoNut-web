@@ -39,6 +39,7 @@ const ParticipantMainPage = () => {
           businessTypes={businessTypes}
           selectedCategories={selectedCategories}
           selectedBusinesses={selectedBusinesses}
+          role="participant"
         />
       </div>
       <Footer />
