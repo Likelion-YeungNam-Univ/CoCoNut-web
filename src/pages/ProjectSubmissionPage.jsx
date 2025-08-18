@@ -364,9 +364,7 @@ const ProjectSubmissionPage = () => {
 
           {/* 설명 */}
           <div className="grid grid-cols-[176px_1fr] items-start gap-4 ml-[176px] mb-[24px]">
-            <label className="text-[#212121] text-[14px]">
-              설명 <span className="text-[#2FD8F6]">*</span>
-            </label>
+            <label className="text-[#212121] text-[14px]">설명</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
