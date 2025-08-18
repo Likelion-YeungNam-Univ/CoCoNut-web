@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
@@ -10,6 +11,7 @@ const ProjectCardInProgress = ({
   project,
   categories = [],
   businessTypes = [],
+  role,
 }) => {
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
@@ -31,7 +33,8 @@ const ProjectCardInProgress = ({
     return diffDays;
   };
 
-  return (
+  // 카드 내용 (공통)
+  const cardContent = (
     <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
       {/* 상단 카테고리/마감일 */}
       <div className="flex gap-[4px] text-[12px] text-[#A3A3A3] font-medium mt-[20px]">
@@ -64,9 +67,7 @@ const ProjectCardInProgress = ({
           </span>
         </div>
 
-        {/* 참여작 
-            -> 추후 백엔드가 참여작 개수 받아올 것 
-        */}
+        {/* 참여작 (임시 값) */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 w-[60px]">
             <img
@@ -103,6 +104,13 @@ const ProjectCardInProgress = ({
         </span>
       </div>
     </div>
+  );
+
+  // role이 merchant -> 소상공인 공모전 상세 페이지 이동
+  return role === "merchant" ? (
+    <Link to={`/project-detail/${project.projectId}`}>{cardContent}</Link>
+  ) : (
+    cardContent
   );
 };
 
