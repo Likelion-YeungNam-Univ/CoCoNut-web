@@ -7,7 +7,7 @@ import checkIcon from "../assets/checkIcon.png";
 import { fetchAiDescription } from "../apis/submissionAssistApi";
 import ScriptModal from "../components/ScriptModal";
 import xIcon from "../assets/xIcon.png";
-import PreviewModal from "../components/PreviewModal";
+import SubmissionPreviewModal from "../components/SubmissionPreviewModal";
 import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
 import { submitProject } from "../apis/projectSubmissionApi";
 import checklistIcon1 from "../assets/checklistIcon1.png";
@@ -650,7 +650,7 @@ const ProjectSubmissionPage = () => {
       </ScriptModal>
 
       {/* 미리보기 모달 */}
-      <PreviewModal
+      <SubmissionPreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         projectTitle={projectTitle}
