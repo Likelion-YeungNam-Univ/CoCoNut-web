@@ -135,6 +135,26 @@ const ProjectSubmissionPage = () => {
 
   // 제출 확인 모달 열기 전에 검사
   const handleOpenSubmitModal = () => {
+    if (!validateForm()) return;
+    setIsConfirmSubmissionOpen(true);
+  };
+
+  const handleOpenPreviewModal = () => {
+    if (!validateForm()) return;
+    setIsPreviewOpen(true);
+  };
+
+  // 입력 시 에러 해제
+  const handleTitleChange = (e) => {
+    setProjectTitle(e.target.value);
+
+    if (errors.title && e.target.value.trim() !== "") {
+      setErrors((prev) => ({ ...prev, title: null }));
+    }
+  };
+
+  // 공통 유효성 검사 함수
+  const validateForm = () => {
     let newErrors = {};
 
     if (!projectTitle.trim()) {
@@ -158,20 +178,11 @@ const ProjectSubmissionPage = () => {
           block: "center",
         });
       }
-      return;
+      return false;
     }
 
     setErrors({});
-    setIsConfirmSubmissionOpen(true);
-  };
-
-  // 입력 시 에러 해제
-  const handleTitleChange = (e) => {
-    setProjectTitle(e.target.value);
-
-    if (errors.title && e.target.value.trim() !== "") {
-      setErrors((prev) => ({ ...prev, title: null }));
-    }
+    return true;
   };
 
   // 로딩 토스트
@@ -433,7 +444,7 @@ const ProjectSubmissionPage = () => {
             <div className="flex space-x-[20px] mx-[326px] mt-[62px]">
               <button
                 disabled={!isAllRequiredChecked}
-                onClick={() => setIsPreviewOpen(true)}
+                onClick={handleOpenPreviewModal}
                 className={`w-[180px] h-[45px] px-[20px] py-[12px] border-[1px] rounded-[8px] text-[16px] font-medium ${
                   isAllRequiredChecked
                     ? "border-[#2FD8F6] text-[#2FD8F6] cursor-pointer hover:bg-[#EAFBFE]"
