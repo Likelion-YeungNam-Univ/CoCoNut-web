@@ -16,9 +16,10 @@ import checklistIcon3 from "../assets/checklistIcon3.png";
 import checklistIcon4 from "../assets/checklistIcon4.png";
 import checklistIcon5 from "../assets/checklistIcon5.png";
 import checklistIcon6 from "../assets/checklistIcon6.png";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ProjectSubmissionPage = () => {
+  const navigate = useNavigate();
   const { projectId } = useParams();
   const [allChecked, setAllChecked] = useState(false);
   const [checkList, setCheckList] = useState({
@@ -86,6 +87,9 @@ const ProjectSubmissionPage = () => {
 
       alert("제출이 완료되었습니다!");
       setIsConfirmSubmissionOpen(false);
+      navigate(`/project-detail/${projectId}`, {
+        state: { initialTab: "SUBMISSIONS" },
+      });
     } catch (error) {
       console.error("제출 실패:", error);
       alert("제출에 실패했습니다. 다시 시도해주세요.");

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import MerchantHeader from "../header/MerchantHeader";
 import api from "../apis/api";
 import { fetchSubmissions } from "../apis/getSubmissionsApi";
@@ -37,7 +37,6 @@ const formatCurrency = (amount) => {
 };
 
 const ProjectDetail = ({ role }) => {
-  const [activeTab, setActiveTab] = useState("CONTENT");
   const [projectData, setProjectData] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
@@ -49,6 +48,9 @@ const ProjectDetail = ({ role }) => {
 
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const initialTab = location.state?.initialTab || "CONTENT";
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
