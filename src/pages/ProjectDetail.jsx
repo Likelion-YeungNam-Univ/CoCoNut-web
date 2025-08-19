@@ -1,7 +1,12 @@
+// src/pages/ProjectDetail.jsx
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+
 import MerchantHeader from "../header/MerchantHeader";
 import api from "../apis/api";
+
+// 투표 그리드 (components 루트에 생성)
+import ParticipantVoteGrid from "../components/ParticipantVoteGrid";
 
 // 아이콘 및 이미지
 import calendarIcon from "../assets/calendarIcon.png";
@@ -19,45 +24,60 @@ import { COLORS_DATA } from "../utils/colorData";
 import ContentSubmissionsTabs from "../components/ContentSubmissionsTabs";
 import Footer from "../components/Footer";
 import DeleteModal from "../components/DeleteModal";
-import SubmissionThumbnail from "../components/SubmissionThumbnail";
+
+// ⚠️ (선택) 아래 모달 컴포넌트를 실제로 쓰고 있다면 import 유지
+// import SubmissionDetailModal from "../components/SubmissionDetailModal";
 
 const formatCurrency = (amount) => {
-  if (amount === null || amount === undefined) {
-    return "가격 없음";
-  }
-
+  if (amount === null || amount === undefined) return "가격 없음";
   const numericAmount = Number(String(amount).replace(/[^0-9]/g, ""));
-  if (isNaN(numericAmount)) {
-    return amount;
-  }
-
+  if (isNaN(numericAmount)) return amount;
   return `${numericAmount.toLocaleString()}원`;
 };
 
+// 더미 참여작 (API 연동 전 테스트용)
 const DUMMY_SUBMISSIONS = [
   {
     id: 1,
     title: "참여작 제목 1",
     writerNickname: "참가자1",
     imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
-    description:
-      "참여작 내용입니다. 이 작업은 프로젝트의 요구 사항을 충족시키기 위해 제작되었습니다.",
+    description: "참여작 내용입니다.",
   },
   {
     id: 2,
     title: "참여작 제목 2",
     writerNickname: "참가자2",
     imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+2",
-    description:
-      "두 번째 참여작입니다. 다양한 디자인 요소를 활용하여 제작된 작품입니다.",
+    description: "두 번째 참여작입니다.",
   },
   {
     id: 3,
     title: "참여작 제목 3",
     writerNickname: "참가자3",
     imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+3",
-    description:
-      "세 번째 참여작입니다. 창의적인 아이디어를 담아 만들어졌습니다.",
+    description: "세 번째 참여작입니다.",
+  },
+    {
+    id: 4,
+    title: "참여작 제목 4",
+    writerNickname: "참가자4",
+    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
+    description: "참여작 내용입니다.",
+  },
+    {
+    id: 5,
+    title: "참여작 제목 5",
+    writerNickname: "참가자5",
+    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
+    description: "참여작 내용입니다.",
+  },
+    {
+    id: 6,
+    title: "참여작 제목 6",
+    writerNickname: "참가자6",
+    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
+    description: "참여작 내용입니다.",
   },
 ];
 
@@ -73,6 +93,7 @@ const ProjectDetail = ({ role }) => {
 
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -94,7 +115,7 @@ const ProjectDetail = ({ role }) => {
       }
     };
 
-    // API 호출 대신 더미 데이터 사용
+    // 현재는 API 대신 더미 사용
     setSubmissions(DUMMY_SUBMISSIONS);
     fetchProjectDetails();
   }, [projectId]);
@@ -182,13 +203,8 @@ const ProjectDetail = ({ role }) => {
     ETC: "기타",
   };
 
-  const getCategoryLabel = (code) => {
-    return CATEGORIES_MAP[code] || "카테고리 없음";
-  };
-
-  const getBusinessTypeLabel = (code) => {
-    return BUSINESSTYPES_MAP[code] || "업종 없음";
-  };
+  const getCategoryLabel = (code) => CATEGORIES_MAP[code] || "카테고리 없음";
+  const getBusinessTypeLabel = (code) => BUSINESSTYPES_MAP[code] || "업종 없음";
 
   const daysLeft = projectData.deadline
     ? Math.ceil(
@@ -205,6 +221,7 @@ const ProjectDetail = ({ role }) => {
       <MerchantHeader />
       <div className="flex-grow bg-[#FFFFFF] py-8 px-40">
         <div className="p-15">
+          {/* 카테고리/업종 라벨 */}
           <div className="flex items-center justify-between text-gray-500 text-sm mb-4">
             <div className="flex items-center space-x-2 text-[#828282]">
               <span className="text-[#A3A3A3] text-[12px] font-normal">
@@ -220,6 +237,8 @@ const ProjectDetail = ({ role }) => {
               </span>
             </div>
           </div>
+
+          {/* 제목 + 옵션 버튼 */}
           <div className="flex items-start justify-between mb-2">
             <h1 className="text-[28px] font-semibold text-[#212121] ">
               {projectData.title || "공모전 제목 없음"}
@@ -239,15 +258,15 @@ const ProjectDetail = ({ role }) => {
                   >
                     <div className="flex space-x-2">
                       <AiFillDelete className="text-[#C3C3C3]" />
-                      <span className="text-[#828282] text-[12px]">
-                        삭제하기
-                      </span>
+                      <span className="text-[#828282] text-[12px]">삭제하기</span>
                     </div>
                   </button>
                 </div>
               )}
             </div>
           </div>
+
+          {/* 작성자/가게 */}
           <div className="flex space-x-2 mb-3">
             <IoPersonCircle className="text-[#B9B9B9] w-[20px] h-[20px]" />
             <p className="text-sm text-[#828282] mb-6">
@@ -260,45 +279,33 @@ const ProjectDetail = ({ role }) => {
               </span>
             </p>
           </div>
+
+          {/* 상금/참여작/기간 */}
           <div className="space-y-3 text-[#4C4C4C] mb-8">
             <div className="flex items-center space-x-2">
               <img src={prizeIcon} alt="상금 아이콘" className="h-4 w-4" />
-              <span className="text-[14px] text-[#828282] font-medium w-[80px]">
-                상금
-              </span>
+              <span className="text-[14px] text-[#828282] font-medium w-[80px]">상금</span>
               <p className="text-[14px] font-medium text-[#212121]">
                 {formatCurrency(projectData.rewardAmount)}
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <img
-                src={participantIcon}
-                alt="상금 아이콘"
-                className="h-4 w-4"
-              />
-              <span className="text-[14px] text-[#828282] font-medium w-[80px]">
-                참여작
-              </span>
-              <p className="text-[14px] font-medium text-[#212121]">
-                {submissions.length}
-              </p>
+              <img src={participantIcon} alt="참여작 아이콘" className="h-4 w-4" />
+              <span className="text-[14px] text-[#828282] font-medium w-[80px]">참여작</span>
+              <p className="text-[14px] font-medium text-[#212121]">{submissions.length}</p>
             </div>
             <div className="flex items-center space-x-2">
               <img src={calendarIcon} alt="기간 아이콘" className="h-4 w-4" />
-              <span className="text-[14px] text-[#828282] font-medium w-[80px]">
-                기간
-              </span>
+              <span className="text-[14px] text-[#828282] font-medium w-[80px]">기간</span>
               <p className="text-[14px] font-medium text-[#212121]">
                 {projectData.deadline
-                  ? `${projectData.createdAt || "기간 없음"} ~ ${
-                      projectData.deadline
-                    }`
+                  ? `${projectData.createdAt || "기간 없음"} ~ ${projectData.deadline}`
                   : "기간 없음"}
               </p>
             </div>
           </div>
 
-          {/* 참가자로 로그인한 경우 참가하기 버튼 보이게 */}
+          {/* 참가자 로그인 시 참가하기 버튼 */}
           {role === "participant" && (
             <button
               onClick={() => navigate(`/projects/${projectId}/submission`)}
@@ -308,24 +315,21 @@ const ProjectDetail = ({ role }) => {
             </button>
           )}
 
+          {/* 탭 */}
           <div className="pt-[60px]">
-            <ContentSubmissionsTabs
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-            />
+            <ContentSubmissionsTabs activeTab={activeTab} setActiveTab={setActiveTab} />
           </div>
+
+          {/* 탭 콘텐츠 */}
           {activeTab === "CONTENT" ? (
             <div className="space-y-4 mt-18">
               {projectData.summary && (
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mb-2">
-                    한 줄 소개
-                  </h2>
-                  <p className="text-[16px] font-normal">
-                    {projectData.summary}
-                  </p>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mb-2">한 줄 소개</h2>
+                  <p className="text-[16px] font-normal">{projectData.summary}</p>
                 </div>
               )}
+
               <div className="flex flex-col space-y-4">
                 <h2
                   className={`text-[16px] font-semibold text-[#212121] ${
@@ -334,24 +338,22 @@ const ProjectDetail = ({ role }) => {
                 >
                   내용
                 </h2>
+
                 {projectData.imageUrl && (
                   <div className="p-4 bg-[#EBEBEB] rounded-md text-[#4C4C4C] whitespace-pre-wrap w-full font-pretendard">
-                    <img
-                      src={projectData.imageUrl}
-                      alt="업로드 이미지"
-                      className="..."
-                    />
+                    <img src={projectData.imageUrl} alt="업로드 이미지" className="..." />
                   </div>
                 )}
+
                 <div className="text-base font-normal whitespace-pre-wrap">
                   {projectData.description || "내용 없음"}
                 </div>
               </div>
+
+              {/* 색상 */}
               <div className="space-y-4 mb-8">
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
-                    색상
-                  </h2>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">색상</h2>
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {projectData.colors && projectData.colors.length > 0 ? (
                       projectData.colors[0] === "color_free" ? (
@@ -360,9 +362,7 @@ const ProjectDetail = ({ role }) => {
                         </span>
                       ) : (
                         projectData.colors.map((colorCode, index) => {
-                          const colorItem = COLORS_DATA.find(
-                            (item) => item.code === colorCode
-                          );
+                          const colorItem = COLORS_DATA.find((item) => item.code === colorCode);
                           return colorItem ? (
                             <span
                               key={index}
@@ -373,17 +373,14 @@ const ProjectDetail = ({ role }) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-3">
-                        선택 안 함
-                      </span>
+                      <span className="text-[#A3A3A3] text-sm col-span-3">선택 안 함</span>
                     )}
                   </div>
                 </div>
-                {/* 스타일  */}
+
+                {/* 스타일 */}
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
-                    스타일
-                  </h2>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">스타일</h2>
                   <div className="grid grid-cols-6 gap-2 mt-2">
                     {projectData.styles && projectData.styles.length > 0 ? (
                       projectData.styles[0] === "style_free" ? (
@@ -392,9 +389,7 @@ const ProjectDetail = ({ role }) => {
                         </span>
                       ) : (
                         projectData.styles.map((styleValue, index) => {
-                          const styleItem = STYLES_DATA.find(
-                            (s) => s.value === styleValue
-                          );
+                          const styleItem = STYLES_DATA.find((s) => s.value === styleValue);
                           return styleItem ? (
                             <span
                               key={index}
@@ -406,17 +401,14 @@ const ProjectDetail = ({ role }) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-6">
-                        선택 안 함
-                      </span>
+                      <span className="text-[#A3A3A3] text-sm col-span-6">선택 안 함</span>
                     )}
                   </div>
                 </div>
-                {/* 타겟  */}
+
+                {/* 타겟 */}
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
-                    타겟
-                  </h2>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">타겟</h2>
                   <div className="grid grid-cols-6 gap-2 mt-2">
                     {projectData.targets && projectData.targets.length > 0 ? (
                       projectData.targets[0] === "target_free" ? (
@@ -425,9 +417,7 @@ const ProjectDetail = ({ role }) => {
                         </span>
                       ) : (
                         projectData.targets.map((targetValue, index) => {
-                          const targetItem = TARGETS_DATA.find(
-                            (t) => t.value === targetValue
-                          );
+                          const targetItem = TARGETS_DATA.find((t) => t.value === targetValue);
                           return targetItem ? (
                             <span
                               key={index}
@@ -439,42 +429,30 @@ const ProjectDetail = ({ role }) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-6">
-                        선택 안 함
-                      </span>
+                      <span className="text-[#A3A3A3] text-sm col-span-6">선택 안 함</span>
                     )}
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col">
-              {submissions.length > 0 ? (
-                <div className="grid grid-cols-4 gap-8 mt-16">
-                  {submissions.map((submission) => (
-                    <SubmissionThumbnail
-                      key={submission.id}
-                      submission={submission}
-                      onClick={handleSubmissionClick}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-[300px] mt-16">
-                  <CgMenuBoxed size={120} className="text-[#E1E1E1]" />
-                  <div className="flex flex-col items-center mt-10">
-                    <label className="text-[#A3A3A3] text-[12px] font-medium">
-                      아직 참여작이 없습니다.
-                    </label>
-                  </div>
-                </div>
-              )}
-            </div>
+            // ✅ 참여작 탭: 썸네일 그리드 → 투표 그리드로 교체
+            <ParticipantVoteGrid
+              submissions={submissions}
+              voteStartDate="2025.08.21"
+              voteEndDate="2025.08.27"
+              onVote={(s) => {
+                alert(`투표 완료! 선택 작품: ${s.title || s.id}`);
+                // 필요 시 여기서 API 호출/리프레시 등 처리
+              }}
+            />
           )}
         </div>
       </div>
+
       <Footer />
 
+      {/* 삭제 모달 */}
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={handleCloseDeleteModal}
@@ -484,11 +462,9 @@ const ProjectDetail = ({ role }) => {
         />
       )}
 
-      {selectedSubmission && (
-        <SubmissionDetailModal
-          submission={selectedSubmission}
-          onClose={handleCloseSubmissionModal}
-        />
+      {/* (선택) 참여작 상세 모달 – 투표 모드에선 사용 안 하지만 기존 유지 */}
+      {selectedSubmission && typeof SubmissionDetailModal !== "undefined" && (
+        <SubmissionDetailModal submission={selectedSubmission} onClose={handleCloseSubmissionModal} />
       )}
     </div>
   );
