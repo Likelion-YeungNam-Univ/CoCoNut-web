@@ -135,12 +135,21 @@ const ProjectRegister = () => {
     if (!aiProjectData.rewardAmount)
       newErrors.rewardAmount = "상금이 입력되지 않았습니다.";
 
-    // 기간 유효성 검사 로직 수정
     if (!aiProjectData.deadline) {
       newErrors.period = "마감일이 입력되지 않았습니다.";
     } else if (!isValidDate(aiProjectData.deadline)) {
       newErrors.period =
         "마감일 형식이 올바르지 않습니다. YYYY-MM-DD 형식으로 입력해주세요.";
+    } else {
+      const deadlineDate = new Date(aiProjectData.deadline);
+      const createdDate = new Date(createdAt);
+
+      deadlineDate.setHours(0, 0, 0, 0);
+      createdDate.setHours(0, 0, 0, 0);
+
+      if (deadlineDate < createdDate) {
+        newErrors.period = "마감일은 현재 날짜보다 이전일 수 없습니다.";
+      }
     }
     return newErrors;
   };
