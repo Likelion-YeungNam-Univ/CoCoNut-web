@@ -5,6 +5,7 @@ import { IoPersonCircle } from "react-icons/io5";
 import { PiNotebook } from "react-icons/pi";
 import api from "../apis/api";
 import Footer from "../components/Footer";
+import { PERSONAL_INFO_CONSENT, SERVICE_TERMS_DATA } from "../utils/termsData";
 
 const MyPageContent = ({ selectedTab, userData }) => {
   const handleLogout = () => {
@@ -79,30 +80,73 @@ const MyPageContent = ({ selectedTab, userData }) => {
               <h3 className="font-medium text-[#212121] text-base mt-12">
                 서비스 이용약관 동의
               </h3>
-              <div className="w-[744px] h-[280px] border border-[#F3F3F3] mt-4 rounded-lg">
+              <div className="w-[744px] h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto">
                 <div className="p-6">
-                  <h1 className="text-[#212121] font-medium text-[14px]">
-                    제1조 목적
-                  </h1>
-                  <p className="text-[#626262] text-[14px]">
-                    이 약관은 팀 브릿지(이하 '회사'라 한다)가 운영하는 웹사이트
-                    관련 서비스(이하 '서비스')를 하나의 계정으로 가입하여
-                    이용함에 있어 회사와 이용자의 권리, 의무 및 책임사항을
-                    규정함을 목적으로 합니다.
-                  </p>
+                  {SERVICE_TERMS_DATA.sections.map((section, index) => (
+                    <div key={index} className="mb-4">
+                      <h1 className="text-[#212121] font-medium text-[14px]">
+                        {section.heading}
+                      </h1>
+                      {Array.isArray(section.content) ? (
+                        section.content.map((item, itemIndex) => (
+                          <div key={itemIndex}>
+                            <h3 className="text-[#626262] text-[14px] font-normal mt-2">
+                              {item.subheading}
+                            </h3>
+                            <p className="text-[#626262] text-[14px]">
+                              {item.text}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[#626262] text-[14px]">
+                          {section.content}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
             <div>
-              <h3 className="font-semibold text-base mb-1">
-                개인정보 수집 및 이용에 대한 안내
+              <h3 className="font-medium text-[#212121] text-base mt-12">
+                개인정보 수집 및 이용 동의
               </h3>
-              <p className="text-[#4C4C4C]">
-                이 약관은 팀 브릿지(이하 '회사'라 한다)가 운영하는 웹사이트 관련
-                서비스(이하 '서비스')를 하나의 계정으로 가입하여 이용함에 있어
-                회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로
-                합니다.
-              </p>
+              <div className="w-[744px] h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto">
+                <div className="p-6">
+                  {PERSONAL_INFO_CONSENT.sections.map((section, index) => (
+                    <div key={index} className="mb-4">
+                      <h1 className="text-[#212121] font-medium text-[14px]">
+                        {section.heading}
+                      </h1>
+                      {Array.isArray(section.content) ? (
+                        section.content.map((item, itemIndex) => (
+                          <div key={itemIndex}>
+                            {typeof item === "object" && item !== null ? (
+                              <>
+                                <h3 className="text-[#626262] text-[14px] font-normal mt-2">
+                                  {item.subheading}
+                                </h3>
+                                <p className="text-[#626262] text-[14px]">
+                                  {item.text}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-[#626262] text-[14px]">
+                                {item}
+                              </p>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-[#626262] text-[14px]">
+                          {section.content}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -114,20 +158,19 @@ const MyPageContent = ({ selectedTab, userData }) => {
             고객센터
           </h2>
           <hr className="mb-4" />
-          <div className="text-sm">
-            <p className="mb-2 text-[#4C4C4C]">도움이 필요하신가요?</p>
-            <p className="mb-4 text-[#A3A3A3]">
-              불편한 점이나 질문을 자유롭게 남겨주세요.
+          <div className="flex flex-col space-y-4">
+            <p className="mt-5 text-[#212121] text-[16px] font-medium">
+              도움이 필요하신가요?
             </p>
             <textarea
-              className="w-full h-24 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#2FD8F6]"
-              placeholder="문의 내용을 입력하세요."
+              className="w-[full] h-[288px] p-4 border border-[#F3F3F3] text-[14px] text-[#C3C3C3] rounded-md focus:outline-none"
+              placeholder="불편한 점이나 질문을 자유롭게 남겨주세요."
             ></textarea>
-            <div className="flex justify-end mt-4 space-x-2">
-              <button className="px-4 py-2 text-sm text-[#4C4C4C] rounded-md border border-[#4C4C4C] hover:bg-gray-100">
+            <div className="flex justify-end mt-4 space-x-4">
+              <button className="px-4 py-2 text-[16px] text-[#212121] rounded-md border border-[#E1E1E1] hover:bg-gray-100">
                 전체 삭제
               </button>
-              <button className="px-4 py-2 text-sm text-white bg-[#2FD8F6] rounded-md hover:bg-[#1EBBDB]">
+              <button className="px-4 py-2 text-[16px] text-white bg-[#212121] rounded-md hover:bg-[#4C4C4C]">
                 작성 완료
               </button>
             </div>
@@ -141,23 +184,39 @@ const MyPageContent = ({ selectedTab, userData }) => {
             계정 관리
           </h2>
           <hr className="mb-4" />
-          <div className="text-sm">
-            <p className="mb-4 text-[#4C4C4C]">
-              회원 정보를 안전하게 관리하세요.
-            </p>
-            <div className="space-y-2">
-              <button className="w-full text-left px-4 py-2 text-sm text-[#4C4C4C] rounded-md border border-gray-300 hover:bg-gray-100">
-                비밀번호 변경
-              </button>
-              <button className="w-full text-left px-4 py-2 text-sm text-[#4C4C4C] rounded-md border border-gray-300 hover:bg-gray-100">
-                연결된 소셜 계정
-              </button>
+          <div className="flex flex-col">
+            <div className="flex flex-row items-center space-x-10 mt-8">
+              <p className="font-medium text-[16px] text-[#212121] whitespace-nowrap">
+                로그아웃
+              </p>
               <button
-                className="w-full text-left px-4 py-2 text-sm text-white bg-[#E57373] rounded-md hover:bg-[#D35A5A]"
+                className="w-[98px] h-[45px] px-4 py-2 text-[16px] text-gray-400 font-medium rounded-md border border-[#F3F3F3] hover:bg-gray-100 text-center"
                 onClick={handleLogout}
               >
-                회원 탈퇴
+                로그아웃
               </button>
+            </div>
+            <div className="space-y-2 mt-16">
+              <p className="font-medium text-[16px] text-[#212121] whitespace-nowrap">
+                회원 탈퇴
+              </p>
+              <div className="flex flex-col space-y-3">
+                <div className="w-full h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto"></div>
+                <p className="flex justify-end text-[14px] text-[#212121] font-normal">
+                  탈퇴 시 안내 사항을 모두 확인하였으며, 동의합니다.
+                </p>
+                <div className="flex justify-end mt-4 space-x-4">
+                  <button className="text-left px-4 py-2 text-[16px] text-[#212121] font-medium rounded-md border border-[#E1E1E1] hover:bg-gray-100">
+                    메인으로 이동
+                  </button>
+                  <button
+                    className="text-left px-4 py-2 text-[16px] text-white font-medium bg-[#EE4343] rounded-md hover:bg-[#D35A5A]"
+                    onClick={handleLogout}
+                  >
+                    탈퇴하기
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
