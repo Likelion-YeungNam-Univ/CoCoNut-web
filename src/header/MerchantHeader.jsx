@@ -49,7 +49,7 @@ const MerchantHeader = ({ defaultValue = "" }) => {
         <form
           onSubmit={submit}
           className="flex items-center w-[480px] h-[36px] bg-[#F3F3F3] border-[1px] border-transparent
-      focus-within:bg-[#FBFBFB] focus-within:border-[#2FD8F6] rounded-[18px] px-3"
+          focus-within:bg-[#FBFBFB] focus-within:border-[#2FD8F6] rounded-[18px] px-3"
         >
           <BiSearch className="text-[#A3A3A3] w-[14px] h-[14px] ml-1" />
           <input
@@ -87,12 +87,11 @@ const MerchantHeader = ({ defaultValue = "" }) => {
         </Link>
 
         {/* 사용자 아이콘 및 드롭다운 메뉴 */}
-        <div
-          className="relative"
-          onMouseEnter={() => setIsMenuOpen(true)}
-          onMouseLeave={() => setIsMenuOpen(false)}
-        >
-          <IoPersonCircle className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer" />
+        <div className="relative">
+          <IoPersonCircle
+            className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          />
 
           {isMenuOpen && (
             <div className="absolute top-10 right-0 w-[240px] bg-white border border-gray-200 rounded-lg shadow-lg z-10 p-4 font-pretendard text-sm">
@@ -111,16 +110,18 @@ const MerchantHeader = ({ defaultValue = "" }) => {
                   </div>
                   <ul className="space-y-2 text-[#212121] font-normal">
                     <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
-                      내 프로필
+                      <Link to="/merchant-mypage">내 프로필</Link>
                     </li>
                     <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
-                      약관 및 정책
+                      <Link to="/merchant-mypage?tab=terms">약관 및 정책</Link>
                     </li>
                     <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
-                      고객센터
+                      <Link to="/merchant-mypage?tab=customer-service">
+                        고객센터
+                      </Link>
                     </li>
                     <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
-                      로그아웃
+                      <Link to="/merchant-mypage?tab=account">계정 관리</Link>
                     </li>
                   </ul>
                 </>
