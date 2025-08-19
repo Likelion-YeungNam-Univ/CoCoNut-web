@@ -84,11 +84,10 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
-
       alert("제출이 완료되었습니다!");
       setIsConfirmSubmissionOpen(false);
-      navigate(`/project-detail/${projectId}`, {
-        state: { initialTab: "SUBMISSIONS" },
+      navigate(`/project-detail-participant/${projectId}`, {
+        state: { initialTab: "SUBMISSIONS", refresh: true },
       });
     } catch (error) {
       console.error("제출 실패:", error);

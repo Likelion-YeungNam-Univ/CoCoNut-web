@@ -53,7 +53,14 @@ const ProjectDetail = ({ role }) => {
   const initialTab = location.state?.initialTab || "CONTENT";
   const [activeTab, setActiveTab] = useState(initialTab);
 
+  // 참가자가 제출한 작품이 있는지 여부
+  const hasMySubmission = submissions.some(
+    (sub) => sub.userId === userInfo?.user_id
+  );
+
   useEffect(() => {
+    if (!userInfo) return;
+
     const fetchProjectDetails = async () => {
       try {
         setLoading(true);
@@ -77,7 +84,7 @@ const ProjectDetail = ({ role }) => {
     };
 
     fetchProjectDetails();
-  }, [projectId]);
+  }, [projectId, location.state?.refresh, userInfo]);
 
   // 사용자 정보 조회
   useEffect(() => {
@@ -320,10 +327,17 @@ const ProjectDetail = ({ role }) => {
           {/* 참가자로 로그인한 경우 참가하기 버튼 보이게 */}
           {role === "participant" && (
             <button
-              onClick={() => navigate(`/projects/${projectId}/submission`)}
-              className="w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium bg-[#2FD8F6] text-white rounded-[8px] leading-[130%] tracking-[-0.02em] hover:bg-[#2AC2DD] cursor-pointer"
+              onClick={() =>
+                !hasMySubmission &&
+                navigate(`/projects/${projectId}/submission`)
+              }
+              className={`w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium rounded-[8px] leading-[130%] tracking-[-0.02em]  ${
+                hasMySubmission
+                  ? "bg-[#E1E1E1] text-white"
+                  : "bg-[#2FD8F6] text-white hover:bg-[#2AC2DD] cursor-pointer"
+              }`}
             >
-              참가하기
+              {hasMySubmission ? "참가완료" : "참가하기"}
             </button>
           )}
 
