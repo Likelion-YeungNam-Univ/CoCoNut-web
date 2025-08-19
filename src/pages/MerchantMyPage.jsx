@@ -2,58 +2,66 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import MerchantHeader from "../header/MerchantHeader";
 import { IoPersonCircle } from "react-icons/io5";
+import { PiNotebook } from "react-icons/pi";
 import api from "../apis/api";
 import Footer from "../components/Footer";
 
-// 각 메뉴 항목의 콘텐츠를 렌더링하는 컴포넌트
 const MyPageContent = ({ selectedTab, userData }) => {
   const handleLogout = () => {
     console.log("로그아웃 버튼이 클릭되었습니다.");
-    // 실제 로그아웃 API 호출 및 토큰 제거 로직 추가
-    // navigate("/login"); // 예시: 로그인 페이지로 리디렉션
   };
 
   switch (selectedTab) {
     case "profile":
       return (
         <div className="p-8">
-          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">내 프로필</h2>
+          <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
+            내 프로필
+          </h2>
           <hr className="mb-4" />
           <div className="flex flex-col space-y-8">
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-4">
-                <IoPersonCircle className="text-[#B9B9B9] w-[60px] h-[60px]" />
-                <div className="flex flex-col">
-                  <span className="font-semibold text-base text-[#212121]">
+            <div className="flex items-center space-x-8 justify-between">
+              <div className="flex items-center space-x-4 ml-8 mt-5">
+                <IoPersonCircle className="text-[#B9B9B9] w-[80px] h-[80px]" />
+                <div className="flex flex-col space-y-1">
+                  <span className="font-semibold text-base text-[#212121] text-[20px]">
                     {userData.nickname}
                   </span>
-                  <span className="font-normal text-sm text-[#4C4C4C]">
+                  <span className="font-normal text-[#4C4C4C] text-[14px]">
                     {userData.email}
                   </span>
                 </div>
               </div>
-              <div className="flex-1 border-l border-gray-200 pl-8 flex justify-around">
-                <div className="flex flex-col items-center">
-                  <span className="text-sm text-[#4C4C4C] font-normal">
+              <div className="flex flex-row justify-end mr-16 space-x-8 mt-5">
+                <div className="flex flex-col items-left">
+                  <span className="text-[14px] text-[#A3A3A3] font-normal">
                     공모전 등록
                   </span>
-                  <span className="text-xl font-bold mt-1">00회</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <span className="text-sm text-[#4C4C4C] font-normal">
-                    거래 완료
+                  <span className=" text-[#212121] text-[16px] font-semibold mt-1">
+                    00회
                   </span>
-                  <span className="text-xl font-bold mt-1">00회</span>
+                </div>
+                <div className="flex-1 border-l border-gray-200 pl-8 flex">
+                  <div className="flex flex-col items-left">
+                    <span className="text-sm text-[#A3A3A3] font-normal">
+                      거래 완료
+                    </span>
+                    <span className="text-[#212121] text-[16px] font-semibold mt-1">
+                      00회
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-inner">
-              <div className="w-20 h-20 bg-gray-200 rounded-full mb-4"></div>{" "}
-              <p className="text-lg font-bold text-[#4C4C4C]">
+
+            <hr className="text-[#E1E1E1]" />
+            <div className="flex flex-col space-y-2 items-center justify-center p-36 bg-white">
+              <PiNotebook className="w-[120px] h-[120px] text-[#F3F3F3]" />
+              <p className="text-[16px] font-semibold text-[#212121]">
                 아직 공모전이 없어요.
               </p>
-              <p className="text-sm text-[#A3A3A3]">
-                가장 쉬운 공모전 도전을 제안 받아보세요.
+              <p className="text-[12px] font-medium text-[#A3A3A3]">
+                가게에 필요한 도움을 요청해 보세요.
               </p>
             </div>
           </div>
@@ -62,7 +70,7 @@ const MyPageContent = ({ selectedTab, userData }) => {
     case "terms":
       return (
         <div className="p-8">
-          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">
+          <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
             약관 및 정책
           </h2>
           <hr className="mb-4" />
@@ -95,7 +103,9 @@ const MyPageContent = ({ selectedTab, userData }) => {
     case "customer-service":
       return (
         <div className="p-8">
-          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">고객센터</h2>
+          <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
+            고객센터
+          </h2>
           <hr className="mb-4" />
           <div className="text-sm">
             <p className="mb-2 text-[#4C4C4C]">도움이 필요하신가요?</p>
@@ -120,7 +130,9 @@ const MyPageContent = ({ selectedTab, userData }) => {
     case "account":
       return (
         <div className="p-8">
-          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">계정 관리</h2>
+          <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
+            계정 관리
+          </h2>
           <hr className="mb-4" />
           <div className="text-sm">
             <p className="mb-4 text-[#4C4C4C]">
@@ -154,7 +166,6 @@ const MerchantMyPage = () => {
   const [selectedTab, setSelectedTab] = useState("profile");
 
   useEffect(() => {
-    // URL에서 탭 정보를 가져와 초기 상태 설정
     const queryParams = new URLSearchParams(location.search);
     const tab = queryParams.get("tab");
     if (tab) {
@@ -187,7 +198,7 @@ const MerchantMyPage = () => {
               <li
                 className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
                   selectedTab === "profile"
-                    ? "font-bold text-[#212121]"
+                    ? "font-medium text-[#212121]"
                     : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("profile")}
@@ -197,7 +208,7 @@ const MerchantMyPage = () => {
               <li
                 className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
                   selectedTab === "terms"
-                    ? "font-bold text-[#212121]"
+                    ? "font-medium text-[#212121]"
                     : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("terms")}
@@ -207,7 +218,7 @@ const MerchantMyPage = () => {
               <li
                 className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
                   selectedTab === "customer-service"
-                    ? "font-bold text-[#212121]"
+                    ? "font-medium text-[#212121]"
                     : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("customer-service")}
@@ -217,7 +228,7 @@ const MerchantMyPage = () => {
               <li
                 className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
                   selectedTab === "account"
-                    ? "font-bold text-[#212121]"
+                    ? "font-medium text-[#212121]"
                     : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("account")}
