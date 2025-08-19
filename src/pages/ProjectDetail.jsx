@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import MerchantHeader from "../header/MerchantHeader";
 import api from "../apis/api";
 import { fetchSubmissions } from "../apis/getSubmissionsApi";
+import { fetchUserInfo } from "../apis/userApi";
 
 // 아이콘 및 이미지
 import calendarIcon from "../assets/calendarIcon.png";
@@ -44,6 +45,7 @@ const ProjectDetail = ({ role }) => {
   const [error, setError] = useState(null);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
 
   const { projectId } = useParams();
   const navigate = useNavigate();
@@ -73,6 +75,19 @@ const ProjectDetail = ({ role }) => {
 
     fetchProjectDetails();
   }, [projectId]);
+
+  // 사용자 정보 조회
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const data = await fetchUserInfo();
+        setUserInfo(data);
+      } catch (err) {
+        console.error("사용자 정보 불러오기 실패:", err);
+      }
+    };
+    loadUserInfo();
+  }, []);
 
   const toggleOptionsModal = () => {
     setIsOptionsModalOpen(!isOptionsModalOpen);
@@ -175,6 +190,26 @@ const ProjectDetail = ({ role }) => {
   const projectStatus = daysLeft > 0 ? "ongoing" : "ended";
   const hasSubmissions = projectData.submissionsCount > 0;
 
+  // 블러 조건
+  const isParticipant = userInfo?.role === "ROLE_USER";
+  const isMerchant = userInfo?.role === "ROLE_BUSINESS";
+  const isMyProject = isMerchant && userInfo?.user_id === projectData.userId;
+
+  // 참가자가 제출한 작품만 필터링
+  let displayedSubmissions = [...submissions];
+  if (isParticipant) {
+    const mySubmission = submissions.find(
+      (sub) => sub.userId === userInfo?.user_id
+    );
+    if (mySubmission) {
+      // 내 작품이 있으면 맨 앞으로 배치
+      displayedSubmissions = [
+        mySubmission,
+        ...submissions.filter((sub) => sub.userId !== userInfo?.user_id),
+      ];
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen font-pretendard">
       <MerchantHeader />
@@ -205,7 +240,7 @@ const ProjectDetail = ({ role }) => {
               </button>
               {isOptionsModalOpen && (
                 <div
-                  className="absolute right-0 top-10 bg-white border border-[#F3F3F3] rounded-md shadow-md py-2 w-38 z-10"
+                  className="absolute right-0 top-10 bg-white border border-[#F3F3F3] rounded-md py-2 w-38 z-10"
                   style={{ zIndex: 100 }}
                 >
                   <button
@@ -426,13 +461,23 @@ const ProjectDetail = ({ role }) => {
             <div className="flex flex-col">
               {submissions.length > 0 ? (
                 <div className="grid grid-cols-4 gap-8 mt-16">
-                  {submissions.map((submission) => (
-                    <SubmissionThumbnail
-                      key={submission.id}
-                      submission={submission}
-                      onClick={handleSubmissionClick}
-                    />
-                  ))}
+                  {displayedSubmissions.map((submission) => {
+                    // 참가자일 경우: 내 작품만 블러 해제
+                    const blurForParticipant =
+                      isParticipant && submission.userId !== userInfo?.user_id;
+
+                    // 소상공인일 경우: 내 공모전이 아니면 블러
+                    const blurForMerchant = isMerchant && !isMyProject;
+
+                    return (
+                      <SubmissionThumbnail
+                        key={submission.submissionId}
+                        submission={submission}
+                        onClick={handleSubmissionClick}
+                        isBlur={blurForParticipant || blurForMerchant}
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-[300px] mt-16">
