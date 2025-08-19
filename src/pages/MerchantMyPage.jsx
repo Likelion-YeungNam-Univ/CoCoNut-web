@@ -76,15 +76,22 @@ const MyPageContent = ({ selectedTab, userData }) => {
           <hr className="mb-4" />
           <div className="text-sm space-y-4">
             <div>
-              <h3 className="font-semibold text-base mb-1">
+              <h3 className="font-medium text-[#212121] text-base mt-12">
                 서비스 이용약관 동의
               </h3>
-              <p className="text-[#4C4C4C]">
-                이 약관은 팀 브릿지(이하 '회사'라 한다)가 운영하는 웹사이트 관련
-                서비스(이하 '서비스')를 하나의 계정으로 가입하여 이용함에 있어
-                회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로
-                합니다.
-              </p>
+              <div className="w-[744px] h-[280px] border border-[#F3F3F3] mt-4 rounded-lg">
+                <div className="p-6">
+                  <h1 className="text-[#212121] font-medium text-[14px]">
+                    제1조 목적
+                  </h1>
+                  <p className="text-[#626262] text-[14px]">
+                    이 약관은 팀 브릿지(이하 '회사'라 한다)가 운영하는 웹사이트
+                    관련 서비스(이하 '서비스')를 하나의 계정으로 가입하여
+                    이용함에 있어 회사와 이용자의 권리, 의무 및 책임사항을
+                    규정함을 목적으로 합니다.
+                  </p>
+                </div>
+              </div>
             </div>
             <div>
               <h3 className="font-semibold text-base mb-1">
