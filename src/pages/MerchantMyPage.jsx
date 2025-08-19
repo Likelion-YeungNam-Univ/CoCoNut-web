@@ -16,40 +16,62 @@ const MyPageContent = ({ selectedTab, userData }) => {
   switch (selectedTab) {
     case "profile":
       return (
-        <div className="p-4">
-          <div className="flex items-center gap-4 mb-4">
-            <IoPersonCircle className="text-[#B9B9B9] w-[60px] h-[60px]" />
-            <div className="flex flex-col space-y-1">
-              <div className="font-semibold text-[14px] text-[#212121]">
-                {userData.nickname}
+        <div className="p-8">
+          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">내 프로필</h2>
+          <hr className="mb-4" />
+          <div className="flex flex-col space-y-8">
+            <div className="flex items-center space-x-8">
+              <div className="flex items-center space-x-4">
+                <IoPersonCircle className="text-[#B9B9B9] w-[60px] h-[60px]" />
+                <div className="flex flex-col">
+                  <span className="font-semibold text-base text-[#212121]">
+                    {userData.nickname}
+                  </span>
+                  <span className="font-normal text-sm text-[#4C4C4C]">
+                    {userData.email}
+                  </span>
+                </div>
               </div>
-              <div className="font-normal text-[12px] text-[#212121]">
-                {userData.email}
+              <div className="flex-1 border-l border-gray-200 pl-8 flex justify-around">
+                <div className="flex flex-col items-center">
+                  <span className="text-sm text-[#4C4C4C] font-normal">
+                    공모전 등록
+                  </span>
+                  <span className="text-xl font-bold mt-1">00회</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-sm text-[#4C4C4C] font-normal">
+                    거래 완료
+                  </span>
+                  <span className="text-xl font-bold mt-1">00회</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex justify-between text-center mt-4">
-            <div className="flex flex-col">
-              <span className="text-xl font-bold">00회</span>
-              <span className="text-xs text-[#4C4C4C]">수상 등록</span>
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-bold">00회</span>
-              <span className="text-xs text-[#4C4C4C]">신청한 공모전</span>
+            <div className="flex flex-col items-center justify-center p-12 bg-white rounded-lg shadow-inner">
+              <div className="w-20 h-20 bg-gray-200 rounded-full mb-4"></div>{" "}
+              <p className="text-lg font-bold text-[#4C4C4C]">
+                아직 공모전이 없어요.
+              </p>
+              <p className="text-sm text-[#A3A3A3]">
+                가장 쉬운 공모전 도전을 제안 받아보세요.
+              </p>
             </div>
           </div>
         </div>
       );
     case "terms":
       return (
-        <div className="p-4">
-          <h2 className="font-bold text-lg mb-4">약관 및 정책</h2>
+        <div className="p-8">
+          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">
+            약관 및 정책
+          </h2>
+          <hr className="mb-4" />
           <div className="text-sm space-y-4">
             <div>
               <h3 className="font-semibold text-base mb-1">
                 서비스 이용약관 동의
               </h3>
-              <p>
+              <p className="text-[#4C4C4C]">
                 이 약관은 팀 브릿지(이하 '회사'라 한다)가 운영하는 웹사이트 관련
                 서비스(이하 '서비스')를 하나의 계정으로 가입하여 이용함에 있어
                 회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로
@@ -60,7 +82,7 @@ const MyPageContent = ({ selectedTab, userData }) => {
               <h3 className="font-semibold text-base mb-1">
                 개인정보 수집 및 이용에 대한 안내
               </h3>
-              <p>
+              <p className="text-[#4C4C4C]">
                 이 약관은 팀 브릿지(이하 '회사'라 한다)가 운영하는 웹사이트 관련
                 서비스(이하 '서비스')를 하나의 계정으로 가입하여 이용함에 있어
                 회사와 이용자의 권리, 의무 및 책임사항을 규정함을 목적으로
@@ -72,8 +94,9 @@ const MyPageContent = ({ selectedTab, userData }) => {
       );
     case "customer-service":
       return (
-        <div className="p-4">
-          <h2 className="font-bold text-lg mb-4">고객센터</h2>
+        <div className="p-8">
+          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">고객센터</h2>
+          <hr className="mb-4" />
           <div className="text-sm">
             <p className="mb-2 text-[#4C4C4C]">도움이 필요하신가요?</p>
             <p className="mb-4 text-[#A3A3A3]">
@@ -96,8 +119,9 @@ const MyPageContent = ({ selectedTab, userData }) => {
       );
     case "account":
       return (
-        <div className="p-4">
-          <h2 className="font-bold text-lg mb-4">계정 관리</h2>
+        <div className="p-8">
+          <h2 className="font-medium text-xl mb-4 text-[#AEAEAE]">계정 관리</h2>
+          <hr className="mb-4" />
           <div className="text-sm">
             <p className="mb-4 text-[#4C4C4C]">
               회원 정보를 안전하게 관리하세요.
@@ -155,53 +179,53 @@ const MerchantMyPage = () => {
     <div>
       <MerchantHeader />
       <div className="w-full h-screen flex justify-center py-10 font-pretendard">
-        <div className="w-[1200px] h-full flex border border-gray-200 rounded-lg shadow-lg font-pretendard">
+        <div className="w-[1200px] h-full flex font-pretendard">
           {/* 좌측 메뉴 바 */}
-          <div className="w-[240px] p-4 border-r border-[#E1E1E1] text-sm">
-            <ul className="space-y-2 text-[#212121] font-normal">
+          <div className="w-[240px] text-sm mt-19">
+            <hr className="mb-0 border-t-1 border-[#E1E1E1]" />
+            <ul className="text-[#4C4C4C] font-normal">
               <li
-                className={`p-2 cursor-pointer rounded-lg hover:bg-gray-100 ${
-                  selectedTab === "profile" ? "bg-gray-100 font-semibold" : ""
+                className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
+                  selectedTab === "profile"
+                    ? "font-bold text-[#212121]"
+                    : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("profile")}
               >
                 내 프로필
               </li>
               <li
-                className={`p-2 cursor-pointer rounded-lg hover:bg-gray-100 ${
-                  selectedTab === "terms" ? "bg-gray-100 font-semibold" : ""
+                className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
+                  selectedTab === "terms"
+                    ? "font-bold text-[#212121]"
+                    : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("terms")}
               >
                 약관 및 정책
               </li>
               <li
-                className={`p-2 cursor-pointer rounded-lg hover:bg-gray-100 ${
+                className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
                   selectedTab === "customer-service"
-                    ? "bg-gray-100 font-semibold"
-                    : ""
+                    ? "font-bold text-[#212121]"
+                    : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("customer-service")}
               >
                 고객센터
               </li>
               <li
-                className={`p-2 cursor-pointer rounded-lg hover:bg-gray-100 ${
-                  selectedTab === "account" ? "bg-gray-100 font-semibold" : ""
+                className={`p-4 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
+                  selectedTab === "account"
+                    ? "font-bold text-[#212121]"
+                    : "text-[#4C4C4C]"
                 }`}
                 onClick={() => setSelectedTab("account")}
               >
                 계정 관리
               </li>
-              <li
-                className={`p-2 cursor-pointer rounded-lg hover:bg-gray-100 ${
-                  selectedTab === "logout" ? "bg-gray-100 font-semibold" : ""
-                }`}
-                onClick={() => setSelectedTab("logout")}
-              >
-                로그아웃
-              </li>
             </ul>
+            <hr className="mt-0 border-t-1 border-[#E1E1E1]" />
           </div>
 
           {/* 우측 콘텐츠 영역 */}
