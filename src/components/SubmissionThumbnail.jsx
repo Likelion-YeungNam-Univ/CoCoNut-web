@@ -18,7 +18,7 @@ const SubmissionThumbnail = ({ submission, onClick, isBlur }) => {
         )}
       </div>
       <div className="p-5 bg-white font-pretendard">
-        <h3 className="text-[#212121] text-[16px] font-semibold truncate">
+        <h3 className="text-[#212121] text-[16px] font-semibold truncate hover:text-[#626262]">
           {submission.title || "제목 없음"}
         </h3>
       </div>
