@@ -1,7 +1,7 @@
 
 // src/components/myprojects/MyProjectsList.jsx
 import React, { useEffect, useState } from "react";
-import readProjectApi from "../../apis/joohee/readProjectApi";
+import readProjectApi from "../../apis/projectapi/readProjectApi";
 import MyProjectRow from "./MyProjectRow";
 
 const MyProjectsList = ({ getCategoryLabel, getBusinessTypeLabel, project }) => {
