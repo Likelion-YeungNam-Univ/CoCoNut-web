@@ -63,7 +63,7 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
 
       {/* 버튼들 */}
       <div className="flex-1 flex justify-end gap-8">
-         <button onClick={() => navigate("/participant-mypage")} className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
+         <button onClick={() => navigate("/participant-myproject")} className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
           내 공모전
         </button> 
         <IoPersonCircle className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer" />
