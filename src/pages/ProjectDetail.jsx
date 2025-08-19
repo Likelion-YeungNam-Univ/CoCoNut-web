@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MerchantHeader from "../header/MerchantHeader";
 import api from "../apis/api";
+import { fetchSubmissions } from "../apis/getSubmissionsApi";
 
 // 아이콘 및 이미지
 import calendarIcon from "../assets/calendarIcon.png";
@@ -34,33 +35,6 @@ const formatCurrency = (amount) => {
   return `${numericAmount.toLocaleString()}원`;
 };
 
-const DUMMY_SUBMISSIONS = [
-  {
-    id: 1,
-    title: "참여작 제목 1",
-    writerNickname: "참가자1",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
-    description:
-      "참여작 내용입니다. 이 작업은 프로젝트의 요구 사항을 충족시키기 위해 제작되었습니다.",
-  },
-  {
-    id: 2,
-    title: "참여작 제목 2",
-    writerNickname: "참가자2",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+2",
-    description:
-      "두 번째 참여작입니다. 다양한 디자인 요소를 활용하여 제작된 작품입니다.",
-  },
-  {
-    id: 3,
-    title: "참여작 제목 3",
-    writerNickname: "참가자3",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+3",
-    description:
-      "세 번째 참여작입니다. 창의적인 아이디어를 담아 만들어졌습니다.",
-  },
-];
-
 const ProjectDetail = ({ role }) => {
   const [activeTab, setActiveTab] = useState("CONTENT");
   const [projectData, setProjectData] = useState(null);
@@ -80,6 +54,9 @@ const ProjectDetail = ({ role }) => {
         setLoading(true);
         const projectResponse = await api.get(`/projects/${projectId}`);
         setProjectData(projectResponse.data);
+        const submissionsData = await fetchSubmissions(projectId);
+        setSubmissions(submissionsData);
+
         setError(null);
       } catch (err) {
         console.error("Failed to fetch project details:", err);
@@ -94,8 +71,6 @@ const ProjectDetail = ({ role }) => {
       }
     };
 
-    // API 호출 대신 더미 데이터 사용
-    setSubmissions(DUMMY_SUBMISSIONS);
     fetchProjectDetails();
   }, [projectId]);
 
