@@ -119,7 +119,13 @@ const ProjectDetail = ({ role }) => {
   };
 
   const handleSubmissionClick = (submission) => {
-    setSelectedSubmission(submission);
+    const canOpenDetail =
+      (isMerchant && isMyProject) || // 소상공인 & 내 공모전일 때
+      (isParticipant && submission.userId === userInfo?.user_id); // 참가자 & 내 작품일 때
+
+    if (canOpenDetail) {
+      setSelectedSubmission(submission);
+    }
   };
 
   const handleCloseSubmissionModal = () => {
@@ -509,7 +515,12 @@ const ProjectDetail = ({ role }) => {
 
       {selectedSubmission && (
         <SubmissionDetailModal
-          isOpen={!!selectedSubmission}
+          isOpen={
+            !!selectedSubmission &&
+            ((isMerchant && isMyProject) || // 소상공인 & 내 공모전
+              (isParticipant &&
+                selectedSubmission.userId === userInfo?.user_id)) // 참가자 & 내 작품
+          }
           submissionId={selectedSubmission.submissionId}
           onClose={handleCloseSubmissionModal}
         />
