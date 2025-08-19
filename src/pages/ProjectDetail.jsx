@@ -250,29 +250,31 @@ const ProjectDetail = ({ role }) => {
             <h1 className="text-[28px] font-semibold text-[#212121] ">
               {projectData.title || "공모전 제목 없음"}
             </h1>
-            <div className="relative">
-              <button onClick={toggleOptionsModal}>
-                <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121]" />
-              </button>
-              {isOptionsModalOpen && (
-                <div
-                  className="absolute right-0 top-10 bg-white border border-[#F3F3F3] rounded-md py-2 w-38 z-10"
-                  style={{ zIndex: 100 }}
-                >
-                  <button
-                    className="flex items-center px-4 py-2 text-[#4C4C4C] hover:bg-gray-100 w-full text-left"
-                    onClick={handleOpenDeleteModal}
+            {isMyProject && (
+              <div className="relative">
+                <button onClick={toggleOptionsModal}>
+                  <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121]" />
+                </button>
+                {isOptionsModalOpen && (
+                  <div
+                    className="absolute right-0 top-10 bg-white border border-[#F3F3F3] rounded-md py-2 w-38 z-10"
+                    style={{ zIndex: 100 }}
                   >
-                    <div className="flex space-x-2">
-                      <AiFillDelete className="text-[#C3C3C3]" />
-                      <span className="text-[#828282] text-[12px]">
-                        삭제하기
-                      </span>
-                    </div>
-                  </button>
-                </div>
-              )}
-            </div>
+                    <button
+                      className="flex items-center px-4 py-2 text-[#4C4C4C] hover:bg-gray-100 w-full text-left"
+                      onClick={handleOpenDeleteModal}
+                    >
+                      <div className="flex space-x-2">
+                        <AiFillDelete className="text-[#C3C3C3]" />
+                        <span className="text-[#828282] text-[12px]">
+                          삭제하기
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex space-x-2 mb-3">
             <IoPersonCircle className="text-[#B9B9B9] w-[20px] h-[20px]" />
