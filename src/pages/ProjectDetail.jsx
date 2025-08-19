@@ -22,6 +22,7 @@ import ContentSubmissionsTabs from "../components/ContentSubmissionsTabs";
 import Footer from "../components/Footer";
 import DeleteModal from "../components/DeleteModal";
 import SubmissionThumbnail from "../components/SubmissionThumbnail";
+import SubmissionDetailModal from "../components/SubmissionDetailModal";
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) {
@@ -508,7 +509,8 @@ const ProjectDetail = ({ role }) => {
 
       {selectedSubmission && (
         <SubmissionDetailModal
-          submission={selectedSubmission}
+          isOpen={!!selectedSubmission}
+          submissionId={selectedSubmission.submissionId}
           onClose={handleCloseSubmissionModal}
         />
       )}
