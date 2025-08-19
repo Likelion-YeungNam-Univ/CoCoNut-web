@@ -10,8 +10,9 @@ import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
 import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
-import MerchantMy from "./pages/MerchantMy";
-import ParticipantMy from "./pages/ParticipantMy.jsx";
+
+import MerchantMyProject from "./pages/MerchantMyProject.jsx";
+import ParticipantMyProject from "./pages/ParticipantMyProject.jsx";
 
 export default function App() {
   return (
@@ -49,8 +50,8 @@ export default function App() {
             path="/projects/:projectId/submission"
             element={<ProjectSubmissionPage />}
           />
-           <Route path="merchant-mypage" element={<MerchantMy/>}/>
-            <Route path="participant-mypage" element={<ParticipantMy/>}/>
+           <Route path="merchant-myproject" element={<MerchantMyProject/>}/>
+            <Route path="participant-myproject" element={<ParticipantMyProject/>}/>
         </Routes>
       </BrowserRouter>
     </AuthProvider>
