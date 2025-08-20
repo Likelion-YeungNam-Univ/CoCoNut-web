@@ -4,15 +4,17 @@ import { BiSearch } from "react-icons/bi";
 import { IoPersonCircle } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
 import { IoIosClose } from "react-icons/io";
+import LoginRequiredModal from "../components/LoginRequiredModal";
 
 const GuestHeader = ({ defaultValue = "" }) => {
   const [value, setValue] = useState(defaultValue);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const navigate = useNavigate();
 
   const submit = (e) => {
     e.preventDefault();
     const q = value.trim();
-    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+    navigate(q ? `/guest-search?q=${encodeURIComponent(q)}` : "/guest-search");
   };
 
   return (
@@ -60,7 +62,7 @@ const GuestHeader = ({ defaultValue = "" }) => {
       {/* 버튼들 */}
       <div className="flex-1 flex justify-end gap-8">
         <button
-          onClick={() => navigate("/merchant-myproject")}
+          onClick={() => setShowLoginModal(true)}
           className="text-[12px] text-[#4C4C4C] font-[12px] cursor-pointer"
         >
           내 공모전
@@ -73,6 +75,9 @@ const GuestHeader = ({ defaultValue = "" }) => {
         </Link>
         <IoPersonCircle className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer" />
       </div>
+      {showLoginModal && (
+        <LoginRequiredModal onClose={() => setShowLoginModal(false)} />
+      )}
     </div>
   );
 };
