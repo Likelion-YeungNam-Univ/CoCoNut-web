@@ -12,6 +12,7 @@ import { fetchCategories } from "../apis/category";
 import { getBusinessTypes } from "../apis/businessTypes";
 
 import MyProjectRow from "../components/myprojects/MyProjectRow";
+import MyProjectsList from "../components/myprojects/MyprojectsList";
 import { useNavigate, Link } from "react-router-dom";
 
 const PAGE_SIZE = 5;
@@ -150,11 +151,11 @@ const MerchantMyProject = () => {
         className="block cursor-pointer hover:bg-[#FAFAFA] rounded-[6px] transition-colors"
         aria-label={`${p.title || "공모전"} 상세보기`}
       >
-        <MyProjectRow
-          project={p}
+        <MyProjectsList
           getCategoryLabel={getCategoryLabel}
           getBusinessTypeLabel={getBusinessTypeLabel}
-        />
+        
+         project={{ project: p }} />
       </Link>
     </div>
 

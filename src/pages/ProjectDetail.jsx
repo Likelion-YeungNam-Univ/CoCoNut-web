@@ -1,12 +1,9 @@
-// src/pages/ProjectDetail.jsx
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-
 import MerchantHeader from "../header/MerchantHeader";
 import api from "../apis/api";
-
-// 투표 그리드 (components 루트에 생성)
-import ParticipantVoteGrid from "../components/ParticipantVoteGrid";
+import { fetchSubmissions } from "../apis/getSubmissionsApi";
+import { fetchUserInfo } from "../apis/userApi";
 
 // 아이콘 및 이미지
 import calendarIcon from "../assets/calendarIcon.png";
@@ -24,65 +21,23 @@ import { COLORS_DATA } from "../utils/colorData";
 import ContentSubmissionsTabs from "../components/ContentSubmissionsTabs";
 import Footer from "../components/Footer";
 import DeleteModal from "../components/DeleteModal";
-
-// ⚠️ (선택) 아래 모달 컴포넌트를 실제로 쓰고 있다면 import 유지
-// import SubmissionDetailModal from "../components/SubmissionDetailModal";
+import SubmissionThumbnail from "../components/SubmissionThumbnail";
+import SubmissionDetailModal from "../components/SubmissionDetailModal";
 
 const formatCurrency = (amount) => {
-  if (amount === null || amount === undefined) return "가격 없음";
+  if (amount === null || amount === undefined) {
+    return "가격 없음";
+  }
+
   const numericAmount = Number(String(amount).replace(/[^0-9]/g, ""));
-  if (isNaN(numericAmount)) return amount;
+  if (isNaN(numericAmount)) {
+    return amount;
+  }
+
   return `${numericAmount.toLocaleString()}원`;
 };
 
-// 더미 참여작 (API 연동 전 테스트용)
-const DUMMY_SUBMISSIONS = [
-  {
-    id: 1,
-    title: "참여작 제목 1",
-    writerNickname: "참가자1",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
-    description: "참여작 내용입니다.",
-  },
-  {
-    id: 2,
-    title: "참여작 제목 2",
-    writerNickname: "참가자2",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+2",
-    description: "두 번째 참여작입니다.",
-  },
-  {
-    id: 3,
-    title: "참여작 제목 3",
-    writerNickname: "참가자3",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+3",
-    description: "세 번째 참여작입니다.",
-  },
-    {
-    id: 4,
-    title: "참여작 제목 4",
-    writerNickname: "참가자4",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
-    description: "참여작 내용입니다.",
-  },
-    {
-    id: 5,
-    title: "참여작 제목 5",
-    writerNickname: "참가자5",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
-    description: "참여작 내용입니다.",
-  },
-    {
-    id: 6,
-    title: "참여작 제목 6",
-    writerNickname: "참가자6",
-    imageUrl: "https://via.placeholder.com/600/D3D3D3/000000?text=Submission+1",
-    description: "참여작 내용입니다.",
-  },
-];
-
 const ProjectDetail = ({ role }) => {
-  const [activeTab, setActiveTab] = useState("CONTENT");
   const [projectData, setProjectData] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
@@ -90,17 +45,30 @@ const ProjectDetail = ({ role }) => {
   const [error, setError] = useState(null);
   const [isOptionsModalOpen, setIsOptionsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
 
   const { projectId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const initialTab = location.state?.initialTab || "CONTENT";
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  // 참가자가 제출한 작품이 있는지 여부
+  const hasMySubmission = submissions.some(
+    (sub) => sub.userId === userInfo?.user_id
+  );
 
   useEffect(() => {
+    if (!userInfo) return;
+
     const fetchProjectDetails = async () => {
       try {
         setLoading(true);
         const projectResponse = await api.get(`/projects/${projectId}`);
         setProjectData(projectResponse.data);
+        const submissionsData = await fetchSubmissions(projectId);
+        setSubmissions(submissionsData);
+
         setError(null);
       } catch (err) {
         console.error("Failed to fetch project details:", err);
@@ -115,10 +83,21 @@ const ProjectDetail = ({ role }) => {
       }
     };
 
-    // 현재는 API 대신 더미 사용
-    setSubmissions(DUMMY_SUBMISSIONS);
     fetchProjectDetails();
-  }, [projectId]);
+  }, [projectId, location.state?.refresh, userInfo]);
+
+  // 사용자 정보 조회
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const data = await fetchUserInfo();
+        setUserInfo(data);
+      } catch (err) {
+        console.error("사용자 정보 불러오기 실패:", err);
+      }
+    };
+    loadUserInfo();
+  }, []);
 
   const toggleOptionsModal = () => {
     setIsOptionsModalOpen(!isOptionsModalOpen);
@@ -147,7 +126,13 @@ const ProjectDetail = ({ role }) => {
   };
 
   const handleSubmissionClick = (submission) => {
-    setSelectedSubmission(submission);
+    const canOpenDetail =
+      (isMerchant && isMyProject) || // 소상공인 & 내 공모전일 때
+      (isParticipant && submission.userId === userInfo?.user_id); // 참가자 & 내 작품일 때
+
+    if (canOpenDetail) {
+      setSelectedSubmission(submission);
+    }
   };
 
   const handleCloseSubmissionModal = () => {
@@ -203,8 +188,13 @@ const ProjectDetail = ({ role }) => {
     ETC: "기타",
   };
 
-  const getCategoryLabel = (code) => CATEGORIES_MAP[code] || "카테고리 없음";
-  const getBusinessTypeLabel = (code) => BUSINESSTYPES_MAP[code] || "업종 없음";
+  const getCategoryLabel = (code) => {
+    return CATEGORIES_MAP[code] || "카테고리 없음";
+  };
+
+  const getBusinessTypeLabel = (code) => {
+    return BUSINESSTYPES_MAP[code] || "업종 없음";
+  };
 
   const daysLeft = projectData.deadline
     ? Math.ceil(
@@ -216,12 +206,31 @@ const ProjectDetail = ({ role }) => {
   const projectStatus = daysLeft > 0 ? "ongoing" : "ended";
   const hasSubmissions = projectData.submissionsCount > 0;
 
+  // 블러 조건
+  const isParticipant = userInfo?.role === "ROLE_USER";
+  const isMerchant = userInfo?.role === "ROLE_BUSINESS";
+  const isMyProject = isMerchant && userInfo?.user_id === projectData.userId;
+
+  // 참가자가 제출한 작품만 필터링
+  let displayedSubmissions = [...submissions];
+  if (isParticipant) {
+    const mySubmission = submissions.find(
+      (sub) => sub.userId === userInfo?.user_id
+    );
+    if (mySubmission) {
+      // 내 작품이 있으면 맨 앞으로 배치
+      displayedSubmissions = [
+        mySubmission,
+        ...submissions.filter((sub) => sub.userId !== userInfo?.user_id),
+      ];
+    }
+  }
+
   return (
     <div className="flex flex-col min-h-screen font-pretendard">
       <MerchantHeader />
       <div className="flex-grow bg-[#FFFFFF] py-8 px-40">
         <div className="p-15">
-          {/* 카테고리/업종 라벨 */}
           <div className="flex items-center justify-between text-gray-500 text-sm mb-4">
             <div className="flex items-center space-x-2 text-[#828282]">
               <span className="text-[#A3A3A3] text-[12px] font-normal">
@@ -237,36 +246,36 @@ const ProjectDetail = ({ role }) => {
               </span>
             </div>
           </div>
-
-          {/* 제목 + 옵션 버튼 */}
           <div className="flex items-start justify-between mb-2">
             <h1 className="text-[28px] font-semibold text-[#212121] ">
               {projectData.title || "공모전 제목 없음"}
             </h1>
-            <div className="relative">
-              <button onClick={toggleOptionsModal}>
-                <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121]" />
-              </button>
-              {isOptionsModalOpen && (
-                <div
-                  className="absolute right-0 top-10 bg-white border border-[#F3F3F3] rounded-md shadow-md py-2 w-38 z-10"
-                  style={{ zIndex: 100 }}
-                >
-                  <button
-                    className="flex items-center px-4 py-2 text-[#4C4C4C] hover:bg-gray-100 w-full text-left"
-                    onClick={handleOpenDeleteModal}
+            {isMyProject && (
+              <div className="relative">
+                <button onClick={toggleOptionsModal}>
+                  <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121]" />
+                </button>
+                {isOptionsModalOpen && (
+                  <div
+                    className="absolute right-0 top-10 bg-white border border-[#F3F3F3] rounded-md py-2 w-38 z-10"
+                    style={{ zIndex: 100 }}
                   >
-                    <div className="flex space-x-2">
-                      <AiFillDelete className="text-[#C3C3C3]" />
-                      <span className="text-[#828282] text-[12px]">삭제하기</span>
-                    </div>
-                  </button>
-                </div>
-              )}
-            </div>
+                    <button
+                      className="flex items-center px-4 py-2 text-[#4C4C4C] hover:bg-gray-100 w-full text-left"
+                      onClick={handleOpenDeleteModal}
+                    >
+                      <div className="flex space-x-2">
+                        <AiFillDelete className="text-[#C3C3C3]" />
+                        <span className="text-[#828282] text-[12px]">
+                          삭제하기
+                        </span>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* 작성자/가게 */}
           <div className="flex space-x-2 mb-3">
             <IoPersonCircle className="text-[#B9B9B9] w-[20px] h-[20px]" />
             <p className="text-sm text-[#828282] mb-6">
@@ -279,57 +288,79 @@ const ProjectDetail = ({ role }) => {
               </span>
             </p>
           </div>
-
-          {/* 상금/참여작/기간 */}
           <div className="space-y-3 text-[#4C4C4C] mb-8">
             <div className="flex items-center space-x-2">
               <img src={prizeIcon} alt="상금 아이콘" className="h-4 w-4" />
-              <span className="text-[14px] text-[#828282] font-medium w-[80px]">상금</span>
+              <span className="text-[14px] text-[#828282] font-medium w-[80px]">
+                상금
+              </span>
               <p className="text-[14px] font-medium text-[#212121]">
                 {formatCurrency(projectData.rewardAmount)}
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <img src={participantIcon} alt="참여작 아이콘" className="h-4 w-4" />
-              <span className="text-[14px] text-[#828282] font-medium w-[80px]">참여작</span>
-              <p className="text-[14px] font-medium text-[#212121]">{submissions.length}</p>
+              <img
+                src={participantIcon}
+                alt="상금 아이콘"
+                className="h-4 w-4"
+              />
+              <span className="text-[14px] text-[#828282] font-medium w-[80px]">
+                참여작
+              </span>
+              <p className="text-[14px] font-medium text-[#212121]">
+                {submissions.length}
+              </p>
             </div>
             <div className="flex items-center space-x-2">
               <img src={calendarIcon} alt="기간 아이콘" className="h-4 w-4" />
-              <span className="text-[14px] text-[#828282] font-medium w-[80px]">기간</span>
+              <span className="text-[14px] text-[#828282] font-medium w-[80px]">
+                기간
+              </span>
               <p className="text-[14px] font-medium text-[#212121]">
                 {projectData.deadline
-                  ? `${projectData.createdAt || "기간 없음"} ~ ${projectData.deadline}`
+                  ? `${projectData.createdAt || "기간 없음"} ~ ${
+                      projectData.deadline
+                    }`
                   : "기간 없음"}
               </p>
             </div>
           </div>
 
-          {/* 참가자 로그인 시 참가하기 버튼 */}
+          {/* 참가자로 로그인한 경우 참가하기 버튼 보이게 */}
           {role === "participant" && (
             <button
-              onClick={() => navigate(`/projects/${projectId}/submission`)}
-              className="w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium bg-[#2FD8F6] text-white rounded-[8px] leading-[130%] tracking-[-0.02em] hover:bg-[#2AC2DD] cursor-pointer"
+              onClick={() =>
+                !hasMySubmission &&
+                navigate(`/projects/${projectId}/submission`)
+              }
+              className={`w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium rounded-[8px] leading-[130%] tracking-[-0.02em]  ${
+                hasMySubmission
+                  ? "bg-[#E1E1E1] text-white"
+                  : "bg-[#2FD8F6] text-white hover:bg-[#2AC2DD] cursor-pointer"
+              }`}
             >
-              참가하기
+              {hasMySubmission ? "참가완료" : "참가하기"}
             </button>
           )}
 
-          {/* 탭 */}
           <div className="pt-[60px]">
-            <ContentSubmissionsTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+            <ContentSubmissionsTabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
           </div>
-
-          {/* 탭 콘텐츠 */}
           {activeTab === "CONTENT" ? (
             <div className="space-y-4 mt-18">
               {projectData.summary && (
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mb-2">한 줄 소개</h2>
-                  <p className="text-[16px] font-normal">{projectData.summary}</p>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mb-2">
+                    한 줄 소개
+                  </h2>
+                  <p className="text-[16px] font-normal">
+                    {projectData.summary}
+                  </p>
                 </div>
               )}
-
               <div className="flex flex-col space-y-4">
                 <h2
                   className={`text-[16px] font-semibold text-[#212121] ${
@@ -338,22 +369,24 @@ const ProjectDetail = ({ role }) => {
                 >
                   내용
                 </h2>
-
                 {projectData.imageUrl && (
                   <div className="p-4 bg-[#EBEBEB] rounded-md text-[#4C4C4C] whitespace-pre-wrap w-full font-pretendard">
-                    <img src={projectData.imageUrl} alt="업로드 이미지" className="..." />
+                    <img
+                      src={projectData.imageUrl}
+                      alt="업로드 이미지"
+                      className="..."
+                    />
                   </div>
                 )}
-
                 <div className="text-base font-normal whitespace-pre-wrap">
                   {projectData.description || "내용 없음"}
                 </div>
               </div>
-
-              {/* 색상 */}
               <div className="space-y-4 mb-8">
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">색상</h2>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
+                    색상
+                  </h2>
                   <div className="grid grid-cols-3 gap-2 mt-2">
                     {projectData.colors && projectData.colors.length > 0 ? (
                       projectData.colors[0] === "color_free" ? (
@@ -362,7 +395,9 @@ const ProjectDetail = ({ role }) => {
                         </span>
                       ) : (
                         projectData.colors.map((colorCode, index) => {
-                          const colorItem = COLORS_DATA.find((item) => item.code === colorCode);
+                          const colorItem = COLORS_DATA.find(
+                            (item) => item.code === colorCode
+                          );
                           return colorItem ? (
                             <span
                               key={index}
@@ -373,14 +408,17 @@ const ProjectDetail = ({ role }) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-3">선택 안 함</span>
+                      <span className="text-[#A3A3A3] text-sm col-span-3">
+                        선택 안 함
+                      </span>
                     )}
                   </div>
                 </div>
-
-                {/* 스타일 */}
+                {/* 스타일  */}
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">스타일</h2>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
+                    스타일
+                  </h2>
                   <div className="grid grid-cols-6 gap-2 mt-2">
                     {projectData.styles && projectData.styles.length > 0 ? (
                       projectData.styles[0] === "style_free" ? (
@@ -389,7 +427,9 @@ const ProjectDetail = ({ role }) => {
                         </span>
                       ) : (
                         projectData.styles.map((styleValue, index) => {
-                          const styleItem = STYLES_DATA.find((s) => s.value === styleValue);
+                          const styleItem = STYLES_DATA.find(
+                            (s) => s.value === styleValue
+                          );
                           return styleItem ? (
                             <span
                               key={index}
@@ -401,14 +441,17 @@ const ProjectDetail = ({ role }) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-6">선택 안 함</span>
+                      <span className="text-[#A3A3A3] text-sm col-span-6">
+                        선택 안 함
+                      </span>
                     )}
                   </div>
                 </div>
-
-                {/* 타겟 */}
+                {/* 타겟  */}
                 <div>
-                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">타겟</h2>
+                  <h2 className="text-[16px] font-semibold text-[#212121] mt-16">
+                    타겟
+                  </h2>
                   <div className="grid grid-cols-6 gap-2 mt-2">
                     {projectData.targets && projectData.targets.length > 0 ? (
                       projectData.targets[0] === "target_free" ? (
@@ -417,7 +460,9 @@ const ProjectDetail = ({ role }) => {
                         </span>
                       ) : (
                         projectData.targets.map((targetValue, index) => {
-                          const targetItem = TARGETS_DATA.find((t) => t.value === targetValue);
+                          const targetItem = TARGETS_DATA.find(
+                            (t) => t.value === targetValue
+                          );
                           return targetItem ? (
                             <span
                               key={index}
@@ -429,30 +474,52 @@ const ProjectDetail = ({ role }) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-6">선택 안 함</span>
+                      <span className="text-[#A3A3A3] text-sm col-span-6">
+                        선택 안 함
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            // ✅ 참여작 탭: 썸네일 그리드 → 투표 그리드로 교체
-            <ParticipantVoteGrid
-              submissions={submissions}
-              voteStartDate="2025.08.21"
-              voteEndDate="2025.08.27"
-              onVote={(s) => {
-                alert(`투표 완료! 선택 작품: ${s.title || s.id}`);
-                // 필요 시 여기서 API 호출/리프레시 등 처리
-              }}
-            />
+            <div className="flex flex-col">
+              {submissions.length > 0 ? (
+                <div className="grid grid-cols-4 gap-8 mt-16">
+                  {displayedSubmissions.map((submission) => {
+                    // 참가자일 경우: 내 작품만 블러 해제
+                    const blurForParticipant =
+                      isParticipant && submission.userId !== userInfo?.user_id;
+
+                    // 소상공인일 경우: 내 공모전이 아니면 블러
+                    const blurForMerchant = isMerchant && !isMyProject;
+
+                    return (
+                      <SubmissionThumbnail
+                        key={submission.submissionId}
+                        submission={submission}
+                        onClick={handleSubmissionClick}
+                        isBlur={blurForParticipant || blurForMerchant}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-[300px] mt-16">
+                  <CgMenuBoxed size={120} className="text-[#E1E1E1]" />
+                  <div className="flex flex-col items-center mt-10">
+                    <label className="text-[#A3A3A3] text-[12px] font-medium">
+                      아직 참여작이 없습니다.
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
-
       <Footer />
 
-      {/* 삭제 모달 */}
       {isDeleteModalOpen && (
         <DeleteModal
           onClose={handleCloseDeleteModal}
@@ -462,9 +529,17 @@ const ProjectDetail = ({ role }) => {
         />
       )}
 
-      {/* (선택) 참여작 상세 모달 – 투표 모드에선 사용 안 하지만 기존 유지 */}
-      {selectedSubmission && typeof SubmissionDetailModal !== "undefined" && (
-        <SubmissionDetailModal submission={selectedSubmission} onClose={handleCloseSubmissionModal} />
+      {selectedSubmission && (
+        <SubmissionDetailModal
+          isOpen={
+            !!selectedSubmission &&
+            ((isMerchant && isMyProject) || // 소상공인 & 내 공모전
+              (isParticipant &&
+                selectedSubmission.userId === userInfo?.user_id)) // 참가자 & 내 작품
+          }
+          submissionId={selectedSubmission.submissionId}
+          onClose={handleCloseSubmissionModal}
+        />
       )}
     </div>
   );
