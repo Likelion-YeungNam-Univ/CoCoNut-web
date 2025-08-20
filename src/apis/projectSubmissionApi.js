@@ -1,13 +1,16 @@
-// apis/projectSubmissionApi.js
 import api from "./api";
 import authApi from "./authApi";
 
 /** 공통: 서버 응답을 배열로 정규화 */
 const normalizeList = (data) => {
-  if (Array.isArray(data)) return data;                 // 배열
+  if (Array.isArray(data)) return data; // 배열
   if (Array.isArray(data?.content)) return data.content; // pageable
-  if (data && typeof data === "object" && ("submissionId" in data || "id" in data)) {
-    return [data];                                      // 단일 객체
+  if (
+    data &&
+    typeof data === "object" &&
+    ("submissionId" in data || "id" in data)
+  ) {
+    return [data]; // 단일 객체
   }
   return [];
 };
@@ -17,24 +20,34 @@ export const submitProject = async (
   projectId,
   { title, description, link, image }
 ) => {
-  const token = sessionStorage.getItem("accessToken");
-  if (!token) throw new Error("로그인이 필요합니다.");
+  try {
+    const token = sessionStorage.getItem("accessToken");
+    const api = authApi(token || "");
 
-  const a = authApi(token);
+    const formData = new FormData();
 
-  const info = { title };
-  if (description?.trim()) info.description = description;
-  if (link?.trim()) info.relatedUrl = link;
+    const info = { title };
+    if (description?.trim()) info.description = description;
+    if (link?.trim()) info.relatedUrl = link;
 
-  const formData = new FormData();
-  formData.append("info", new Blob([JSON.stringify(info)], { type: "application/json" }));
-  if (image) formData.append("image", image);
+    formData.append(
+      "info",
+      new Blob([JSON.stringify(info)], { type: "application/json" })
+    );
+    if (image) formData.append("image", image);
 
-  const { data } = await a.post(`/projects/${projectId}/submissions`, formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-    withCredentials: true,
-  });
-  return data;
+    const headers = { "Content-Type": "multipart/form-data" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+
+    const res = await api.post(`/projects/${projectId}/submissions`, formData, {
+      headers,
+    });
+
+    return res.data;
+  } catch (error) {
+    console.error("제출 실패:", error.response?.data || error.message);
+    throw error;
+  }
 };
 
 /** 특정 프로젝트 제출물 목록 - GET /api/v1/projects/{projectId}/submissions */
@@ -56,11 +69,11 @@ export const fetchAllSubmissions = async (opts = {}) => {
     signal,
     withCredentials: true,
   });
-  console.log(normalizeList(data))
+  console.log(normalizeList(data));
   return normalizeList(data);
 };
- 
-/** 🔹 작품 상세 - GET /api/v1/submissions/{submission_id} */
+
+/** 작품 상세 - GET /api/v1/submissions/{submission_id} */
 export const fetchSubmissionDetail = async (submissionId, opts = {}) => {
   const { signal } = opts;
   const { data } = await api.get(`/submissions/${submissionId}`, {

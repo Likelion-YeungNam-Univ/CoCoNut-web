@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import ParticipantHeader from "../header/ParticipantHeader";
 import Footer from "../components/Footer";
 import { BiSolidImage } from "react-icons/bi";
@@ -10,17 +10,24 @@ import xIcon from "../assets/xIcon.png";
 import SubmissionPreviewModal from "../components/SubmissionPreviewModal";
 import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
 import { submitProject } from "../apis/projectSubmissionApi";
+import { updateSubmission } from "../apis/updateSubmissionApi"; // 🔹 추가
 import checklistIcon1 from "../assets/checklistIcon1.png";
 import checklistIcon2 from "../assets/checklistIcon2.png";
 import checklistIcon3 from "../assets/checklistIcon3.png";
 import checklistIcon4 from "../assets/checklistIcon4.png";
 import checklistIcon5 from "../assets/checklistIcon5.png";
 import checklistIcon6 from "../assets/checklistIcon6.png";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 const ProjectSubmissionPage = () => {
   const navigate = useNavigate();
   const { projectId } = useParams();
+  const location = useLocation();
+
+  // 수정 모드 여부
+  const submission = location.state?.submission || null;
+  const isEditMode = !!submission;
+
   const [allChecked, setAllChecked] = useState(false);
   const [checkList, setCheckList] = useState({
     checklist: false,
@@ -51,47 +58,128 @@ const ProjectSubmissionPage = () => {
   const [uploadedImage, setUploadedImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
-  const [errors, setErrors] = useState({}); // 에러 상태
-  const titleRef = useRef(null); // 제목 input 참조
-  const imageRef = useRef(null); // 이미지 영역 참조
+  const [errors, setErrors] = useState({});
+  const titleRef = useRef(null);
+  const imageRef = useRef(null);
+
+  // 수정 모드일 경우 기존 데이터 세팅
+  useEffect(() => {
+    if (isEditMode) {
+      setProjectTitle(submission.title || "");
+      setDescription(submission.description || "");
+      setLink(submission.relatedUrl || "");
+      if (submission.imageUrl) {
+        setPreviewUrl(submission.imageUrl);
+      }
+    }
+  }, [isEditMode, submission]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setUploadedImage(file); // 서버 전송용
-      setPreviewUrl(URL.createObjectURL(file)); // 화면 표시용
+      setUploadedImage(file);
+      setPreviewUrl(URL.createObjectURL(file));
 
-      // 에러 해제
       if (errors.image) {
         setErrors((prev) => ({ ...prev, image: null }));
       }
     }
   };
 
-  const handleSubmitProject = async () => {
-    try {
-      // 유효성 검사
-      if (!projectTitle.trim()) {
-        setErrors({ title: "공모전의 제목을 입력해 주세요." });
-        return;
+  // 공통 에러 핸들링
+  const handleApiError = (error, context) => {
+    if (error.response) {
+      const { status, data } = error.response;
+      switch (status) {
+        case 400:
+          if (context === "update") {
+            alert(data.message || "제출 기한이 이미 지났습니다.");
+          } else {
+            alert(data.message || "작품제목은 필수 입력입니다.");
+          }
+          break;
+        case 401:
+          alert(data.message || "토큰이 없거나 만료되었습니다.");
+          navigate("/signin");
+          break;
+        case 403:
+          if (context === "submit") {
+            alert(
+              data.message ||
+                "로그인된 계정이 해당 작업을 수행할 수 있는 역할이 아닙니다."
+            );
+          } else {
+            alert(
+              data.message ||
+                "작품의 유저정보와 로그인 정보가 일치하지 않습니다."
+            );
+          }
+          break;
+        case 404:
+          if (context === "submit") {
+            alert(data.message || "해당 공모전을 찾을 수 없습니다.");
+          } else {
+            alert(data.message || "해당 작품은 존재하지 않습니다.");
+          }
+          navigate("/");
+          break;
+        default:
+          alert("알 수 없는 오류가 발생했습니다.");
       }
+    } else {
+      alert("서버와 연결할 수 없습니다.");
+    }
+  };
 
-      setErrors({}); // 에러 초기화
-
+  // 신규 제출
+  const handleSubmitNewProject = async () => {
+    try {
       await submitProject(projectId, {
         title: projectTitle,
         description,
         link,
         image: uploadedImage,
       });
-      alert("제출이 완료되었습니다!");
-      setIsConfirmSubmissionOpen(false);
+      alert("작품이 성공적으로 제출되었습니다!");
       navigate(`/project-detail-participant/${projectId}`, {
         state: { initialTab: "SUBMISSIONS", refresh: true },
       });
     } catch (error) {
-      console.error("제출 실패:", error);
-      alert("제출에 실패했습니다. 다시 시도해주세요.");
+      handleApiError(error, "submit");
+    }
+  };
+
+  // 수정
+  const handleUpdateProject = async () => {
+    try {
+      await updateSubmission(submission.submissionId, {
+        title: projectTitle,
+        description,
+        link,
+        image: uploadedImage,
+      });
+
+      alert("작품이 성공적으로 수정되었습니다!");
+      navigate(`/project-detail-participant/${projectId}`, {
+        state: { initialTab: "SUBMISSIONS", refresh: true },
+      });
+    } catch (error) {
+      handleApiError(error, "update");
+    }
+  };
+
+  // 제출/수정 통합 함수
+  const handleSubmitProject = async () => {
+    if (!projectTitle.trim()) {
+      setErrors({ title: "공모전의 제목을 입력해 주세요." });
+      return;
+    }
+    setErrors({});
+
+    if (isEditMode) {
+      handleUpdateProject();
+    } else {
+      handleSubmitNewProject();
     }
   };
 
@@ -136,7 +224,6 @@ const ProjectSubmissionPage = () => {
     }
   };
 
-  // 제출 확인 모달 열기 전에 검사
   const handleOpenSubmitModal = () => {
     if (!validateForm()) return;
     setIsConfirmSubmissionOpen(true);
@@ -147,23 +234,20 @@ const ProjectSubmissionPage = () => {
     setIsPreviewOpen(true);
   };
 
-  // 입력 시 에러 해제
   const handleTitleChange = (e) => {
     setProjectTitle(e.target.value);
-
     if (errors.title && e.target.value.trim() !== "") {
       setErrors((prev) => ({ ...prev, title: null }));
     }
   };
 
-  // 공통 유효성 검사 함수
   const validateForm = () => {
     let newErrors = {};
 
     if (!projectTitle.trim()) {
       newErrors.title = "공모전의 제목을 입력해 주세요.";
     }
-    if (!uploadedImage) {
+    if (!previewUrl) {
       newErrors.image = "작품 이미지를 업로드해 주세요.";
     }
 
@@ -188,7 +272,6 @@ const ProjectSubmissionPage = () => {
     return true;
   };
 
-  // 로딩 토스트
   const AiLoadingToast = () => (
     <div
       className="
@@ -261,7 +344,6 @@ const ProjectSubmissionPage = () => {
           </div>
 
           {/* 이미지 첨부 */}
-          {/* 이미지 첨부 */}
           <div className="grid grid-cols-[176px_1fr] items-start gap-4 ml-[176px] mb-[24px]">
             <label className="text-[#212121] text-[14px]">
               이미지 첨부하기 <span className="text-[#2FD8F6]">*</span>
@@ -276,7 +358,7 @@ const ProjectSubmissionPage = () => {
             : "border border-[#F3F3F3] hover:bg-[#F3F3F3] hover:border-[#E1E1E1]"
         }`}
               >
-                {uploadedImage ? (
+                {previewUrl ? (
                   <div className="relative w-full h-full">
                     <img
                       src={previewUrl}
@@ -289,7 +371,7 @@ const ProjectSubmissionPage = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         setUploadedImage(null);
-                        // ❗ 삭제 시 에러 다시 표시
+                        setPreviewUrl(null); // 기존 미리보기도 제거
                         setErrors((prev) => ({
                           ...prev,
                           image: "작품 이미지를 업로드해 주세요.",
@@ -317,7 +399,7 @@ const ProjectSubmissionPage = () => {
                   className="hidden"
                 />
 
-                {!uploadedImage && (
+                {!previewUrl && (
                   <label
                     htmlFor="imageUpload"
                     className="absolute inset-0 cursor-pointer"
@@ -464,7 +546,7 @@ const ProjectSubmissionPage = () => {
                     : "bg-[#E1E1E1] text-white cursor-not-allowed"
                 }`}
               >
-                제출하기
+                {isEditMode ? "수정하기" : "제출하기"}
               </button>
             </div>
           </div>
@@ -671,11 +753,12 @@ const ProjectSubmissionPage = () => {
         link={link}
       />
 
-      {/* 제출 확인 모달 */}
+      {/* 제출/수정 확인 모달 */}
       {isConfirmSubmissionOpen && (
         <ConfirmSubmissionModal
           onClose={() => setIsConfirmSubmissionOpen(false)}
           onSubmit={handleSubmitProject}
+          mode={isEditMode ? "edit" : "submit"}
         />
       )}
     </div>
