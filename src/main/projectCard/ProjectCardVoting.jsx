@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
@@ -9,14 +10,15 @@ const ProjectCardVoting = ({
   project,
   categories = [],
   businessTypes = [],
+  role,
+  onRequireLogin,
 }) => {
-  // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
     (b) => b.code === project.businessType
   );
 
-  return (
+  const cardContent = (
     <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
       {/* 카테고리/업종 */}
       <div className="flex gap-[4px] text-[12px] text-[#A3A3A3] font-medium mt-[20px]">
@@ -32,8 +34,8 @@ const ProjectCardVoting = ({
         {(() => {
           const today = new Date();
           const end = new Date(project.deadline);
-          end.setDate(end.getDate() + 7); // 투표 종료일 = 공모전 마감일 + 7일
-          const startOfToday = new Date( // 자정으로 세팅 (날짜 기준으로 계산되게)
+          end.setDate(end.getDate() + 7);
+          const startOfToday = new Date(
             today.getFullYear(),
             today.getMonth(),
             today.getDate()
@@ -126,6 +128,18 @@ const ProjectCardVoting = ({
       </div>
     </div>
   );
+
+  // role 분기
+  if (role === "guest") {
+    return (
+      <div onClick={() => onRequireLogin?.()} className="cursor-pointer">
+        {cardContent}
+      </div>
+    );
+  }
+
+  // 추후 participant/merchant 전용 투표 상세 페이지 연결 해야함!!
+  return cardContent;
 };
 
 export default ProjectCardVoting;
