@@ -38,6 +38,7 @@ const ProjectList = ({
   selectedBusinesses = [],
   hideHeader = false,
   role,
+  onRequireLogin,
 }) => {
   const [page, setPage] = useState(1); // 현재 보고있는 페이지 번호 상태
   const [projects, setProjects] = useState([]);
@@ -145,6 +146,7 @@ const ProjectList = ({
                 categories={categories}
                 businessTypes={businessTypes}
                 role={role}
+                onRequireLogin={onRequireLogin}
               />
             );
           })}

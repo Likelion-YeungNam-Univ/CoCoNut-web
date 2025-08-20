@@ -12,6 +12,7 @@ const ProjectCardInProgress = ({
   categories = [],
   businessTypes = [],
   role,
+  onRequireLogin,
 }) => {
   // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
   const categoryObj = categories.find((c) => c.code === project.category);
@@ -106,16 +107,30 @@ const ProjectCardInProgress = ({
     </div>
   );
 
-  // role이 merchant -> 소상공인 공모전 상세 페이지 이동, participant -> 참가자 공모전 상세 페이지 이동
-  return role === "merchant" ? (
-    <Link to={`/project-detail/${project.projectId}`}>{cardContent}</Link>
-  ) : role === "participant" ? (
-    <Link to={`/project-detail-participant/${project.projectId}`}>
-      {cardContent}
-    </Link>
-  ) : (
-    cardContent
-  );
+  // role이 merchant -> 소상공인 공모전 상세 페이지 이동, participant -> 참가자 공모전 상세 페이지 이동, guest -> 로그인 모달
+  if (role === "merchant") {
+    return (
+      <Link to={`/project-detail/${project.projectId}`}>{cardContent}</Link>
+    );
+  }
+
+  if (role === "participant") {
+    return (
+      <Link to={`/project-detail-participant/${project.projectId}`}>
+        {cardContent}
+      </Link>
+    );
+  }
+
+  if (role === "guest") {
+    return (
+      <div onClick={() => onRequireLogin?.()} className="cursor-pointer">
+        {cardContent}
+      </div>
+    );
+  }
+
+  return cardContent;
 };
 
 export default ProjectCardInProgress;
