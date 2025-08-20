@@ -11,16 +11,31 @@ const SubmissionDetailModal = ({ isOpen, onClose, submissionId, role }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const navigate = useNavigate();
   const { projectId } = useParams();
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!isOpen || !submissionId) return;
 
     const getSubmission = async () => {
       try {
+        setError(null);
         const data = await fetchSubmissionDetail(submissionId);
         setSubmission(data);
       } catch (error) {
         console.error("작품 상세 조회 실패:", error);
+
+        if (error.response) {
+          const { status, data } = error.response;
+          if (status === 401) {
+            setError(data.message || "토큰이 없거나 만료되었습니다.");
+          } else if (status === 404) {
+            setError(data.message || "해당 작품은 존재하지 않습니다.");
+          } else {
+            setError("작품 정보를 불러오는 중 오류가 발생했습니다.");
+          }
+        } else {
+          setError("서버와 연결할 수 없습니다.");
+        }
       }
     };
 

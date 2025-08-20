@@ -152,11 +152,13 @@ const ProjectSubmissionPage = () => {
   // 수정
   const handleUpdateProject = async () => {
     try {
-      await updateSubmission(submission.id, {
+      await updateSubmission(submission.submissionId, {
         title: projectTitle,
         description,
-        relatedUrl: link,
+        link,
+        image: uploadedImage,
       });
+
       alert("작품이 성공적으로 수정되었습니다!");
       navigate(`/project-detail-participant/${projectId}`, {
         state: { initialTab: "SUBMISSIONS", refresh: true },
