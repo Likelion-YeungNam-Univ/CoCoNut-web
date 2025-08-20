@@ -23,6 +23,7 @@ import Footer from "../components/Footer";
 import DeleteModal from "../components/DeleteModal";
 import SubmissionThumbnail from "../components/SubmissionThumbnail";
 import SubmissionDetailModal from "../components/SubmissionDetailModal";
+import ParticipantHeader from "../header/ParticipantHeader";
 
 const formatCurrency = (amount) => {
   if (amount === null || amount === undefined) {
@@ -228,7 +229,7 @@ const ProjectDetail = ({ role }) => {
 
   return (
     <div className="flex flex-col min-h-screen font-pretendard">
-      <MerchantHeader />
+      {isMerchant ? <MerchantHeader /> : <ParticipantHeader />}
       <div className="flex-grow bg-[#FFFFFF] py-8 px-40">
         <div className="p-15">
           <div className="flex items-center justify-between text-gray-500 text-sm mb-4">
@@ -539,6 +540,7 @@ const ProjectDetail = ({ role }) => {
           }
           submissionId={selectedSubmission.submissionId}
           onClose={handleCloseSubmissionModal}
+          role={role}
         />
       )}
     </div>
