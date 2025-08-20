@@ -6,36 +6,25 @@ export const submitProject = async (
 ) => {
   try {
     const token = sessionStorage.getItem("accessToken");
-    if (!token) throw new Error("로그인이 필요합니다.");
-
-    const api = authApi(token);
+    const api = authApi(token || "");
 
     const formData = new FormData();
 
-    // info 객체 구성 - 값이 있는 경우만 추가
-    const info = { title }; // title은 필수
-    if (description && description.trim() !== "") {
-      info.description = description;
-    }
-    if (link && link.trim() !== "") {
-      info.relatedUrl = link;
-    }
+    const info = { title };
+    if (description?.trim()) info.description = description;
+    if (link?.trim()) info.relatedUrl = link;
 
-    // JSON blob으로 감싸서 append
     formData.append(
       "info",
       new Blob([JSON.stringify(info)], { type: "application/json" })
     );
+    if (image) formData.append("image", image);
 
-    // 이미지 파일이 있으면 추가
-    if (image) {
-      formData.append("image", image);
-    }
+    const headers = { "Content-Type": "multipart/form-data" };
+    if (token) headers.Authorization = `Bearer ${token}`;
 
     const res = await api.post(`/projects/${projectId}/submissions`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
+      headers,
     });
 
     return res.data;
