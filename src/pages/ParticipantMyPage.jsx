@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ParticipantHeader from "../header/ParticipantHeader";
 import { IoPersonCircle } from "react-icons/io5";
-import { PiNotebook } from "react-icons/pi";
+import { LiaTrophySolid } from "react-icons/lia";
 import api from "../apis/api";
 import Footer from "../components/Footer";
 import ProjectCardClosed from "../main/projectCard/ProjectCardClosed";
+import { SERVICE_TERMS_DATA, PERSONAL_INFO_CONSENT } from "../utils/termsData";
 
 const MyPageContent = ({
   selectedTab,
@@ -92,26 +93,35 @@ const MyPageContent = ({
                     </span>
                   </div>
                 </div>
+                <div className="flex-1 border-l border-gray-200 pl-8 flex">
+                  <div className="flex flex-col items-left">
+                    <span className="text-sm text-[#A3A3A3] font-normal">
+                      보유 상금
+                    </span>
+                    <span className="text-[#212121] text-[16px] font-semibold mt-1">
+                      0000000원
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
             <hr className="text-[#E1E1E1]" />
-            <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
-              수상 내역
-            </h2>
-            {/* 수상작이 없을 때 */}
+
             {userProjects.length === 0 ? (
               <div className="flex flex-col space-y-2 items-center justify-center p-36 bg-white">
-                <PiNotebook className="w-[120px] h-[120px] text-[#F3F3F3]" />
+                <LiaTrophySolid className="w-[120px] h-[120px] text-[#F3F3F3]" />
                 <p className="text-[16px] font-semibold text-[#212121]">
-                  아직 수상 내역이 없어요.
+                  아직 수상작이 없어요.
                 </p>
                 <p className="text-[12px] font-medium text-[#A3A3A3]">
-                  다양한 공모전에 참여하여 나만의 포트폴리오를 만들어보세요.
+                  프로필에서는 선정된 작품만 확인할 수 있어요.
                 </p>
               </div>
             ) : (
-              // 수상작이 있을 때
               <div className="flex flex-col space-y-4">
+                <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
+                  수상 내역
+                </h2>
                 {userProjects.map((project) => (
                   <ProjectCardClosed
                     key={project.projectId}
@@ -258,19 +268,7 @@ const MyPageContent = ({
                 회원 탈퇴
               </p>
               <div className="flex flex-col space-y-3">
-                <div className="w-full h-[280px] p-6 border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto text-[14px] text-[#626262]">
-                  <p className="mb-3">
-                    탈퇴 시 모든 개인 정보는 즉시 삭제됩니다.
-                  </p>
-                  <p className="mb-3">
-                    탈퇴 시 복구는 불가능하며, 회원 정보 및 공모전 참여 내역,
-                    수상 내역 등 모든 활동 기록이 삭제됩니다.
-                  </p>
-                  <p className="mb-3">
-                    진행 중인 공모전이 있을 경우 탈퇴가 불가능합니다. 공모전이
-                    모두 종료된 후 탈퇴를 진행해 주세요.
-                  </p>
-                </div>
+                <div className="w-full h-[280px] p-6 border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto text-[14px] text-[#626262]"></div>
                 <div className="flex justify-end">
                   <label className="flex items-center text-[#000000] gap-2 cursor-pointer">
                     <div
@@ -508,7 +506,7 @@ const ParticipantMyPage = () => {
               정말 탈퇴하시겠습니까?
             </h3>
             <p className="text-[14px] text-[#828282] mb-6 text-left">
-              지금까지 등록한 공모전, 거래 기록이 모두 삭제되며
+              지금까지의 참여 내역, 수상 기록이 모두 삭제되며
               <br />
               계정 복구가 불가능합니다.
             </p>
