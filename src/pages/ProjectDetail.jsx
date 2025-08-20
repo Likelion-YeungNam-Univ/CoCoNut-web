@@ -539,6 +539,7 @@ const ProjectDetail = ({ role }) => {
           }
           submissionId={selectedSubmission.submissionId}
           onClose={handleCloseSubmissionModal}
+          role={role}
         />
       )}
     </div>
