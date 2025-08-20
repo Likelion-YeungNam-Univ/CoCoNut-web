@@ -41,30 +41,42 @@ const SignIn = () => {
     try {
       /** 로그인 API 호출 */
       const result = await SignInApi(body);
-      const accessToken = result?.data?.accessToken ?? result?.accessToken;
+    const accessToken = result?.data?.accessToken ?? result?.accessToken;
+      const role =
+        result?.data?.role ??
+        result?.role ??
+        result?.data?.user?.role ??
+        result?.user?.role;
+
       if (!accessToken) throw new Error("토큰이 응답에 없습니다.");
 
       login(accessToken);
       alert("로그인이 완료되었습니다!");
       /** 성공 시 이동 (role에 따라 분기하면 여기서 처리) */
-      navigate("/merchant-main-page");
+       if (role === "ROLE_BUSINESS") {
+        navigate("/merchant-main-page");
+     } else if (role === "ROLE_USER") {
+        navigate("/participant-main-page");
+      } else {
+        // role이 없거나 예상치 못한 값인 경우 기본 페이지로
+        navigate("/");
+      }
     } catch (err) {
       // 서버 메시지/필드 정보 파싱
       const server = err?.response?.data || {};
-      const serverMsg =
-        server.message || server.error || err.message || "";
+      const serverMsg = server.message || server.error || err.message || "";
 
       // 서버가 잘못된 필드를 알려주는 여러 케이스를 대응
       const errorField =
-        server.field ||
-        server.errorField ||
-        server?.errors?.[0]?.field ||
-        null;
+        server.field || server.errorField || server?.errors?.[0]?.field || null;
 
       if (errorField === "email" || /email|아이디/i.test(serverMsg)) {
         setEmailError("아이디를 잘못 입력하셨습니다. 다시 입력해 주세요.");
         setPasswordError(""); // 다른 필드 메시지는 비움
-      } else if (errorField === "password" || /password|비밀번호/i.test(serverMsg)) {
+      } else if (
+        errorField === "password" ||
+        /password|비밀번호/i.test(serverMsg)
+      ) {
         setPasswordError("비밀번호를 잘못 입력하셨습니다. 다시 입력해주세요.");
         setEmailError("");
       } else {

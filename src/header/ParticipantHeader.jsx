@@ -20,7 +20,7 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
   };
 
   return (
-    <div className="w-full h-[60px] flex items-center px-[120px] border-b border-gray-200 font-pretendard">
+    <div className="w-full h-[60px] flex items-center px-[120px] bg-white border-b border-gray-200 font-pretendard">
       {/* 로고 */}
       <div className="flex-1 flex justify-start">
         <Link to="/participant-main-page">
@@ -63,9 +63,9 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
 
       {/* 버튼들 */}
       <div className="flex-1 flex justify-end gap-8">
-        <button className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
+         <button onClick={() => navigate("/participant-myproject")} className="text-[12px] text-[#4C4C4C] font-medium cursor-pointer">
           내 공모전
-        </button>
+        </button> 
         <IoPersonCircle className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer" />
       </div>
     </div>
