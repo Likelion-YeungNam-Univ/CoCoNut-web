@@ -14,6 +14,7 @@ import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
 import MerchantMyProject from "./pages/MerchantMyProject.jsx";
 import ParticipantMyProject from "./pages/ParticipantMyProject.jsx";
 import GuestMainPage from "./pages/GuestMainPage.jsx";
+import ParticipantMyPage from "./pages/ParticipantMyPage.jsx"; // ParticipantMyPage 컴포넌트 import
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
             path="participant-myproject"
             element={<ParticipantMyProject />}
           />
+          <Route path="participant-mypage" element={<ParticipantMyPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
