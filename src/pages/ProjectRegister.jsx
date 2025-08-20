@@ -256,7 +256,7 @@ const ProjectRegister = () => {
     const data = TERMS_DATA[termType];
     if (data) {
       setModalTitle(data.title);
-      setModalContent(data.content);
+      setModalContent(data);
       setIsTermsModalOpen(true);
     }
   };
