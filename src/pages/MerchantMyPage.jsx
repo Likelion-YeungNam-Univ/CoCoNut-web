@@ -5,7 +5,11 @@ import { IoPersonCircle } from "react-icons/io5";
 import { PiNotebook } from "react-icons/pi";
 import api from "../apis/api";
 import Footer from "../components/Footer";
-import { PERSONAL_INFO_CONSENT, SERVICE_TERMS_DATA } from "../utils/termsData";
+import {
+  PERSONAL_INFO_CONSENT,
+  SERVICE_TERMS_DATA,
+  WITHDRAWAL_DATA,
+} from "../utils/termsData";
 import ProjectCardClosed from "../main/projectCard/ProjectCardClosed";
 
 const MyPageContent = ({
@@ -225,7 +229,7 @@ const MyPageContent = ({
               도움이 필요하신가요?
             </p>
             <textarea
-              className="w-[full] h-[288px] p-4 border border-[#F3F3F3] text-[14px] text-[#C3C3C3] rounded-md focus:outline-none"
+              className="w-[full] h-[288px] p-4 border border-[#F3F3F3] text-[14px] text-[#] rounded-md focus:outline-none"
               placeholder="불편한 점이나 질문을 자유롭게 남겨주세요."
             ></textarea>
             <div className="flex justify-end mt-4 space-x-4">
@@ -262,7 +266,25 @@ const MyPageContent = ({
               <p className="font-medium text-[16px] text-[#212121] whitespace-nowrap">
                 회원 탈퇴
               </p>
-              <div className="w-full h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto"></div>
+              <div className="w-full h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto">
+                <div className="p-6">
+                  <h3 className="font-semibold text-base text-[#212121]">
+                    {WITHDRAWAL_DATA.withdrawal.title}
+                  </h3>
+                  {WITHDRAWAL_DATA.withdrawal.sections.map((section, index) => (
+                    <div key={index} className="mt-4">
+                      <h4 className="font-medium text-sm text-[#212121]">
+                        {section.subtitle}
+                      </h4>
+                      <ul className="list-disc list-inside text-sm text-[#626262] mt-2 space-y-1">
+                        {section.points.map((point, pointIndex) => (
+                          <li key={pointIndex}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
               <div className="flex justify-end">
                 <label className="flex items-center text-[#000000] gap-2 cursor-pointer">
                   <div
