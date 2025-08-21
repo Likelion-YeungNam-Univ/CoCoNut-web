@@ -36,7 +36,7 @@ const ScriptModal = ({ isOpen, onClose, title, children }) => {
           {/* 모달 박스 */}
           <div className="bg-white rounded-[12px] w-[840px] h-[800px] overflow-y-auto pt-[48px] pl-[60px]">
             {title && (
-              <h2 className="text-[16px] font-semibold mb-3">{title}</h2>
+              <h2 className="text-[16px] font-semibold mb-6">{title}</h2>
             )}
             {children}
           </div>
