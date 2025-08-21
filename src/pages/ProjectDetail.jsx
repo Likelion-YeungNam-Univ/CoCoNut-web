@@ -61,7 +61,6 @@ const ProjectDetail = ({ role }) => {
 
   useEffect(() => {
     if (!userInfo) return;
-
     const fetchProjectDetails = async () => {
       try {
         setLoading(true);
@@ -74,9 +73,13 @@ const ProjectDetail = ({ role }) => {
       } catch (err) {
         console.error("Failed to fetch project details:", err);
         if (err.response && err.response.status === 404) {
-          setError("해당 프로젝트를 찾을 수 없습니다.");
+          const message =
+            err.response.data?.message || "해당 공모전을 찾을 수 없습니다.";
+          alert(message);
+          setError(message);
         } else {
-          setError("프로젝트 정보를 불러오는 데 실패했습니다.");
+          alert("공모전 정보를 불러오는 데 실패했습니다.");
+          setError("공모전 정보를 불러오는 데 실패했습니다.");
         }
         setProjectData(null);
       } finally {
