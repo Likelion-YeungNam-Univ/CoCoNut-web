@@ -412,11 +412,11 @@ const ProjectRegister = () => {
 
       const projectId = response?.data;
 
-      console.log("추출된 projectId:", projectId);
-
       if (projectId !== null && projectId !== undefined) {
         setIsConfirmModalOpen(false);
         setIsFormDirty(false);
+
+        alert("공모전이 성공적으로 등록되었습니다!");
         navigate(`/project-detail/${projectId}`);
       } else {
         console.error("서버 응답에 유효한 projectId가 없습니다.", response);
@@ -431,6 +431,7 @@ const ProjectRegister = () => {
       setErrors({ general: "프로젝트 등록 중 오류가 발생했습니다." });
     }
   };
+
   // '등록하기' 버튼 클릭을 처리하고 확인 모달을 여는 핸들러
   const handleRegisterClick = () => {
     setIsSubmitted(true);
@@ -1167,10 +1168,10 @@ const ProjectRegister = () => {
       )}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmSubmit}
         title={modalTitle}
         content={modalContent}
-        onConfirm={handleConfirmSubmit}
-        onClose={() => setIsConfirmModalOpen(false)}
       />
       {isEasyHelpModalOpen && (
         <EasyHelpModal onClose={() => setIsEasyHelpModalOpen(false)} />
