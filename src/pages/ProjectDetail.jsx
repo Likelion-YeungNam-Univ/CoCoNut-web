@@ -61,26 +61,40 @@ const ProjectDetail = ({ role }) => {
 
   useEffect(() => {
     if (!userInfo) return;
+
     const fetchProjectDetails = async () => {
       try {
         setLoading(true);
         const projectResponse = await api.get(`/projects/${projectId}`);
         setProjectData(projectResponse.data);
+
         const submissionsData = await fetchSubmissions(projectId);
         setSubmissions(submissionsData);
 
         setError(null);
       } catch (err) {
         console.error("Failed to fetch project details:", err);
-        if (err.response && err.response.status === 404) {
-          const message =
-            err.response.data?.message || "해당 공모전을 찾을 수 없습니다.";
-          alert(message);
-          setError(message);
+
+        if (err.response) {
+          if (err.response.status === 401) {
+            const message =
+              err.response.data?.message || "토큰이 없거나 만료되었습니다.";
+            alert(message);
+            navigate("/signin");
+          } else if (err.response.status === 404) {
+            const message =
+              err.response.data?.message || "해당 공모전을 찾을 수 없습니다.";
+            alert(message);
+            setError(message);
+          } else {
+            alert("공모전 정보를 불러오는 데 실패했습니다.");
+            setError("공모전 정보를 불러오는 데 실패했습니다.");
+          }
         } else {
-          alert("공모전 정보를 불러오는 데 실패했습니다.");
-          setError("공모전 정보를 불러오는 데 실패했습니다.");
+          alert("네트워크 오류가 발생했습니다.");
+          setError("네트워크 오류가 발생했습니다.");
         }
+
         setProjectData(null);
       } finally {
         setLoading(false);
@@ -88,7 +102,7 @@ const ProjectDetail = ({ role }) => {
     };
 
     fetchProjectDetails();
-  }, [projectId, location.state?.refresh, userInfo]);
+  }, [projectId, location.state?.refresh, userInfo, navigate]);
 
   // 사용자 정보 조회
   useEffect(() => {
@@ -98,10 +112,19 @@ const ProjectDetail = ({ role }) => {
         setUserInfo(data);
       } catch (err) {
         console.error("사용자 정보 불러오기 실패:", err);
+        if (
+          err.response?.status === 401 ||
+          err.message === "로그인이 필요합니다."
+        ) {
+          alert("토큰이 없거나 만료되었습니다.");
+          navigate("/signin");
+        } else {
+          alert("사용자 정보를 불러오는 중 오류가 발생했습니다.");
+        }
       }
     };
     loadUserInfo();
-  }, []);
+  }, [navigate]);
 
   const toggleOptionsModal = () => {
     setIsOptionsModalOpen(!isOptionsModalOpen);
