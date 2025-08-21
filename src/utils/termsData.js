@@ -17,12 +17,6 @@ export const TERMS_DATA = {
         공모전 이용 주의사항 내용입니다.
         `,
   },
-  easyhelp: {
-    title: "쉽게 도움 받는 법",
-    content: `
-        AI 도움을 받는 방법에 대한 내용입니다.
-        `,
-  },
 };
 
 export const SERVICE_TERMS_DATA = {
