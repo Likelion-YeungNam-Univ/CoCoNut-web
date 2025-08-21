@@ -10,7 +10,7 @@ import xIcon from "../assets/xIcon.png";
 import SubmissionPreviewModal from "../components/SubmissionPreviewModal";
 import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
 import { submitProject } from "../apis/projectSubmissionApi";
-import { updateSubmission } from "../apis/updateSubmissionApi"; // 🔹 추가
+import { updateSubmission } from "../apis/updateSubmissionApi";
 import checklistIcon1 from "../assets/checklistIcon1.png";
 import checklistIcon2 from "../assets/checklistIcon2.png";
 import checklistIcon3 from "../assets/checklistIcon3.png";
@@ -18,6 +18,7 @@ import checklistIcon4 from "../assets/checklistIcon4.png";
 import checklistIcon5 from "../assets/checklistIcon5.png";
 import checklistIcon6 from "../assets/checklistIcon6.png";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { checkSubmissionValid } from "../apis/submissionValidApi";
 
 const ProjectSubmissionPage = () => {
   const navigate = useNavigate();
@@ -229,9 +230,20 @@ const ProjectSubmissionPage = () => {
     }
   };
 
-  const handleOpenSubmitModal = () => {
+  const handleOpenSubmitModal = async () => {
     if (!validateForm()) return;
-    setIsConfirmSubmissionOpen(true);
+
+    try {
+      await checkSubmissionValid(projectId);
+      setIsConfirmSubmissionOpen(true); // 검증 성공 시 모달 열기
+    } catch (error) {
+      const backendMessage = error.response?.data?.message;
+      if (backendMessage) {
+        alert(backendMessage);
+      } else {
+        alert("제출 자격 확인 중 알 수 없는 오류가 발생했습니다.");
+      }
+    }
   };
 
   const handleOpenPreviewModal = () => {
