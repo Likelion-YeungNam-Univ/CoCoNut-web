@@ -102,7 +102,9 @@ const ProjectCardVoting = ({
               참여작
             </span>
           </div>
-          <span className="text-[12px] text-[#212121] font-medium">100개</span>
+          <span className="text-[12px] text-[#212121] font-medium">
+            {project.submissionCount}개
+          </span>
         </div>
 
         {/* 기간 */}
