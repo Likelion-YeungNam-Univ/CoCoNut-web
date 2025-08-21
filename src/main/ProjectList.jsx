@@ -37,6 +37,7 @@ const ProjectList = ({
   businessTypes,
   selectedCategories = [],
   selectedBusinesses = [],
+  hideHeader = false,
   role,
   onRequireLogin,
 }) => {
@@ -116,7 +117,7 @@ const ProjectList = ({
   return (
     <div className="flex flex-col gap-4 font-pretendard w-[856px]">
       <div className="flex justify-between items-center mb-4 z-10">
-        {activeTab && (
+        {!hideHeader && activeTab && (
           <h2 className="text-[20px] font-semibold">{headerText[activeTab]}</h2>
         )}
         <DropdownSort sortOption={sortOption} setSortOption={setSortOption} />
