@@ -266,14 +266,29 @@ const ProjectRegister = () => {
     setLoading(true);
     try {
       const aiData = await analyzeProjectWithAI(assistanceText);
-      setAiProjectData({
-        rewardAmount: aiData.rewardAmount,
-        description: aiData.description,
-        summary: aiData.summary,
-        deadline: aiData.deadline,
-      });
+
+      // Check if the AI data is valid before updating the state
+      if (
+        !aiData ||
+        !aiData.description ||
+        !aiData.summary ||
+        !aiData.rewardAmount ||
+        !aiData.deadline
+      ) {
+        alert("AI가 내용을 불러오지 못했어요.");
+        console.error("AI analysis returned incomplete data:", aiData);
+      } else {
+        setAiProjectData({
+          rewardAmount: aiData.rewardAmount,
+          description: aiData.description,
+          summary: aiData.summary,
+          deadline: aiData.deadline,
+        });
+      }
     } catch (error) {
       console.error("AI analysis error:", error);
+
+      alert("AI가 내용을 불러오지 못했어요.");
     } finally {
       setLoading(false);
     }
@@ -644,7 +659,7 @@ const ProjectRegister = () => {
                       onChange={(e) => setAssistanceText(e.target.value)}
                     />
                     <SlArrowUpCircle
-                      className="absolute right-2 bottom-3 text-gray-400 hover:text-[#212121s] cursor-pointer"
+                      className="absolute right-2 bottom-3 text-gray-400 hover:text-[#212121] cursor-pointer"
                       size={24}
                       onClick={analyzeWithAI}
                     />

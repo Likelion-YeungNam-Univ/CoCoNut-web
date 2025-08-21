@@ -68,7 +68,7 @@ const ProjectCardInProgress = ({
           </span>
         </div>
 
-        {/* 참여작 (임시 값) */}
+        {/* 참여작 */}
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2 w-[60px]">
             <img
@@ -80,7 +80,9 @@ const ProjectCardInProgress = ({
               참여작
             </span>
           </div>
-          <span className="text-[12px] text-[#212121] font-medium">100개</span>
+          <span className="text-[12px] text-[#212121] font-medium">
+            {project.submissionCount}개
+          </span>
         </div>
 
         {/* 기간 */}
