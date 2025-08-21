@@ -171,7 +171,7 @@ const ProjectSubmissionPage = () => {
   // 제출/수정 통합 함수
   const handleSubmitProject = async () => {
     if (!projectTitle.trim()) {
-      setErrors({ title: "공모전의 제목을 입력해 주세요." });
+      setErrors({ title: "작품 제목을 입력해 주세요." });
       return;
     }
     setErrors({});
@@ -245,7 +245,7 @@ const ProjectSubmissionPage = () => {
     let newErrors = {};
 
     if (!projectTitle.trim()) {
-      newErrors.title = "공모전의 제목을 입력해 주세요.";
+      newErrors.title = "작품 제목을 입력해 주세요.";
     }
     if (!previewUrl) {
       newErrors.image = "작품 이미지를 업로드해 주세요.";
