@@ -1,4 +1,6 @@
-const ConfirmSubmissionModal = ({ onClose, onSubmit }) => {
+const ConfirmSubmissionModal = ({ onClose, onSubmit, mode = "submit" }) => {
+  const isEdit = mode === "edit";
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/50 overflow-y-auto font-pretendard"
@@ -9,7 +11,9 @@ const ConfirmSubmissionModal = ({ onClose, onSubmit }) => {
           {/* 모달 박스 */}
           <div className="bg-white rounded-[12px] w-[420px] h-[200px] pt-[32px] pb-[24px] pl-[28px]">
             <h3 className="text-[#212121] text-[20px] font-semibold">
-              작품을 제출하시겠습니까?
+              {isEdit
+                ? "수정한 내용을 저장하시겠습니까?"
+                : "작품을 제출하시겠습니까?"}
             </h3>
             <span className="text-[#828282] text-[14px]">
               제출 후에도 마감일까지 작품을 수정할 수 있습니다.
@@ -25,7 +29,7 @@ const ConfirmSubmissionModal = ({ onClose, onSubmit }) => {
                 onClick={onSubmit}
                 className="w-[99px] h-[32px] bg-[#4C4C4C] text-white rounded-[6px] hover:bg-[#212121] cursor-pointer"
               >
-                네, 제출할게요
+                {isEdit ? "네, 저장할게요" : "네, 제출할게요"}
               </button>
             </div>
           </div>

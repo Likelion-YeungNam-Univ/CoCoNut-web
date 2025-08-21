@@ -13,6 +13,7 @@ import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
 import MerchantMyPage from "./pages/MerchantMyPage";
 import MerchantMyProject from "./pages/MerchantMyProject.jsx";
 import ParticipantMyProject from "./pages/ParticipantMyProject.jsx";
+import GuestMainPage from "./pages/GuestMainPage.jsx";
 
 export default function App() {
   return (
@@ -34,18 +35,14 @@ export default function App() {
             />
           </Route>
           <Route path="/merchant-main-page" element={<MerchantMainPage />} />
-          <Route
-            path="/search"
-            element={<SearchPage showRegisterButton={true} />}
-          />
+          <Route path="/search" element={<SearchPage />} />
           <Route
             path="/participant-main-page"
             element={<ParticipantMainPage />}
           />
-          <Route
-            path="/participant-search"
-            element={<SearchPage showRegisterButton={false} />}
-          />
+          <Route path="/participant-search" element={<SearchPage />} />
+          <Route path="guest-main-page" element={<GuestMainPage />} />
+          <Route path="/guest-search" element={<SearchPage />} />
           <Route
             path="/projects/:projectId/submission"
             element={<ProjectSubmissionPage />}

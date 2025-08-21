@@ -6,6 +6,8 @@ import calendarIcon from "../../assets/calendarIcon.png";
 import { formatDate } from "../../utils/dateUtils";
 
 const MyProjectRow = ({ project, getCategoryLabel, getBusinessTypeLabel }) => {
+  console.log('in Row :',project)
+
   const formatCurrency = (amount) => {
     if (amount == null) return "가격 없음";
     const numeric = Number(String(amount).replace(/[^0-9]/g, ""));
