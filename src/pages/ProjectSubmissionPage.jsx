@@ -92,7 +92,12 @@ const ProjectSubmissionPage = () => {
       const { status, data } = error.response;
       switch (status) {
         case 400:
-          if (context === "update") {
+          if (context === "ai") {
+            alert(
+              data.message ||
+                "AI Assistance 응답 생성에 실패하였습니다. 입력한 정보가 정확한지 확인해주세요."
+            );
+          } else if (context === "update") {
             alert(data.message || "제출 기한이 이미 지났습니다.");
           } else {
             alert(data.message || "작품제목은 필수 입력입니다.");
@@ -218,7 +223,7 @@ const ProjectSubmissionPage = () => {
       const result = await fetchAiDescription(aiPrompt);
       setDescription(result.description || result);
     } catch (error) {
-      alert("AI 설명 생성 중 오류가 발생했습니다.");
+      handleApiError(error, "ai");
     } finally {
       setLoadingAi(false);
     }

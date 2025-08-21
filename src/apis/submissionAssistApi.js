@@ -4,7 +4,6 @@ import authApi from "./authApi";
 export const fetchAiDescription = async (prompt) => {
   try {
     const token = sessionStorage.getItem("accessToken");
-    if (!token) throw new Error("로그인이 필요합니다.");
     const api = authApi(token);
     const res = await api.post("submissions/assist", { prompt });
     return res.data;
