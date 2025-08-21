@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const Rending = () => {
+const Landing = () => {
   return (
     <>
       <div className="flex flex-col items-center gap-5 mt-40 font-pretendard">
@@ -39,4 +39,4 @@ const Rending = () => {
   );
 };
 
-export default Rending;
+export default Landing;
