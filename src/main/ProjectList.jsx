@@ -5,6 +5,7 @@ import ProjectCardClosed from "./projectCard/ProjectCardClosed";
 import Pagination from "../components/Pagination";
 import noProjectIcon from "../assets/noProjectIcon.png";
 import magnifierIcon from "../assets/magnifierIcon.png";
+import DropdownSort from "../components/DropdownSort"; // DropdownSort 컴포넌트 import
 import { fetchProjects } from "../apis/getProjectsApi";
 
 const headerText = {
@@ -19,13 +20,13 @@ const CardByStatus = {
   CLOSED: ProjectCardClosed,
 };
 
-const PAGE_SIZE = 10; // 페이지 당 최대 카드 수
-const BLOCK_SIZE = 5; // 1~5, 다음으로는 6~10 처럼 보이는 페이지 묶음 크기
+const PAGE_SIZE = 10;
+const BLOCK_SIZE = 5;
 
 const toSafeRegex = (input) => {
   if (!input) return null;
-  const esc = input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // 메타문자 이스케이프
-  return new RegExp(esc.replace(/\s+/g, ".*"), "i"); // 공백은 느슨한 매칭
+  const esc = input.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(esc.replace(/\s+/g, ".*"), "i");
 };
 
 const ProjectList = ({
@@ -36,20 +37,18 @@ const ProjectList = ({
   businessTypes,
   selectedCategories = [],
   selectedBusinesses = [],
-  hideHeader = false,
   role,
   onRequireLogin,
 }) => {
-  const [page, setPage] = useState(1); // 현재 보고있는 페이지 번호 상태
+  const [page, setPage] = useState(1);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sortOption, setSortOption] = useState("최신순"); // 정렬 상태 추가
 
-  // 탭이 바뀌거나, 카테고리/업종 체크박스 선택 시 1페이지로 리셋
   useEffect(() => {
     setPage(1);
-  }, [activeTab, selectedCategories, selectedBusinesses]);
+  }, [activeTab, selectedCategories, selectedBusinesses, sortOption]);
 
-  // 페이지 전환할 때 효과
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page]);
@@ -68,12 +67,9 @@ const ProjectList = ({
     loadProjects();
   }, []);
 
-  // 탭 상태, 선택된 카테고리/업종과 동일한 공모전만 보여주기
-  // 기존 + 제목 검색 필터
   const filtered = useMemo(() => {
     const rx = toSafeRegex(q);
-
-    const byStatus = activeTab
+    let byStatus = activeTab
       ? projects.filter((p) => p.status === activeTab)
       : projects.slice();
 
@@ -90,29 +86,45 @@ const ProjectList = ({
       ? byCategoryOrBusiness.filter((p) => rx.test(p.title ?? ""))
       : byCategoryOrBusiness;
 
-    return byTitle;
-  }, [q, activeTab, selectedCategories, selectedBusinesses, projects]);
+    let sortedProjects = [...byTitle];
+    if (sortOption === "최신순") {
+      sortedProjects.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+    } else if (sortOption === "상금순") {
+      sortedProjects.sort((a, b) => b.prize - a.prize);
+    }
 
-  const totalItems = filtered.length; // 필터 거친 아이템 개수
-  const start = (page - 1) * PAGE_SIZE; // 현재 페이지에서 몇 번째 데이터부터 가져올지 계산
-  const pageItems = filtered.slice(start, start + PAGE_SIZE); //현재 페이지에 해당하는 데이터만 잘라서 저장
+    return sortedProjects;
+  }, [
+    q,
+    activeTab,
+    selectedCategories,
+    selectedBusinesses,
+    projects,
+    sortOption,
+  ]);
+
+  const totalItems = filtered.length;
+  const start = (page - 1) * PAGE_SIZE;
+  const pageItems = filtered.slice(start, start + PAGE_SIZE);
 
   const emptyBySearch = isSearched && q.trim() !== "" && pageItems.length === 0;
 
   if (loading) return <div>로딩 중...</div>;
 
   return (
-    <div className="flex flex-col gap-4 font-pretendard">
-      {!hideHeader && activeTab && (
-        <div className="text-[20px] font-semibold mb-[16px]">
-          {headerText[activeTab]}
-        </div>
-      )}
+    <div className="flex flex-col gap-4 font-pretendard w-[856px]">
+      <div className="flex justify-between items-center mb-4">
+        {activeTab && (
+          <h2 className="text-[20px] font-semibold">{headerText[activeTab]}</h2>
+        )}
+        <DropdownSort sortOption={sortOption} setSortOption={setSortOption} />
+      </div>
 
       {pageItems.length === 0 ? (
         emptyBySearch ? (
-          // 검색 결과 없음 (검색 제출 후 0건)
-          <div className="flex flex-col justify-center items-center w-[856px] pt-[80px]">
+          <div className="flex flex-col justify-center items-center w-full pt-[80px]">
             <img src={magnifierIcon} className="w-[120px] h-[120px]" />
             <div className="pt-[16px] text-[16px] text-[#212121] font-semibold">
               일치하는 검색 결과가 없습니다.
@@ -122,8 +134,7 @@ const ProjectList = ({
             </div>
           </div>
         ) : (
-          // 기본 빈 상태 (탭/카테고리/업종만으로 0건)
-          <div className="flex flex-col justify-center items-center w-[856px] pt-[80px]">
+          <div className="flex flex-col justify-center items-center w-full pt-[80px]">
             <img src={noProjectIcon} className="w-[120px] h-[120px]" />
             <div className="pt-[16px] text-[16px] text-[#212121] font-semibold">
               아직 공모전이 없어요.
