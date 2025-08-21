@@ -5,7 +5,7 @@ import ProjectCardClosed from "./projectCard/ProjectCardClosed";
 import Pagination from "../components/Pagination";
 import noProjectIcon from "../assets/noProjectIcon.png";
 import magnifierIcon from "../assets/magnifierIcon.png";
-import DropdownSort from "../components/DropdownSort"; // DropdownSort 컴포넌트 import
+import DropdownSort from "./DropdownSort";
 import { fetchProjects } from "../apis/getProjectsApi";
 
 const headerText = {
@@ -43,7 +43,7 @@ const ProjectList = ({
   const [page, setPage] = useState(1);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortOption, setSortOption] = useState("최신순"); // 정렬 상태 추가
+  const [sortOption, setSortOption] = useState("최신순");
 
   useEffect(() => {
     setPage(1);
@@ -91,8 +91,8 @@ const ProjectList = ({
       sortedProjects.sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
       );
-    } else if (sortOption === "상금순") {
-      sortedProjects.sort((a, b) => b.prize - a.prize);
+    } else if (sortOption === "총상금순") {
+      sortedProjects.sort((a, b) => b.rewardAmount - a.rewardAmount);
     }
 
     return sortedProjects;
@@ -115,7 +115,7 @@ const ProjectList = ({
 
   return (
     <div className="flex flex-col gap-4 font-pretendard w-[856px]">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 z-10">
         {activeTab && (
           <h2 className="text-[20px] font-semibold">{headerText[activeTab]}</h2>
         )}
@@ -125,7 +125,11 @@ const ProjectList = ({
       {pageItems.length === 0 ? (
         emptyBySearch ? (
           <div className="flex flex-col justify-center items-center w-full pt-[80px]">
-            <img src={magnifierIcon} className="w-[120px] h-[120px]" />
+            <img
+              src={magnifierIcon}
+              className="w-[120px] h-[120px]"
+              alt="돋보기"
+            />
             <div className="pt-[16px] text-[16px] text-[#212121] font-semibold">
               일치하는 검색 결과가 없습니다.
             </div>
@@ -135,7 +139,11 @@ const ProjectList = ({
           </div>
         ) : (
           <div className="flex flex-col justify-center items-center w-full pt-[80px]">
-            <img src={noProjectIcon} className="w-[120px] h-[120px]" />
+            <img
+              src={noProjectIcon}
+              className="w-[120px] h-[120px]"
+              alt="프로젝트 없음"
+            />
             <div className="pt-[16px] text-[16px] text-[#212121] font-semibold">
               아직 공모전이 없어요.
             </div>
