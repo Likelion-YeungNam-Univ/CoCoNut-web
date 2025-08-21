@@ -76,7 +76,7 @@ const ProjectCardClosed = ({
               </span>
             </div>
             <span className="text-[12px] text-[#212121] font-medium">
-              100개
+              {project.submissionCount}개
             </span>
           </div>
 

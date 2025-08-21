@@ -10,7 +10,7 @@ import xIcon from "../assets/xIcon.png";
 import SubmissionPreviewModal from "../components/SubmissionPreviewModal";
 import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
 import { submitProject } from "../apis/projectSubmissionApi";
-import { updateSubmission } from "../apis/updateSubmissionApi"; // 🔹 추가
+import { updateSubmission } from "../apis/updateSubmissionApi";
 import checklistIcon1 from "../assets/checklistIcon1.png";
 import checklistIcon2 from "../assets/checklistIcon2.png";
 import checklistIcon3 from "../assets/checklistIcon3.png";
@@ -19,6 +19,7 @@ import checklistIcon5 from "../assets/checklistIcon5.png";
 import checklistIcon6 from "../assets/checklistIcon6.png";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SubEasyHelpModal from "../components/SubEasyHelpModal";
+import { checkSubmissionValid } from "../apis/submissionValidApi";
 
 const ProjectSubmissionPage = () => {
   const navigate = useNavigate();
@@ -93,7 +94,12 @@ const ProjectSubmissionPage = () => {
       const { status, data } = error.response;
       switch (status) {
         case 400:
-          if (context === "update") {
+          if (context === "ai") {
+            alert(
+              data.message ||
+                "AI Assistance 응답 생성에 실패하였습니다. 입력한 정보가 정확한지 확인해주세요."
+            );
+          } else if (context === "update") {
             alert(data.message || "제출 기한이 이미 지났습니다.");
           } else {
             alert(data.message || "작품제목은 필수 입력입니다.");
@@ -172,7 +178,7 @@ const ProjectSubmissionPage = () => {
   // 제출/수정 통합 함수
   const handleSubmitProject = async () => {
     if (!projectTitle.trim()) {
-      setErrors({ title: "공모전의 제목을 입력해 주세요." });
+      setErrors({ title: "작품 제목을 입력해 주세요." });
       return;
     }
     setErrors({});
@@ -219,15 +225,26 @@ const ProjectSubmissionPage = () => {
       const result = await fetchAiDescription(aiPrompt);
       setDescription(result.description || result);
     } catch (error) {
-      alert("AI 설명 생성 중 오류가 발생했습니다.");
+      handleApiError(error, "ai");
     } finally {
       setLoadingAi(false);
     }
   };
 
-  const handleOpenSubmitModal = () => {
+  const handleOpenSubmitModal = async () => {
     if (!validateForm()) return;
-    setIsConfirmSubmissionOpen(true);
+
+    try {
+      await checkSubmissionValid(projectId);
+      setIsConfirmSubmissionOpen(true); // 검증 성공 시 모달 열기
+    } catch (error) {
+      const backendMessage = error.response?.data?.message;
+      if (backendMessage) {
+        alert(backendMessage);
+      } else {
+        alert("제출 자격 확인 중 알 수 없는 오류가 발생했습니다.");
+      }
+    }
   };
 
   const handleOpenPreviewModal = () => {
@@ -246,7 +263,7 @@ const ProjectSubmissionPage = () => {
     let newErrors = {};
 
     if (!projectTitle.trim()) {
-      newErrors.title = "공모전의 제목을 입력해 주세요.";
+      newErrors.title = "작품 제목을 입력해 주세요.";
     }
     if (!previewUrl) {
       newErrors.image = "작품 이미지를 업로드해 주세요.";
