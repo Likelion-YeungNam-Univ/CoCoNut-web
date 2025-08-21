@@ -10,7 +10,65 @@ import Landing3_3 from "../assets/Landing3_3.png";
 import Landing4 from "../assets/Landing4.png";
 import Landing5 from "../assets/Landing5.png";
 import Landing6 from "../assets/Landing6.png";
+import Landing7 from "../assets/Landing7.png";
 import { RiArrowDownWideFill } from "react-icons/ri";
+import Footer from "../components/Footer.jsx";
+import LandingProjectCard from "../main/projectCard/LandingProjectCard.jsx";
+const mockProjects = [
+  {
+    projectId: 1,
+    title: "음식점 메뉴판 3장 디자인 필요해요",
+    summary:
+      "포차 감성 술집을 운영하는 중입니다. 지류 3장 메뉴판 디자인이 필요해요.",
+    category: "그래픽/편집",
+    businessType: "식당/카페/주점",
+    rewardAmount: 300000,
+    createdAt: "2025-08-01",
+    deadline: "2025-08-27",
+    merchantName: "빌런호프",
+    writerNickname: "오뚜기",
+    submissionsCount: 12,
+  },
+  {
+    projectId: 2,
+    title: "쇼핑몰 웹사이트 리뉴얼",
+    summary: "현재 운영 중인 쇼핑몰 웹사이트를 반응형으로 개선하고 싶습니다.",
+    category: "IT/모바일/웹",
+    businessType: "의류/쇼핑몰",
+    rewardAmount: 200000,
+    createdAt: "2025-08-05",
+    deadline: "2025-09-01",
+    merchantName: "해피스토어",
+    writerNickname: "코딩장인",
+    submissionsCount: 7,
+  },
+  {
+    projectId: 3,
+    title: "치킨집 포스터 제작 요청",
+    summary: "신메뉴 홍보용 포스터가 필요합니다.",
+    category: "네이밍/슬로건",
+    businessType: "식당/카페/주점",
+    rewardAmount: 150000,
+    createdAt: "2025-08-07",
+    deadline: "2025-08-27",
+    merchantName: "치킨천국",
+    writerNickname: "최고닭",
+    submissionsCount: 25,
+  },
+  {
+    projectId: 4,
+    title: "학원 온라인 강의 홍보 영상",
+    summary: "신규 개강 수업을 홍보할 짧은 인스타용 영상 편집이 필요합니다.",
+    category: "사진/영상/UCC",
+    businessType: "교육/학원",
+    rewardAmount: 100000,
+    createdAt: "2025-08-10",
+    deadline: "2025-10-22",
+    merchantName: "탑클래스학원",
+    writerNickname: "공부의신",
+    submissionsCount: 3,
+  },
+];
 
 const Landing = () => {
   return (
@@ -171,9 +229,9 @@ const Landing = () => {
       </div>
       {/* 다섯 번째 영역 */}
       <div className="flex flex-col items-center bg-[#EAFBFE] w-full h-[740px] pt-[130px]">
-        <div className="flex space-x-[60px] pl-[240px] pr-[225px]">
+        <div className="flex space-x-[44px] pl-[240px] pr-[225px]">
           {/* 왼쪽 */}
-          <div className="flex-1">
+          <div className="flex-1 flex items-start">
             <img
               src={Landing4}
               alt="랜딩 이미지4"
@@ -182,21 +240,102 @@ const Landing = () => {
           </div>
 
           {/* 오른쪽 */}
-          <div className="flex-1">
-            <p className="text-[#2FD8F6] font-semibold text-[16px] mb-[12px] tracking-[-0.02em]">
-              공모전 참여하기
-            </p>
-            <h2 className="text-[#212121] text-[32px] font-bold leading-[130%] mb-[12px] tracking-[-0.02em] whitespace-nowrap">
-              내가 낸 아이디로 동네를 변화시켜요.
-            </h2>
-            <p className="text-[#626262] text-[16px] leading-[170%] tracking-[-0.02em]">
-              지역 주민 누구나 가게의 새로운 아이디어를 제안할 수 있습니다.
-              <br />
-              공모전 참여를 넘어 동네를 함께 만드는 특별한 경험을 할 수 있어요.
-            </p>
+          <div className="flex-1 flex flex-col justify-between ">
+            {/* 텍스트 부분 */}
+            <div className="ml-[12px]">
+              <p className="text-[#2FD8F6] font-semibold text-[16px] mb-[12px] tracking-[-0.02em]">
+                공모전 참여하기
+              </p>
+              <h2 className="text-[#212121] text-[32px] font-bold leading-[130%] mb-[12px] tracking-[-0.02em] whitespace-nowrap">
+                내가 낸 아이디어로 동네를 변화시켜요.
+              </h2>
+              <p className="text-[#626262] text-[16px] leading-[170%] tracking-[-0.02em]">
+                지역 주민 누구나 가게의 새로운 아이디어를 제안할 수 있습니다.
+                <br />
+                공모전 참여를 넘어 동네를 함께 만드는 특별한 경험을 할 수
+                있어요.
+              </p>
+            </div>
+            <div className="flex space-x-[48px] mt-[139px]">
+              <img
+                src={Landing5}
+                alt="랜딩 이미지5"
+                className="w-[240px] h-[200px] rounded-[12px]"
+              />
+              <img
+                src={Landing6}
+                alt="랜딩 이미지6"
+                className="w-[240px] h-[200px] rounded-[12px]"
+              />
+            </div>
           </div>
         </div>
       </div>
+      {/* 여섯 번째 영역 */}
+      <div className="flex flex-col items-center bg-white w-full h-[1600px] pt-[130px]">
+        {/* 섹션 타이틀 */}
+        <div className="flex flex-col items-center mb-[48px]">
+          <p className="text-[#2FD8F6] font-semibold text-[16px] mb-[12px]">
+            미리보기
+          </p>
+          <h2 className="text-[#212121] text-[32px] font-bold leading-[130%] tracking-[-0.02em] text-center">
+            현재 브릿지에서 진행 중인 공모전을 미리 살펴보세요.
+          </h2>
+        </div>
+
+        <div className="flex flex-col items-center bg-[#fdfdfd] min-h-screen relative">
+          {/* 카드 리스트 */}
+          <div className="flex flex-col space-y-[24px] w-[856px] relative z-10">
+            {mockProjects.map((project) => (
+              <LandingProjectCard key={project.projectId} project={project} />
+            ))}
+            <div
+              className="absolute bottom-0 left-0 w-full h-[200px] 
+                bg-gradient-to-b from-transparent to-[#fdfdfd] pointer-events-none"
+            ></div>
+          </div>
+
+          {/* 다리 이미지 */}
+          <div className="w-full relative -mt-[160px] z-0">
+            <img
+              src={Landing7}
+              alt="bridge"
+              className="w-full object-contain"
+            />
+            <div className="absolute bottom-0 left-0 w-full h-[100px] bg-gradient-to-b from-transparent to-white"></div>
+          </div>
+        </div>
+
+        {/* 하단 버튼 + 작은 텍스트 */}
+        <div className="flex flex-col items-center space-y-[16px] mt-[20px]">
+          <div className="flex gap-[16px] mt-[40px]">
+            <Link
+              className="border border-[#2FD8F6] bg-[#EAFBFE] hover:bg-[#E0F9FE] rounded-xl 
+                        w-[140px] h-[45px] flex items-center justify-center text-[#2FD8F6] text-[16px]"
+              to="/signup"
+              state={{ presetRole: "참가자" }}
+            >
+              공모전 참여하기
+            </Link>
+            <Link
+              className="border rounded-xl bg-[#2FD8F6] hover:bg-[#2AC2DD] 
+                        w-[140px] h-[45px] text-[#FFFFFF] flex items-center justify-center text-[16px]"
+              to="/signup"
+              state={{ presetRole: "소상공인" }}
+            >
+              도움 요청하기
+            </Link>
+          </div>
+
+          <Link
+            className="text-[#A3A3A3] underline underline-offset-2 text-[12px] mt-[20px]"
+            to="/guest-main-page"
+          >
+            지금 올라온 공모전 둘러보기
+          </Link>
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 };
