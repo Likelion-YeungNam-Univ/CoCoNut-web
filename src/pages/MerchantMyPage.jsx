@@ -105,21 +105,23 @@ const MyPageContent = ({
               </div>
             </div>
             <hr className="text-[#E1E1E1]" />
-            <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
-              등록한 공모전
-            </h2>
             {userProjects && userProjects.length > 0 ? (
-              <div className="flex flex-col space-y-4">
-                {userProjects.map((project) => (
-                  <ProjectCardClosed
-                    key={project.projectId}
-                    project={project}
-                    categories={categories}
-                    businessTypes={businessTypes}
-                    navigate={navigate}
-                  />
-                ))}
-              </div>
+              <>
+                <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
+                  등록한 공모전
+                </h2>
+                <div className="flex flex-col space-y-4">
+                  {userProjects.map((project) => (
+                    <ProjectCardClosed
+                      key={project.projectId}
+                      project={project}
+                      categories={categories}
+                      businessTypes={businessTypes}
+                      navigate={navigate}
+                    />
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="flex flex-col space-y-2 items-center justify-center p-36 bg-white">
                 <PiNotebook className="w-[120px] h-[120px] text-[#F3F3F3]" />
