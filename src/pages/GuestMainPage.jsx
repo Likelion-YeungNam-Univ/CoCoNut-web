@@ -9,7 +9,7 @@ import GuestHeader from "../header/GuestHeader";
 import LoginRequiredModal from "../components/LoginRequiredModal";
 
 const GuestMainPage = () => {
-  const [activeTab, setActiveTab] = useState("CLOSED");
+  const [activeTab, setActiveTab] = useState("IN_PROGRESS");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBusinesses, setSelectedBusinesses] = useState([]);
   const [q, setQ] = useState("");
