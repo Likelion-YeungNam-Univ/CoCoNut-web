@@ -7,7 +7,7 @@ import { fetchSubmissions } from "../apis/getSubmissionsApi";
 import { fetchUserInfo } from "../apis/userApi";
 import ParticipantVoteGrid from "../components/ParticipantVoteGrid";
 import MerchantVoteManage from "../components/MerchantVoteManage";
-
+import ParticipantVoteManage from "../components/ParticipantVoteManage";
 // 아이콘 및 이미지
 import calendarIcon from "../assets/calendarIcon.png";
 import participantIcon from "../assets/participantIcon.png";
@@ -35,7 +35,23 @@ const formatCurrency = (amount) => {
   return `${numericAmount.toLocaleString()}원`;
 };
 
+/** ✅ Reward API 및 다양한 서버 필드를 커버해 winnerId를 도출 */
+const deriveWinnerId = (p, subs = []) => {
+  if (!p) return null;
+  return (
+    p.winnerSubmissionId ??                   // 기대 필드
+    p.winnerId ??                             // 다른 이름
+    p.awardedSubmissionId ??                  // 다른 이름
+    p?.winnerSubmission?.submissionId ??      // 객체로 들어온 경우
+    p?.reward?.submissionId ??                // Reward API 저장됨
+    (Array.isArray(p?.rewards) && p.rewards[0]?.submissionId) ?? // rewards 배열
+    (subs.find((s) => s.isWinner || s.winner || s.awarded)?.submissionId) ??
+    null
+  );
+};
+
 const ProjectDetail = ({ role }) => {
+  // ---------------- Hooks (항상 최상단, 조기 리턴보다 위) ----------------
   const [projectData, setProjectData] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
@@ -51,13 +67,20 @@ const ProjectDetail = ({ role }) => {
   const initialTab = location.state?.initialTab || "CONTENT";
   const [activeTab, setActiveTab] = useState(initialTab);
 
-  const hasMySubmission = submissions.some(
-    (sub) => sub.userId === userInfo?.user_id
-  );
+  useEffect(() => {
+    const loadUserInfo = async () => {
+      try {
+        const data = await fetchUserInfo();
+        setUserInfo(data);
+      } catch (err) {
+        console.error("사용자 정보 불러오기 실패:", err);
+      }
+    };
+    loadUserInfo();
+  }, []);
 
   useEffect(() => {
     if (!userInfo) return;
-
     const fetchProjectDetails = async () => {
       try {
         setLoading(true);
@@ -70,7 +93,7 @@ const ProjectDetail = ({ role }) => {
         setError(null);
       } catch (err) {
         console.error("Failed to fetch project details:", err);
-        if (err.response && err.response.status === 404) {
+        if (err?.response?.status === 404) {
           setError("해당 프로젝트를 찾을 수 없습니다.");
         } else {
           setError("프로젝트 정보를 불러오는 데 실패했습니다.");
@@ -84,50 +107,24 @@ const ProjectDetail = ({ role }) => {
     fetchProjectDetails();
   }, [projectId, location.state?.refresh, userInfo]);
 
+  // ✅ 서버/제출물에서 우승작 id 계산 (hook 아님: 항상 호출되어 훅 규칙 위반 없음)
+  const winnerIdFromServer = deriveWinnerId(projectData, submissions);
+
+  // ✅ 서버가 아직 우승 id를 못 실어줄 때(지연 응답 등) 캐시된 값 복구
   useEffect(() => {
-    const loadUserInfo = async () => {
-      try {
-        const data = await fetchUserInfo();
-        setUserInfo(data);
-      } catch (err) {
-        console.error("사용자 정보 불러오기 실패:", err);
-      }
-    };
-    loadUserInfo();
-  }, []);
-
-  const toggleOptionsModal = () => setIsOptionsModalOpen(!isOptionsModalOpen);
-  const handleOpenDeleteModal = () => {
-    setIsOptionsModalOpen(false);
-    setIsDeleteModalOpen(true);
-  };
-  const handleConfirmDelete = async () => {
+    if (winnerIdFromServer) return;
     try {
-      await api.delete(`/projects/${projectId}`);
-      alert("프로젝트가 성공적으로 삭제되었습니다.");
-      navigate("/merchant-main-page");
-    } catch (err) {
-      console.error("프로젝트 삭제 실패:", err);
-      alert("프로젝트 삭제에 실패했습니다.");
-    } finally {
-      setIsDeleteModalOpen(false);
-    }
-  };
-  const handleCloseDeleteModal = () => setIsDeleteModalOpen(false);
+      const cached = sessionStorage.getItem(`winner:${projectId}`);
+      if (cached) {
+        setProjectData((prev) => ({
+          ...(prev || {}),
+          winnerSubmissionId: Number(cached),
+        }));
+      }
+    } catch {}
+  }, [winnerIdFromServer, projectId]);
 
-  const handleSubmissionClick = (submission) => {
-    const isParticipant = userInfo?.role === "ROLE_USER";
-    const isMerchant = userInfo?.role === "ROLE_BUSINESS";
-    const isMyProject = isMerchant && userInfo?.user_id === projectData?.userId;
-
-    const canOpenDetail =
-      (isMerchant && isMyProject) ||
-      (isParticipant && submission.userId === userInfo?.user_id);
-
-    if (canOpenDetail) setSelectedSubmission(submission);
-  };
-  const handleCloseSubmissionModal = () => setSelectedSubmission(null);
-
+  // ---------------- 조기 리턴 (훅들보다 아래) ----------------
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -150,6 +147,11 @@ const ProjectDetail = ({ role }) => {
     );
   }
 
+  // ---------------- 나머지 파생 값 ----------------
+  const hasMySubmission = submissions.some(
+    (sub) => sub.userId === userInfo?.user_id
+  );
+
   const deadline = projectData.deadline ? new Date(projectData.deadline) : null;
   const toYMD = (d) =>
     d instanceof Date && !isNaN(d) ? d.toISOString().slice(0, 10) : null;
@@ -158,7 +160,9 @@ const ProjectDetail = ({ role }) => {
     projectData.voteStartDate ?? (deadline ? toYMD(deadline) : null);
   const voteEndForGrid =
     projectData.voteEndDate ??
-    (deadline ? toYMD(new Date(deadline.getTime() + 7 * 24 * 60 * 60 * 1000)) : null);
+    (deadline
+      ? toYMD(new Date(deadline.getTime() + 7 * 24 * 60 * 60 * 1000))
+      : null);
 
   let fallbackStatus = "IN_PROGRESS";
   if (deadline) {
@@ -252,7 +256,7 @@ const ProjectDetail = ({ role }) => {
             </h1>
             {isMerchant && isMyProject && (
               <div className="relative">
-                <button onClick={toggleOptionsModal}>
+                <button onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}>
                   <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121]" />
                 </button>
                 {isOptionsModalOpen && (
@@ -262,13 +266,14 @@ const ProjectDetail = ({ role }) => {
                   >
                     <button
                       className="flex items-center px-4 py-2 text-[#4C4C4C] hover:bg-gray-100 w-full text-left"
-                      onClick={handleOpenDeleteModal}
+                      onClick={() => {
+                        setIsOptionsModalOpen(false);
+                        setIsDeleteModalOpen(true);
+                      }}
                     >
                       <div className="flex space-x-2">
                         <AiFillDelete className="text-[#C3C3C3]" />
-                        <span className="text-[#828282] text-[12px]">
-                          삭제하기
-                        </span>
+                        <span className="text-[#828282] text-[12px]">삭제하기</span>
                       </div>
                     </button>
                   </div>
@@ -302,7 +307,7 @@ const ProjectDetail = ({ role }) => {
             </div>
 
             <div className="flex items-center space-x-2">
-              <img src={participantIcon} alt="상금 아이콘" className="h-4 w-4" />
+              <img src={participantIcon} alt="참여작 아이콘" className="h-4 w-4" />
               <span className="text-[14px] text-[#828282] font-medium w-[80px]">
                 참여작
               </span>
@@ -328,8 +333,7 @@ const ProjectDetail = ({ role }) => {
           {role === "participant" && (
             <button
               onClick={() =>
-                !hasMySubmission &&
-                navigate(`/projects/${projectId}/submission`)
+                !hasMySubmission && navigate(`/projects/${projectId}/submission`)
               }
               className={`w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium rounded-[8px] leading-[130%] tracking-[-0.02em]  ${
                 hasMySubmission
@@ -472,90 +476,160 @@ const ProjectDetail = ({ role }) => {
                 </div>
               </div>
             </div>
-          ) : (
-            /* ====== 참여작 탭 ====== */
-            <>
-              {(projectStatus === "VOTING" ||
-                (isMerchant && isMyProject && !!projectData?.winnerSubmissionId)) ? (
-                isMerchant && isMyProject ? (
-                  <div className="mt-6">
-                    <MerchantVoteManage
-                      projectId={projectId}
-                      submissions={submissions.map((s) => ({
-                        id: s.submissionId,
-                        submissionId: s.submissionId,
-                        title: s.title,
-                        writerNickname: s.writerNickname,
-                        imageUrl: s.imageUrl,
-                      }))}
-                      voteStartDate={voteStartForGrid}
-                      voteEndDate={voteEndForGrid}
-                      winnerSubmissionId={projectData?.winnerSubmissionId ?? null}
-                      onWinnerSelected={(winnerId) => {
-                        // ✅ 우승작만 기록 (status는 건드리지 않음)
-                        setProjectData((prev) => ({
-                          ...prev,
-                          winnerSubmissionId: winnerId,
-                        }));
-                      }}
-                    />
-                  </div>
-                ) : (
-                  <div className="mt-6">
-                    <ParticipantVoteGrid
-                      projectId={projectId}
-                      userId={userInfo?.user_id}
-                      mySubmissionId={
-                        isParticipant
-                          ? submissions.find((s) => s.userId === userInfo?.user_id)?.submissionId ?? null
-                          : null
-                      }
-                      submissions={submissions.map((s) => ({
-                        id: s.submissionId,
-                        submissionId: s.submissionId,
-                        title: s.title,
-                        writerNickname: s.writerNickname,
-                        imageUrl: s.imageUrl,
-                      }))}
-                      voteStartDate={voteStartForGrid}
-                      voteEndDate={voteEndForGrid}
-                      forceOpen={projectStatus === "VOTING"}
-                    />
-                  </div>
-                )
-              ) : (
-                // 진행중/마감됨엔 기존 썸네일 뷰 유지
-                <div className="flex flex-col">
-                  {submissions.length > 0 ? (
-                    <div className="grid grid-cols-4 gap-8 mt-16">
-                      {displayedSubmissions.map((submission) => {
-                        const blurForParticipant =
-                          isParticipant && submission.userId !== userInfo?.user_id;
-                        const blurForMerchant = isMerchant && !isMyProject;
-                        return (
-                          <SubmissionThumbnail
-                            key={submission.submissionId}
-                            submission={submission}
-                            onClick={handleSubmissionClick}
-                            isBlur={blurForParticipant || blurForMerchant}
-                          />
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-[300px] mt-16">
-                      <CgMenuBoxed size={120} className="text-[#E1E1E1]" />
-                      <div className="flex flex-col items-center mt-10">
-                        <label className="text-[#A3A3A3] text-[12px] font-medium">
-                          아직 참여작이 없습니다.
-                        </label>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
+         ) : (
+  /* ====== 참여작 탭 ====== */
+  
+  <>
+  
+   {winnerIdFromServer ? (
+    
+    <div className="mt-6">
+      {isMerchant ? (
+      <MerchantVoteManage
+        projectId={projectId}
+        submissions={submissions.map((s) => ({
+          id: s.submissionId,
+          submissionId: s.submissionId,
+          title: s.title,
+          writerNickname: s.writerNickname,
+          imageUrl: s.imageUrl,
+        }))}
+        voteStartDate={voteStartForGrid}
+        voteEndDate={voteEndForGrid}
+        winnerSubmissionId={winnerIdFromServer}
+      />
+    ) : (
+      <ParticipantVoteManage
+        projectId={projectId}
+        submissions={submissions.map((s) => ({
+          id: s.submissionId,
+          submissionId: s.submissionId,
+          title: s.title,
+          writerNickname: s.writerNickname,
+          imageUrl: s.imageUrl,
+        }))}
+        voteStartDate={voteStartForGrid}
+        voteEndDate={voteEndForGrid}
+        winnerSubmissionId={winnerIdFromServer}
+      />
+    )}
+  </div>
+  ) : (isMerchant && isMyProject && projectStatus === "CLOSED") ? (
+    // ✅ 우승작이 없고 CLOSED면: 소상공인에게 '투표결과 + 수상작 선정하기'
+    <div className="mt-6">
+      <MerchantVoteManage
+        projectId={projectId}
+        submissions={submissions.map((s) => ({
+          id: s.submissionId,
+          submissionId: s.submissionId,
+          title: s.title,
+          writerNickname: s.writerNickname,
+          imageUrl: s.imageUrl,
+        }))}
+        voteStartDate={voteStartForGrid}
+        voteEndDate={voteEndForGrid}
+        winnerSubmissionId={null}
+        uiVariant="result"
+        onWinnerSelected={(winnerId, reward) => {
+          setProjectData((prev) => ({
+            ...prev,
+            winnerSubmissionId: winnerId,
+            reward: reward ?? prev?.reward,
+          }));
+          try {
+            sessionStorage.setItem(`winner:${projectId}`, String(winnerId));
+          } catch {}
+        }}
+      />
+    </div>
+  ) : projectStatus === "VOTING" ? (
+    // ✅ 투표 중
+    isMerchant && isMyProject ? (
+      <div className="mt-6">
+        <MerchantVoteManage
+          projectId={projectId}
+          submissions={submissions.map((s) => ({
+            id: s.submissionId,
+            submissionId: s.submissionId,
+            title: s.title,
+            writerNickname: s.writerNickname,
+            imageUrl: s.imageUrl,
+          }))}
+          voteStartDate={voteStartForGrid}
+          voteEndDate={voteEndForGrid}
+          winnerSubmissionId={null}
+          onWinnerSelected={(winnerId, reward) => {
+            setProjectData((prev) => ({
+              ...prev,
+              winnerSubmissionId: winnerId,
+              reward: reward ?? prev?.reward,
+            }));
+            try {
+              sessionStorage.setItem(`winner:${projectId}`, String(winnerId));
+            } catch {}
+          }}
+        />
+      </div>
+    ) : (
+      <div className="mt-6">
+        <ParticipantVoteGrid
+          projectId={projectId}
+          userId={userInfo?.user_id}
+          mySubmissionId={
+            submissions.find((s) => s.userId === userInfo?.user_id)?.submissionId ?? null
+          }
+          submissions={submissions.map((s) => ({
+            id: s.submissionId,
+            submissionId: s.submissionId,
+            title: s.title,
+            writerNickname: s.writerNickname,
+            imageUrl: s.imageUrl,
+          }))}
+          voteStartDate={voteStartForGrid}
+          voteEndDate={voteEndForGrid}
+          forceOpen
+        />
+      </div>
+    )
+  ) : (
+    // ✅ 그 외: 썸네일 뷰
+    <div className="flex flex-col">
+      {submissions.length > 0 ? (
+        <div className="grid grid-cols-4 gap-8 mt-16">
+          {displayedSubmissions.map((submission) => {
+            const blurForParticipant =
+              isParticipant && submission.userId !== userInfo?.user_id;
+            const blurForMerchant = isMerchant && !isMyProject;
+            return (
+              <SubmissionThumbnail
+                key={submission.submissionId}
+                submission={submission}
+                onClick={(s) => {
+                  const canOpenDetail =
+                    (isMerchant && isMyProject) ||
+                    (isParticipant && s.userId === userInfo?.user_id);
+                  if (canOpenDetail) setSelectedSubmission(s);
+                }}
+                isBlur={blurForParticipant || blurForMerchant}
+              />
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center h-[300px] mt-16">
+          <CgMenuBoxed size={120} className="text-[#E1E1E1]" />
+          <div className="flex flex-col items-center mt-10">
+            <label className="text-[#A3A3A3] text-[12px] font-medium">
+              아직 참여작이 없습니다.
+            </label>
+          </div>
+        </div>
+      )}
+    </div>
+  )}
+</>
+)
+}
         </div>
       </div>
 
@@ -563,8 +637,19 @@ const ProjectDetail = ({ role }) => {
 
       {isDeleteModalOpen && (
         <DeleteModal
-          onClose={handleCloseDeleteModal}
-          onConfirm={handleConfirmDelete}
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={async () => {
+            try {
+              await api.delete(`/projects/${projectId}`);
+              alert("프로젝트가 성공적으로 삭제되었습니다.");
+              navigate("/merchant-main-page");
+            } catch (err) {
+              console.error("프로젝트 삭제 실패:", err);
+              alert("프로젝트 삭제에 실패했습니다.");
+            } finally {
+              setIsDeleteModalOpen(false);
+            }
+          }}
           projectStatus={projectStatus}
           hasSubmissions={hasSubmissions}
         />
@@ -575,10 +660,11 @@ const ProjectDetail = ({ role }) => {
           isOpen={
             !!selectedSubmission &&
             ((isMerchant && isMyProject) ||
-              (isParticipant && selectedSubmission.userId === userInfo?.user_id))
+              (isParticipant &&
+                selectedSubmission.userId === userInfo?.user_id))
           }
           submissionId={selectedSubmission.submissionId}
-          onClose={handleCloseSubmissionModal}
+          onClose={() => setSelectedSubmission(null)}
           role={role}
         />
       )}

@@ -11,9 +11,10 @@ import { fetchUserInfo } from "../apis/userApi";
 import { fetchProjects } from "../apis/getProjectsApi";
 import { fetchCategories } from "../apis/category";
 import { getBusinessTypes } from "../apis/businessTypes";
+import api from "../apis/api";
 import { selectWinner } from "../apis/rewardsApi";
 
-import AwardConfirmModal from "../components/AwardConfirmModal"; // ✅ 새 모달
+import AwardConfirmModal from "../components/AwardConfirmModal";
 
 const PAGE_SIZE = 5;
 
@@ -23,9 +24,19 @@ const STATUS_LABEL = {
   CLOSED: "완료",
 };
 
-// 서버가 내려주는 값 기준으로 '거래 완료' 판단
-const isAwarded = (p) =>
-  !!p?.winnerSubmissionId || p?.winnerSelected === true || p?.awardConfirmed === true;
+// 서버/객체 어디에서 와도 우승작 id를 뽑아내는 헬퍼
+const deriveWinnerId = (p) => {
+  if (!p) return null;
+  return (
+    p.winnerSubmissionId ??
+    p.winnerId ??
+    p.awardedSubmissionId ??
+    p?.winnerSubmission?.submissionId ??
+    p?.reward?.submissionId ??
+    (Array.isArray(p?.rewards) && p.rewards[0]?.submissionId) ??
+    null
+  );
+};
 
 const MerchantMyProject = () => {
   const navigate = useNavigate();
@@ -37,22 +48,28 @@ const MerchantMyProject = () => {
   const [categories, setCategories] = useState([]);
   const [businessTypes, setBusinessTypes] = useState([]);
 
-  // 페이지네이션
   const [page, setPage] = useState(1);
   const start = (page - 1) * PAGE_SIZE;
-  const pageItems = useMemo(() => projects.slice(start, start + PAGE_SIZE), [projects, start]);
+  const pageItems = useMemo(
+    () => projects.slice(start, start + PAGE_SIZE),
+    [projects, start]
+  );
 
-  // 모달 상태
+  // 확정 모달
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [targetProject, setTargetProject] = useState(null);
 
-  // 공통 라벨 함수
+  const openConfirm = useCallback((p) => {
+    setTargetProject(p);
+    setConfirmOpen(true);
+  }, []);
+
   const getCategoryLabel = (code) =>
     categories.find((c) => c.code === code)?.description || "카테고리 없음";
   const getBusinessTypeLabel = (code) =>
     businessTypes.find((b) => b.code === code)?.description || "업종 없음";
 
-  // 내 프로젝트 목록 불러오기
+  // 내 공모전 목록 로드 (+ 로컬 캐시 보정)
   const loadMine = useCallback(
     async (userForFilter) => {
       const all = await fetchProjects();
@@ -62,7 +79,25 @@ const MerchantMyProject = () => {
           p?.merchantName === userForFilter?.nickname ||
           p?.ownerNickname === userForFilter?.nickname
       );
-      setProjects(mine);
+
+      const merged = mine.map((p) => {
+        const pid = p.projectId ?? p.id;
+        const cachedWinner = sessionStorage.getItem(`winner:${pid}`);
+        const cachedAward = sessionStorage.getItem(`awarded:${pid}`) === "1";
+
+        return {
+          ...p,
+          // 우승작 id는 캐시로 보강 가능
+          winnerSubmissionId:
+            p.winnerSubmissionId ??
+            (cachedWinner ? Number(cachedWinner) : undefined),
+          // ✅ 규칙: 완료일 때만 캐시로 '확정됨' 반영
+          // 진행중/투표중에는 항상 비활성 버튼이므로 캐시 무시
+          awardConfirmed: p.status === "CLOSED" ? (p.awardConfirmed || cachedAward) : false,
+        };
+      });
+
+      setProjects(merged);
     },
     [setProjects]
   );
@@ -79,7 +114,10 @@ const MerchantMyProject = () => {
           return;
         }
 
-        const [cats, biz] = await Promise.all([fetchCategories(), getBusinessTypes()]);
+        const [cats, biz] = await Promise.all([
+          fetchCategories(),
+          getBusinessTypes(),
+        ]);
         setCategories(cats || []);
         setBusinessTypes(biz || []);
 
@@ -93,37 +131,59 @@ const MerchantMyProject = () => {
     })();
   }, [navigate, loadMine]);
 
-  // “수상 확정” 버튼 → 모달 열기
-  const openConfirm = (p) => {
-    setTargetProject(p);
-    setConfirmOpen(true);
-  };
-
-  // 모달 확인
+  // 수상 확정 처리 (모달 확인)
   const confirmAward = async () => {
     if (!targetProject) return;
+    const pid = targetProject.projectId ?? targetProject.id;
+
     try {
-      // 1) 우승작이 이미 선택되어 있으면 서버에 확정 저장
-      const pid = targetProject.projectId ?? targetProject.id;
-      const sid =
-        targetProject.winnerSubmissionId ??
+      // 가능한 모든 소스에서 submissionId 확보
+      let sid =
+        deriveWinnerId(targetProject) ??
         targetProject.selectedSubmissionId ??
         targetProject.submissionId ??
         null;
 
       if (!sid) {
-        // 2) 아직 우승작을 고르지 않았다면 상세 페이지로 이동시켜서 먼저 선정
-        setConfirmOpen(false);
-        alert("우승작이 아직 선택되지 않았습니다. 우승작을 먼저 선택해 주세요.");
-        navigate(`/project-detail/${pid}`);
-        return;
+        try {
+          const fresh = await api.get(`/projects/${pid}`);
+          const p = fresh?.data;
+          sid = deriveWinnerId(p) ?? p?.selectedSubmissionId ?? null;
+        } catch {}
+      }
+      if (!sid) {
+        const cached = sessionStorage.getItem(`winner:${pid}`);
+        if (cached) sid = Number(cached);
       }
 
-      // 3) 서버에 영구 저장 (Request Body 없음)
-      await selectWinner(pid, sid);
+      // sid가 있으면 보상 확정 API 호출(이미 확정 409/400은 성공으로 간주)
+      if (sid) {
+        try {
+          await selectWinner(pid, sid);
+        } catch (err) {
+          const status = err?.response?.status;
+          if (!(status === 409 || status === 400)) throw err;
+        }
+      }
 
-      // 4) 서버 기준으로 목록 다시 불러와 UI 반영
-      await loadMine(me);
+      // 로컬 캐시: 완료로 표시 유지
+      sessionStorage.setItem(`awarded:${pid}`, "1");
+      if (sid != null) sessionStorage.setItem(`winner:${pid}`, String(sid));
+
+      // 리스트 즉시 갱신(거래 완료로 전환)
+      setProjects((prev) =>
+        prev.map((prj) =>
+          (prj.projectId ?? prj.id) === pid
+            ? {
+                ...prj,
+                winnerSubmissionId: sid ?? prj.winnerSubmissionId,
+                awardConfirmed: true,
+              }
+            : prj
+        )
+      );
+
+      alert("수상확정이 완료되었습니다.");
     } catch (e) {
       console.error(e);
       alert("수상 확정 처리에 실패했어요. 잠시 후 다시 시도해 주세요.");
@@ -133,12 +193,35 @@ const MerchantMyProject = () => {
     }
   };
 
-  // 수상 버튼 셀
+  // ✅ 버튼 렌더링: 너가 말한 규칙 그대로
+  // - 진행중(IN_PROGRESS): 비활성(회색)
+  // - 투표중(VOTING): 비활성(회색)
+  // - 완료(CLOSED):
+  //     * 미확정 → 활성(파랑) "수상 확정"
+  //     * 확정  → "거래 완료"(비활성)
   const renderAwardCell = (p) => {
-    const awarded = isAwarded(p);
+    if (p.status === "IN_PROGRESS" || p.status === "VOTING") {
+      return (
+        <button
+          disabled
+          className="w-[96px] h-[32px] rounded-[6px] bg-[#F3F3F3] text-[#A3A3A3] text-[12px] cursor-not-allowed"
+        >
+          수상 확정
+        </button>
+      );
+    }
 
-    // 완료(CLOSED)이고 아직 확정 전이면 버튼 노출
-    if (p.status === "CLOSED" && !awarded) {
+    if (p.status === "CLOSED") {
+      if (p.awardConfirmed) {
+        return (
+          <button
+            disabled
+            className="w-[96px] h-[32px] rounded-[6px] bg-[#EDEDED] text-[#A3A3A3] text-[12px] cursor-not-allowed"
+          >
+            거래 완료
+          </button>
+        );
+      }
       return (
         <button
           onClick={() => openConfirm(p)}
@@ -149,19 +232,7 @@ const MerchantMyProject = () => {
       );
     }
 
-    // 완료(CLOSED) + 확정됨 → 거래 완료
-    if (p.status === "CLOSED" && awarded) {
-      return (
-        <button
-          disabled
-          className="w-[96px] h-[32px] rounded-[6px] bg-[#EDEDED] text-[#A3A3A3] text-[12px] cursor-not-allowed"
-        >
-          거래 완료
-        </button>
-      );
-    }
-
-    // 진행 중/투표 중
+    // 혹시 모를 기타 상태 대비
     return (
       <button
         disabled
@@ -177,7 +248,6 @@ const MerchantMyProject = () => {
   return (
     <div className="min-h-screen flex flex-col bg-white font-pretendard">
       <MerchantHeader />
-
       <div className="flex flex-col items-center w-full ">
         <div className="w-[1120px] max-w-[92vw]">
           <h2 className="text-[24px] font-semibold mt-[40px] mb-[20px] text-center">
@@ -185,11 +255,7 @@ const MerchantMyProject = () => {
           </h2>
 
           {/* 헤더: 좌(8) | 상태(2) | 수상작(2) */}
-          <div
-            className="grid grid-cols-12 items-center h-[40px] gap-0
-                       bg-[#F3F3F3] border-b border-[#E0E0E0]
-                       text-[12px] text-[#212121]"
-          >
+          <div className="grid grid-cols-12 items-center h-[40px] gap-0 bg-[#F3F3F3] border-b border-[#E0E0E0] text-[12px] text-[#212121]">
             <div className="col-span-8 pl-4">공모전 목록</div>
             <div className="col-span-2 text-center">상태</div>
             <div className="col-span-2 text-center">수상작</div>
@@ -201,7 +267,7 @@ const MerchantMyProject = () => {
               key={p.projectId}
               className="grid grid-cols-12 items-stretch gap-0 border-b border-[#F1F1F1] first:-mt-px"
             >
-              {/* 좌측: 공모전 카드 (상세로 이동) */}
+              {/* 좌측 카드 (상세 페이지 링크) */}
               <div className="col-span-8 py-3">
                 <Link
                   to={`/project-detail/${p.projectId}`}
@@ -221,7 +287,7 @@ const MerchantMyProject = () => {
                 {STATUS_LABEL[p.status] || p.status}
               </div>
 
-              {/* 수상작 */}
+              {/* 수상/확정 버튼 */}
               <div className="col-span-2 border-l border-[#E0E0E0] flex items-center justify-center py-3">
                 {renderAwardCell(p)}
               </div>
@@ -244,7 +310,7 @@ const MerchantMyProject = () => {
         <Footer />
       </div>
 
-      {/* ✅ 첨부 이미지 스타일 모달 */}
+      {/* 수상 확정 모달 */}
       <AwardConfirmModal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
