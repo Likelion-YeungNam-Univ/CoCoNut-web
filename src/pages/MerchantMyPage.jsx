@@ -55,6 +55,11 @@ const MyPageContent = ({
 
   switch (selectedTab) {
     case "profile":
+      const closedProjects = userProjects.filter(
+        (project) => project.status === "CLOSED"
+      );
+      const completedCount = closedProjects.length;
+
       return (
         <div className="p-8">
           <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
@@ -89,7 +94,7 @@ const MyPageContent = ({
                       거래 완료
                     </span>
                     <span className="text-[#212121] text-[16px] font-semibold mt-1">
-                      00회
+                      {completedCount}회
                     </span>
                   </div>
                 </div>
@@ -97,7 +102,7 @@ const MyPageContent = ({
             </div>
             <hr className="text-[#E1E1E1]" />
             <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
-              등록 공모전
+              등록한 공모전
             </h2>
             {userProjects && userProjects.length > 0 ? (
               <div className="flex flex-col space-y-4">
@@ -107,6 +112,7 @@ const MyPageContent = ({
                     project={project}
                     categories={categories}
                     businessTypes={businessTypes}
+                    navigate={navigate}
                   />
                 ))}
               </div>
@@ -256,55 +262,53 @@ const MyPageContent = ({
               <p className="font-medium text-[16px] text-[#212121] whitespace-nowrap">
                 회원 탈퇴
               </p>
-              <div className="flex flex-col space-y-3">
-                <div className="w-full h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto"></div>
-                <div className="flex justify-end">
-                  <label className="flex items-center text-[#000000] gap-2 cursor-pointer">
-                    <div
-                      className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 ${
-                        isWithdrawalAgreed
-                          ? "bg-[#2FD8F6] border-[#2FD8F6]"
-                          : "bg-white border-[#F3F3F3]"
-                      }`}
-                      onClick={() => setIsWithdrawalAgreed(!isWithdrawalAgreed)}
-                    >
-                      {isWithdrawalAgreed && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-3 h-3"
-                        >
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      )}
-                    </div>
-                    탈퇴 시 안내사항을 모두 확인하였으며, 동의합니다.
-                  </label>
-                </div>
-                <div className="flex justify-end mt-4 space-x-4">
-                  <button
-                    className="text-left px-4 py-2 text-[16px] text-[#212121] font-medium rounded-md border border-[#E1E1E1] hover:bg-gray-100"
-                    onClick={() => navigate("/merchant-main-page")}
-                  >
-                    메인으로 이동
-                  </button>
-                  <button
-                    className={`text-left px-4 py-2 text-[16px] font-medium rounded-md transition-colors duration-200 ${
+              <div className="w-full h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto"></div>
+              <div className="flex justify-end">
+                <label className="flex items-center text-[#000000] gap-2 cursor-pointer">
+                  <div
+                    className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 ${
                       isWithdrawalAgreed
-                        ? "bg-[#EE4343] text-white hover:bg-[#D35A5A]"
-                        : "bg-[#E1E1E1] text-[#FFFFFF] cursor-not-allowed"
+                        ? "bg-[#2FD8F6] border-[#2FD8F6]"
+                        : "bg-white border-[#F3F3F3]"
                     }`}
-                    onClick={openWithdrawalModal}
-                    disabled={!isWithdrawalAgreed}
+                    onClick={() => setIsWithdrawalAgreed(!isWithdrawalAgreed)}
                   >
-                    탈퇴하기
-                  </button>
-                </div>
+                    {isWithdrawalAgreed && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-3 h-3"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    )}
+                  </div>
+                  탈퇴 시 안내사항을 모두 확인하였으며, 동의합니다.
+                </label>
+              </div>
+              <div className="flex justify-end mt-4 space-x-4">
+                <button
+                  className="text-left px-4 py-2 text-[16px] text-[#212121] font-medium rounded-md border border-[#E1E1E1] hover:bg-gray-100"
+                  onClick={() => navigate("/merchant-main-page")}
+                >
+                  메인으로 이동
+                </button>
+                <button
+                  className={`text-left px-4 py-2 text-[16px] font-medium rounded-md transition-colors duration-200 ${
+                    isWithdrawalAgreed
+                      ? "bg-[#EE4343] text-white hover:bg-[#D35A5A]"
+                      : "bg-[#E1E1E1] text-[#FFFFFF] cursor-not-allowed"
+                  }`}
+                  onClick={openWithdrawalModal}
+                  disabled={!isWithdrawalAgreed}
+                >
+                  탈퇴하기
+                </button>
               </div>
             </div>
           </div>
