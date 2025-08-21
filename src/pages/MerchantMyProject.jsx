@@ -117,10 +117,10 @@ const MerchantMyProject = () => {
   if (loading) return <div className="p-10">불러오는 중...</div>;
 
   return (
-    <div className="min-h-screen bg-white font-pretendard">
+    <div className="min-h-screen flex flex-col bg-white font-pretendard">
       <MerchantHeader />
 
-      <div className="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center w-full ">
         <div className="w-[1120px] max-w-[92vw]">
           <h2 className="text-[24px] font-semibold mt-[40px] mb-[20px] text-center">
             내 공모전
@@ -186,7 +186,7 @@ const MerchantMyProject = () => {
         </div>
       </div>
 
-      <Footer />
+      <div className="mt-auto"><Footer /></div>
     </div>
   );
 };
