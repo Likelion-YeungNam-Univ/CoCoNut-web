@@ -10,7 +10,7 @@ import xIcon from "../assets/xIcon.png";
 import SubmissionPreviewModal from "../components/SubmissionPreviewModal";
 import ConfirmSubmissionModal from "../components/ConfirmSubmissionModal";
 import { submitProject } from "../apis/projectSubmissionApi";
-import { updateSubmission } from "../apis/updateSubmissionApi"; // 🔹 추가
+import { updateSubmission } from "../apis/updateSubmissionApi";
 import checklistIcon1 from "../assets/checklistIcon1.png";
 import checklistIcon2 from "../assets/checklistIcon2.png";
 import checklistIcon3 from "../assets/checklistIcon3.png";
@@ -18,6 +18,7 @@ import checklistIcon4 from "../assets/checklistIcon4.png";
 import checklistIcon5 from "../assets/checklistIcon5.png";
 import checklistIcon6 from "../assets/checklistIcon6.png";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import SubEasyHelpModal from "../components/SubEasyHelpModal";
 
 const ProjectSubmissionPage = () => {
   const navigate = useNavigate();
@@ -417,13 +418,21 @@ const ProjectSubmissionPage = () => {
 
           {/* AI 작성 */}
           <div className="grid grid-cols-[184px_1fr] items-start gap-4 ml-[168px] mb-[24px]">
-            <div>
-              <label className="ml-[8px] text-[#212121] text-[14px]">
-                AI로 설명 빠르게 작성하기
+            <div className="group w-44 flex flex-col space-y-1 justify-center items-center pr-7 relative">
+              <label className="text-sm font-pretendard font-normal text-[#212121] pt-2">
+                AI로 공모전 쉽게 작성하기
               </label>
-              <div className="w-[153px] h-[32px] mt-[8px] bg-[#E0F9FE] px-[16px] py-[8px] text-[12px] text-[#2AC2DD] font-medium rounded-[16px] leading-[130%] tracking-[-0.01em]">
+              <a
+                href="#"
+                className="w-40 text-xs rounded-3xl text-[#2AC2DD] font-pretendard pt-2 pb-2 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF]"
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+              >
                 Tip. 도움받는 법 알아보기
-              </div>
+              </a>
+
+              <SubEasyHelpModal />
             </div>
             <div className="relative w-[504px] h-[93px]">
               <textarea
