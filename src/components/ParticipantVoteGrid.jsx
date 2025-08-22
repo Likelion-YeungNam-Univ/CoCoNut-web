@@ -132,10 +132,11 @@ const ParticipantVoteGrid = ({
           (data?.my_vote && data.my_vote.submission_id)
       );
 
-      if (serverHasVoted) {
-        setHasVoted(true);
-        if (votedKey) localStorage.setItem(votedKey, "1");
-      }
+     setHasVoted(serverHasVoted);
+if (votedKey) {
+  if (serverHasVoted) localStorage.setItem(votedKey, "1");
+  else localStorage.removeItem(votedKey);
+}
     } catch (e) {
       console.error("loadProjectVotes failed:", e);
     } finally {
@@ -210,21 +211,36 @@ const ParticipantVoteGrid = ({
 
       if (votedKey) localStorage.setItem(votedKey, "1");
       if (typeof onVote === "function") onVote(selected);
-    } catch (e) {
-      console.error("voteSubmission failed:", e);
-      const dup = e?.response?.status === 409;
-      alert(dup ? "이미 이 공모전에 투표했어요" : "투표에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+  } catch (e) {
+  console.error("voteSubmission failed:", e);
+  const resp = e?.response;
+  const dup = resp?.status === 409;
 
-      if (dup) {
-        setHasVoted(true);
-        setIsSelecting(false);
-        setSelected(null);
-        if (votedKey) localStorage.setItem(votedKey, "1");
-      }
+  // 서버가 내려주는 메시지 우선 사용, 없으면 기본 문구
+  const serverMsg = resp?.data?.message;
+  const msg = dup
+    ? (serverMsg || "해당 공모전에 대한 작품에 이미 투표하셨습니다.")
+    : (serverMsg || "투표에 실패했습니다. 잠시 후 다시 시도해 주세요.");
 
-      setOpenConfirm(false);
-      await loadProjectVotes();
-    }
+  alert(msg);
+
+  if (dup) {
+    // 즉시 '이미 투표했어요' 상태로 전환
+    setHasVoted(true);
+    setIsSelecting(false);
+    setSelected(null);
+    setOpenConfirm(false);
+    if (votedKey) localStorage.setItem(votedKey, "1");
+
+    // 최신 집계 반영(표 수 등)
+    await loadProjectVotes();
+    return; // 여기서 종료
+  }
+
+  setOpenConfirm(false);
+  await loadProjectVotes();
+}
+
   };
 
   const top3Map = useMemo(() => {
