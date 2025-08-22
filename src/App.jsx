@@ -8,6 +8,7 @@ import Signup from "./pages/Signup";
 import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
+
 import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
 import MerchantMyPage from "./pages/MerchantMyPage";
 import MerchantMyProject from "./pages/MerchantMyProject.jsx";
@@ -15,6 +16,7 @@ import ParticipantMyProject from "./pages/ParticipantMyProject.jsx";
 import GuestMainPage from "./pages/GuestMainPage.jsx";
 import ParticipantMyPage from "./pages/ParticipantMyPage.jsx";
 import Landing from "./pages/Landing.jsx";
+
 
 export default function App() {
   return (
