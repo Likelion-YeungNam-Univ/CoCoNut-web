@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
@@ -13,14 +14,28 @@ const ProjectCardClosed = ({
   role,
   onRequireLogin,
 }) => {
+  const navigate = useNavigate();
+
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
     (b) => b.code === project.businessType
   );
 
-  // 카드 내용 공통
+  // 클릭 시 상세 페이지로 이동하는 핸들러 함수
+  const handleCardClick = () => {
+    if (project.projectId) {
+      navigate(`/project-detail-participant/${project.projectId}`);
+    } else {
+      console.error("projectId가 없어 상세 페이지로 이동할 수 없습니다.");
+    }
+  };
+
+  // 카드 내용 공통 (클릭 이벤트 포함)
   const cardContent = (
-    <div className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
+    <div
+      className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3] cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* 수상작 대표 이미지 */}
       <img
         src={projectImgExample}
@@ -120,7 +135,6 @@ const ProjectCardClosed = ({
     );
   }
 
-  // 추후 상세 페이지 연결 예정
   return cardContent;
 };
 

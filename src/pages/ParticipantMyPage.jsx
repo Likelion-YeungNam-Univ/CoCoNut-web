@@ -16,6 +16,7 @@ const MyPageContent = ({
   selectedTab,
   userData,
   userSubmissions,
+  userAwards,
   openLogoutModal,
   openWithdrawalModal,
   navigate,
@@ -60,18 +61,13 @@ const MyPageContent = ({
   switch (selectedTab) {
     case "profile":
       const totalParticipations = userSubmissions.length;
-      const winningSubmissions = userSubmissions.filter(
-        (submission) => submission.isWinner
-      );
+      // 'userAwards'를 사용하여 수상작 목록으로 직접 사용
       const winningCount = userData?.winningCount || 0;
 
-      const totalPrizeMoney = winningSubmissions.reduce((total, submission) => {
-        const rewardValue = String(submission.rewardAmount || "0").replace(
-          /[^0-9]/g,
-          ""
-        );
-        const reward = parseInt(rewardValue, 10);
-        return total + (isNaN(reward) ? 0 : reward);
+      // 'userAwards'를 사용하여 상금 합산
+      const totalPrizeMoney = userAwards.reduce((total, award) => {
+        const reward = award.rewardAmount || 0;
+        return total + reward;
       }, 0);
 
       return (
@@ -117,7 +113,7 @@ const MyPageContent = ({
                     <span className="text-sm text-[#A3A3A3] font-normal">
                       보유 상금
                     </span>
-                    <span className="text-[#212121] text-[16px] font-semibold mt-1">
+                    <span className="text-[#212121] text-[16px] font-semibold mt-1 whitespace-nowrap">
                       {totalPrizeMoney.toLocaleString()}원
                     </span>
                   </div>
@@ -126,15 +122,15 @@ const MyPageContent = ({
             </div>
             <hr className="text-[#E1E1E1]" />
 
-            {winningSubmissions.length > 0 ? (
+            {userAwards.length > 0 ? (
               <div className="flex flex-col space-y-4">
-                <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
+                <h2 className="font-semibold text-[20px] mt-16 mb-4 text-[#212121]">
                   수상 내역
                 </h2>
-                {winningSubmissions.map((submission) => (
+                {userAwards.map((award) => (
                   <ProjectCardClosed
-                    key={submission.projectId}
-                    project={submission}
+                    key={award.projectId}
+                    project={award}
                     categories={categories}
                     businessTypes={businessTypes}
                     role="participant"
@@ -171,7 +167,7 @@ const MyPageContent = ({
                 <div className="p-6">
                   {SERVICE_TERMS_DATA.sections.map((section, index) => (
                     <div key={index} className="mb-4">
-                      <h1 className="text-[#212121] font-medium text-[14px]">
+                      <h1 className="text-[#21221] font-medium text-[14px]">
                         {section.heading}
                       </h1>
                       {Array.isArray(section.content) ? (
@@ -284,7 +280,7 @@ const MyPageContent = ({
               </button>
             </div>
             <div className="space-y-2 mt-16">
-              <p className="font-medium text-[16px] text-[#212121] whitespace-nowrap">
+              <p className="font-medium text-[16px] text-[#212121] whitespace-nowap">
                 회원 탈퇴
               </p>
               <div className="w-full h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto">
@@ -365,6 +361,7 @@ const MyPageContent = ({
 const ParticipantMyPage = () => {
   const [userData, setUserData] = useState(null);
   const [userSubmissions, setUserSubmissions] = useState([]);
+  const [userAwards, setUserAwards] = useState([]); // 추가된 state
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const location = useLocation();
@@ -429,7 +426,6 @@ const ParticipantMyPage = () => {
         const userResponse = await api.get("/users");
         setUserData(userResponse.data);
 
-        // `/rewards/me/awards/count` API를 호출하여 수상 횟수를 가져옵니다.
         const winningCountResponse = await api.get("/rewards/me/awards/count");
         const winningCount = winningCountResponse.data || 0;
         setUserData((prevData) => ({
@@ -437,15 +433,16 @@ const ParticipantMyPage = () => {
           winningCount,
         }));
 
-        // `/submissions` API만 호출하여 데이터를 가져옵니다.
         const submissionsResponse = await api.get("/submissions");
-        const submissions = submissionsResponse.data;
+        setUserSubmissions(submissionsResponse.data);
 
-        setUserSubmissions(submissions);
+        const awardsResponse = await api.get("/rewards/me/awards");
+        setUserAwards(awardsResponse.data);
       } catch (err) {
         console.error("데이터를 가져오는 데 실패했습니다:", err);
         setUserData(null);
         setUserSubmissions([]);
+        setUserAwards([]);
       }
     };
 
@@ -509,6 +506,7 @@ const ParticipantMyPage = () => {
                 selectedTab={selectedTab}
                 userData={userData}
                 userSubmissions={userSubmissions}
+                userAwards={userAwards} // 추가
                 openLogoutModal={openLogoutModal}
                 openWithdrawalModal={openWithdrawalModal}
                 navigate={navigate}
