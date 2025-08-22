@@ -40,11 +40,19 @@ const ProjectList = ({
   hideHeader = false,
   role,
   onRequireLogin,
+  sortOption: propSortOption,
+  setSortOption: propSetSortOption,
 }) => {
   const [page, setPage] = useState(1);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortOption, setSortOption] = useState("최신순");
+
+  const [localSortOption, setLocalSortOption] = useState("최신순");
+
+  const sortOption =
+    propSortOption !== undefined ? propSortOption : localSortOption;
+  const setSortOption =
+    propSetSortOption !== undefined ? propSetSortOption : setLocalSortOption;
 
   useEffect(() => {
     setPage(1);
@@ -116,12 +124,12 @@ const ProjectList = ({
 
   return (
     <div className="flex flex-col gap-4 font-pretendard w-[856px]">
-      <div className="flex justify-between items-center mb-4 z-10">
-        {!hideHeader && activeTab && (
+      {!(isSearched || hideHeader) && activeTab && (
+        <div className="flex justify-between items-center mb-4 z-10">
           <h2 className="text-[20px] font-semibold">{headerText[activeTab]}</h2>
-        )}
-        <DropdownSort sortOption={sortOption} setSortOption={setSortOption} />
-      </div>
+          <DropdownSort sortOption={sortOption} setSortOption={setSortOption} />
+        </div>
+      )}
 
       {pageItems.length === 0 ? (
         emptyBySearch ? (
