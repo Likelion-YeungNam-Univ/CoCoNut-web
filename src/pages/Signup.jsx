@@ -370,8 +370,8 @@ const Signup = () => {
                             nicknameMessage.includes("사용 가능한")
                               ? "text-[#2CCC41]"
                               : nicknameMessage.includes("이미")
-                              ? "text-[#EE4343]"
-                              : "text-[#828282]"
+                              ? "text-[#828282]"
+                              : "text-[#EE4343]"
                           }`}
                         >
                           {nicknameMessage}
