@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
@@ -12,18 +13,28 @@ const ProjectCardClosed = ({
   businessTypes = [],
   role,
   onRequireLogin,
-  navigate,
 }) => {
+  const navigate = useNavigate();
+
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
     (b) => b.code === project.businessType
   );
 
+ 
   const handleCardClick = () => {
-    if (navigate && role !== "guest") {
-      navigate(`/project-detail/${project.projectId}`);
-    } else if (onRequireLogin && role === "guest") {
+    
+    if (role === "guest" && onRequireLogin) {
       onRequireLogin();
+    } else if (project.projectId) {
+     
+      if (role === "participant") {
+        navigate(`/project-detail-participant/${project.projectId}`);
+      } else {
+        navigate(`/project-detail/${project.projectId}`);
+      }
+    } else {
+      console.error("projectId가 없어 상세 페이지로 이동할 수 없습니다.");
     }
   };
 

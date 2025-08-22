@@ -13,6 +13,7 @@ import MerchantMyPage from "./pages/MerchantMyPage";
 import MerchantMyProject from "./pages/MerchantMyProject.jsx";
 import ParticipantMyProject from "./pages/ParticipantMyProject.jsx";
 import GuestMainPage from "./pages/GuestMainPage.jsx";
+import ParticipantMyPage from "./pages/ParticipantMyPage.jsx";
 import Landing from "./pages/Landing.jsx";
 
 export default function App() {
@@ -53,6 +54,7 @@ export default function App() {
             path="participant-myproject"
             element={<ParticipantMyProject />}
           />
+          <Route path="participant-mypage" element={<ParticipantMyPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
