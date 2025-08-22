@@ -370,10 +370,15 @@ const MerchantMyPage = () => {
     setIsWithdrawalModalOpen(false);
   };
 
-  const handleConfirmLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    console.log("로그아웃 되었습니다.");
+  const handleConfirmLogout = async () => {
+    try {
+      await api.post("/users/logout");
+    } catch (error) {
+      console.error("로그아웃 API 호출 실패:", error);
+      alert("로그아웃에 실패했습니다. 다시 시도해 주세요.");
+    }
+    sessionStorage.removeItem("accessToken");
+    console.log("로그아웃 완료.");
     closeLogoutModal();
     navigate("/signin");
   };
@@ -381,8 +386,7 @@ const MerchantMyPage = () => {
   const handleConfirmWithdrawal = async () => {
     try {
       await api.delete("/users");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
+      sessionStorage.removeItem("accessToken");
       console.log("회원 탈퇴가 완료되었습니다.");
       closeWithdrawalModal();
       navigate("/");
@@ -478,7 +482,6 @@ const MerchantMyPage = () => {
                 selectedTab={selectedTab}
                 userData={userData}
                 userProjects={userProjects}
-                handleLogout={handleConfirmLogout}
                 openLogoutModal={openLogoutModal}
                 openWithdrawalModal={openWithdrawalModal}
                 navigate={navigate}
