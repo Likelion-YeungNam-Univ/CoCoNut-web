@@ -108,7 +108,7 @@ const MyPageContent = ({
             {userProjects && userProjects.length > 0 ? (
               <>
                 <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
-                  등록한 공모전
+                  선정한 공모전
                 </h2>
                 <div className="flex flex-col space-y-4">
                   {userProjects.map((project) => (
@@ -375,7 +375,6 @@ const MerchantMyPage = () => {
       await api.post("/users/logout");
     } catch (error) {
       console.error("로그아웃 API 호출 실패:", error);
-      alert("로그아웃에 실패했습니다. 다시 시도해 주세요.");
     }
     sessionStorage.removeItem("accessToken");
     console.log("로그아웃 완료.");
