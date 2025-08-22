@@ -34,6 +34,27 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
         : "/participant-search"
     );
   };
+  const handleLogout = () => {
+    setIsLogoutModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const closeLogoutModal = () => {
+    setIsLogoutModalOpen(false);
+  };
+
+  const handleConfirmLogout = async () => {
+    try {
+      await api.post("/users/logout");
+      sessionStorage.removeItem("accessToken");
+      console.log("로그아웃 성공");
+      closeLogoutModal();
+      navigate("/signin");
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+      alert("로그아웃에 실패했습니다. 다시 시도해 주세요.");
+    }
+  };
 
   return (
     <div className="w-full h-[60px] flex items-center px-[120px] bg-white border-b border-gray-200 font-pretendard">
