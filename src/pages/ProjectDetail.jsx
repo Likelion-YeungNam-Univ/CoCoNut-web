@@ -692,7 +692,7 @@ const ProjectDetail = ({ role }) => {
           }}
           className="px-6 py-3 bg-[#2FD8F6] text-white rounded-md font-medium text-base hover:bg-[#2AC2DD] transition-colors"
         >
-          메인으로 돌아가기
+          목록으로 돌아가기
         </button>
         <Footer />
       </div>
