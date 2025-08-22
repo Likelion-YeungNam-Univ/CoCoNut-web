@@ -234,15 +234,21 @@ const ProjectSubmissionPage = () => {
   const handleOpenSubmitModal = async () => {
     if (!validateForm()) return;
 
-    try {
-      await checkSubmissionValid(projectId);
-      setIsConfirmSubmissionOpen(true); // 검증 성공 시 모달 열기
-    } catch (error) {
-      const backendMessage = error.response?.data?.message;
-      if (backendMessage) {
-        alert(backendMessage);
-      } else {
-        alert("제출 자격 확인 중 알 수 없는 오류가 발생했습니다.");
+    if (isEditMode) {
+      // 수정 모드에서는 검증 불필요
+      setIsConfirmSubmissionOpen(true);
+    } else {
+      // 신규 제출 모드일 때만 자격 검증
+      try {
+        await checkSubmissionValid(projectId);
+        setIsConfirmSubmissionOpen(true);
+      } catch (error) {
+        const backendMessage = error.response?.data?.message;
+        if (backendMessage) {
+          alert(backendMessage);
+        } else {
+          alert("제출 자격 확인 중 알 수 없는 오류가 발생했습니다.");
+        }
       }
     }
   };
