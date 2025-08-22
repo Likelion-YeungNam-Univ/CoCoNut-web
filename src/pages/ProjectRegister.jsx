@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 // 아이콘
 import { SlArrowUpCircle } from "react-icons/sl";
 import { useNavigate } from "react-router-dom";
+import { IoArrowUp } from "react-icons/io5";
 
 // API 함수들
 import { analyzeProjectWithAI } from "../apis/analyzeWithAI";
@@ -32,6 +33,14 @@ import { COLORS_DATA } from "../utils/colorData";
 
 const ProjectRegister = () => {
   const navigate = useNavigate();
+
+  const projectTitleRef = useRef(null);
+  const merchantNameRef = useRef(null);
+  const categoryRef = useRef(null);
+  const businesstypeRef = useRef(null);
+  const descriptionRef = useRef(null);
+  const rewardAmountRef = useRef(null);
+  const deadlineRef = useRef(null);
 
   // 약관 동의 관련 상태
   const [agreeAll, setAgreeAll] = useState(false);
@@ -256,7 +265,7 @@ const ProjectRegister = () => {
     const data = TERMS_DATA[termType];
     if (data) {
       setModalTitle(data.title);
-      setModalContent(data.content);
+      setModalContent(data);
       setIsTermsModalOpen(true);
     }
   };
@@ -266,14 +275,29 @@ const ProjectRegister = () => {
     setLoading(true);
     try {
       const aiData = await analyzeProjectWithAI(assistanceText);
-      setAiProjectData({
-        rewardAmount: aiData.rewardAmount,
-        description: aiData.description,
-        summary: aiData.summary,
-        deadline: aiData.deadline,
-      });
+
+      // Check if the AI data is valid before updating the state
+      if (
+        !aiData ||
+        !aiData.description ||
+        !aiData.summary ||
+        !aiData.rewardAmount ||
+        !aiData.deadline
+      ) {
+        alert("AI가 내용을 불러오지 못했어요.");
+        console.error("AI analysis returned incomplete data:", aiData);
+      } else {
+        setAiProjectData({
+          rewardAmount: aiData.rewardAmount,
+          description: aiData.description,
+          summary: aiData.summary,
+          deadline: aiData.deadline,
+        });
+      }
     } catch (error) {
       console.error("AI analysis error:", error);
+
+      alert("AI가 내용을 불러오지 못했어요.");
     } finally {
       setLoading(false);
     }
@@ -350,27 +374,32 @@ const ProjectRegister = () => {
     const newErrors = validateForm();
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0) {
-      const data = {
-        projectTitle,
-        merchantName,
-        category,
-        businesstype,
-        createdAt: createdAt,
-        deadline: aiProjectData.deadline,
-        rewardAmount: aiProjectData.rewardAmount,
-        content: aiProjectData.description,
-        summary: aiProjectData.summary,
-        color: colors,
-        style: styles,
-        target: targets,
-        image: imagePreviewUrl,
-        writerNickname: userName,
-        submissionsCount: submissionsCount,
-      };
-      setPreviewData(data);
-      setIsPreviewModalOpen(true);
+    // 에러 있으면 바로 스크롤 후 return
+    if (Object.keys(newErrors).length > 0) {
+      scrollToErrorField(newErrors);
+      return;
     }
+
+    // 에러 없을 때만 미리보기 열기
+    const data = {
+      projectTitle,
+      merchantName,
+      category,
+      businesstype,
+      createdAt: createdAt,
+      deadline: aiProjectData.deadline,
+      rewardAmount: aiProjectData.rewardAmount,
+      content: aiProjectData.description,
+      summary: aiProjectData.summary,
+      color: colors,
+      style: styles,
+      target: targets,
+      image: imagePreviewUrl,
+      writerNickname: userName,
+      submissionsCount: submissionsCount,
+    };
+    setPreviewData(data);
+    setIsPreviewModalOpen(true);
   };
 
   // 공모전 등록을 최종적으로 처리하는 비동기 핸들러
@@ -412,11 +441,11 @@ const ProjectRegister = () => {
 
       const projectId = response?.data;
 
-      console.log("추출된 projectId:", projectId);
-
       if (projectId !== null && projectId !== undefined) {
         setIsConfirmModalOpen(false);
         setIsFormDirty(false);
+
+        alert("공모전이 성공적으로 등록되었습니다!");
         navigate(`/project-detail/${projectId}`);
       } else {
         console.error("서버 응답에 유효한 projectId가 없습니다.", response);
@@ -431,13 +460,21 @@ const ProjectRegister = () => {
       setErrors({ general: "프로젝트 등록 중 오류가 발생했습니다." });
     }
   };
+
   // '등록하기' 버튼 클릭을 처리하고 확인 모달을 여는 핸들러
   const handleRegisterClick = () => {
     setIsSubmitted(true);
     const newErrors = validateForm();
     setErrors(newErrors);
 
-    if (Object.keys(newErrors).length === 0 && isButtonActive) {
+    // 에러 있으면 바로 스크롤 후 return
+    if (Object.keys(newErrors).length > 0) {
+      scrollToErrorField(newErrors);
+      return;
+    }
+
+    // 에러 없을 때만 등록 확인 모달 열기
+    if (isButtonActive) {
       setModalTitle("등록 확인");
       setModalContent("입력하신 내용으로 공모전을 등록하시겠습니까?");
       setIsConfirmModalOpen(true);
@@ -451,29 +488,72 @@ const ProjectRegister = () => {
     navigate(-1);
   };
 
+  const scrollToErrorField = (errors) => {
+    if (errors.projectTitle && projectTitleRef.current) {
+      projectTitleRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      projectTitleRef.current.focus();
+    } else if (errors.merchantName && merchantNameRef.current) {
+      merchantNameRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      merchantNameRef.current.focus();
+    } else if (errors.category && categoryRef.current) {
+      categoryRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    } else if (errors.businesstype && businesstypeRef.current) {
+      businesstypeRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    } else if (errors.content && descriptionRef.current) {
+      descriptionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      descriptionRef.current.focus();
+    } else if (errors.rewardAmount && rewardAmountRef.current) {
+      rewardAmountRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      rewardAmountRef.current.focus();
+    } else if (errors.period && deadlineRef.current) {
+      deadlineRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      deadlineRef.current.focus();
+    }
+  };
+
   return (
     <div className="flex flex-col">
       <MerchantHeader />
-      <div className="bg-[#F8F8F8] flex justify-center py-12 px-4">
-        <div className="bg-white rounded-lg shadow-md p-8 w-full max-w-[1032px] min-h-[2408px]">
+      <div className="bg-[#F8F8F8] flex justify-center py-12 px-4 font-pretendard">
+        <div className="bg-white rounded-[12px] p-8 w-full max-w-[1032px] min-h-[2408px]">
           <div className="max-w-2xl mx-auto mt-12">
             <section className="flex flex-col mb-12 items-center">
-              <h1 className="text-3xl font-pretendard font-semibold mb-3 text-[#000000]">
+              <h1 className="text-[24px]  font-semibold mb-3 text-[#212121]">
                 공모전 등록하기
               </h1>
-              <p className="text-sm font-pretendard text-[#828282]">
+              <p className="text-[12px] text-[#828282] text-center">
                 필요한 홍보물, 메뉴판 등 어떤 요청이든 쉽게 등록하세요.
-              </p>
-              <p className="text-sm font-pretendard text-[#828282]">
+                <br />
                 마음에 드는 수상작을 직접 선택할 수 있습니다.
               </p>
             </section>
             <div className="flex justify-between">
-              <h1 className="text-xl font-pretendard font-semibold text-[#000000] mb-2">
+              <h1 className="text-[16px] font-semibold text-[#212121] mb-2">
                 기본정보 입력
               </h1>
-              <label className="text-sm font-normal text-[#626262]">
-                <span className="font-pretendard text-[#2FD8F6]">*</span>
+              <label className="text-[12px] text-[#626262]">
+                <span className="text-[#2FD8F6]">*</span>
                 필수입력
               </label>
             </div>
@@ -484,13 +564,16 @@ const ProjectRegister = () => {
                 {/* "공모전 제목" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
-                      공모전 제목<span className="text-[#2FD8F6]">*</span>
+                    <label
+                      ref={projectTitleRef}
+                      className="w-44 text-sm font-pretendard font-normal text-[#212121]"
+                    >
+                      공모전 제목 <span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       <input
                         type="text"
-                        className={`w-full rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
+                        className={`w-full rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none ${
                           isSubmitted && errors.projectTitle
                             ? "border border-red-500"
                             : "border border-[#F3F3F3]"
@@ -518,13 +601,16 @@ const ProjectRegister = () => {
                 {/* "가게명" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
-                      가게명<span className="text-[#2FD8F6]">*</span>
+                    <label
+                      ref={merchantNameRef}
+                      className="w-44 text-sm font-pretendard font-normal text-[#212121]"
+                    >
+                      가게명 <span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       <input
                         type="text"
-                        className={`w-full rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
+                        className={`w-full rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none ${
                           isSubmitted && errors.merchantName
                             ? "border border-red-500"
                             : "border border-[#F3F3F3]"
@@ -553,9 +639,9 @@ const ProjectRegister = () => {
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
-                      카테고리<span className="text-[#2FD8F6]">*</span>
+                      카테고리 <span className="text-[#2FD8F6]">*</span>
                     </label>
-                    <div className="flex-grow flex flex-col">
+                    <div ref={categoryRef} className="flex-grow flex flex-col">
                       <CustomDropdown
                         label="공모전의 카테고리를 선택해 주세요"
                         options={categories}
@@ -581,9 +667,12 @@ const ProjectRegister = () => {
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
-                      업종<span className="text-[#2FD8F6]">*</span>
+                      업종 <span className="text-[#2FD8F6]">*</span>
                     </label>
-                    <div className="flex-grow flex flex-col">
+                    <div
+                      ref={businesstypeRef}
+                      className="flex-grow flex flex-col"
+                    >
                       <CustomDropdown
                         label="가게(상호)의 업종을 선택해 주세요"
                         options={businesstypes}
@@ -610,7 +699,7 @@ const ProjectRegister = () => {
                 </div>
               </div>
             </section>
-            <h2 className="text-xl font-pretendard font-semibold mb-2 text-[#000000]">
+            <h2 className="text-[16px] font-pretendard font-semibold mb-2 text-[#212121]">
               공모전 내용 입력
             </h2>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
@@ -637,16 +726,23 @@ const ProjectRegister = () => {
 
                   <div className="flex-grow justify-between relative">
                     <textarea
-                      className="w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] pr-10"
+                      className="w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] pr-10 focus:border-[#E1E1E1] outline-none resize-none"
                       placeholder="어떤 도움이 필요한지 작성해 주세요. AI가 내용, 기간, 상금 등을 자동으로 생성해줘요."
                       value={assistanceText}
                       onChange={(e) => setAssistanceText(e.target.value)}
                     />
-                    <SlArrowUpCircle
-                      className="absolute right-2 bottom-3 text-gray-400 hover:text-[#212121s] cursor-pointer"
-                      size={24}
+                    <button
+                      type="button"
                       onClick={analyzeWithAI}
-                    />
+                      disabled={!assistanceText.trim()}
+                      className={`absolute bottom-[16px] right-[16px] text-white ${
+                        assistanceText.trim()
+                          ? "bg-[#4C4C4C] hover:bg-[#636161] cursor-pointer"
+                          : "bg-[#E1E1E1] cursor-not-allowed"
+                      } rounded-full w-[24px] h-[24px] flex items-center justify-center`}
+                    >
+                      <IoArrowUp className="w-[16px] h-[16px]" />
+                    </button>
                   </div>
                 </div>
                 {loading && (
@@ -659,13 +755,16 @@ const ProjectRegister = () => {
                 {/* "내용" */}
                 <div className="flex flex-col space-y-1">
                   <div className="flex items-start space-x-2">
-                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121] pt-2">
-                      내용<span className="text-[#2FD8F6]">*</span>
+                    <label
+                      ref={descriptionRef}
+                      className="w-44 text-sm font-pretendard font-normal text-[#212121] pt-2"
+                    >
+                      내용 <span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       {" "}
                       <textarea
-                        className={`w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] pr-10 ${
+                        className={`w-full border border-[#F3F3F3] rounded p-2 h-24 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] pr-10 focus:border-[#E1E1E1] outline-none resize-none ${
                           isSubmitted && errors.content
                             ? "border border-red-500"
                             : "border border-[#F3F3F3]"
@@ -693,8 +792,11 @@ const ProjectRegister = () => {
                 {/* "상금" */}
                 <div className="flex-grow flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
-                    <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
-                      상금<span className="text-[#2FD8F6]">*</span>
+                    <label
+                      ref={rewardAmountRef}
+                      className="w-44 text-sm font-pretendard font-normal text-[#212121]"
+                    >
+                      상금 <span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex items-center space-x-2">
                       <div className="w-[231px] flex flex-col space-y-1">
@@ -703,7 +805,7 @@ const ProjectRegister = () => {
                           {" "}
                           <input
                             type="text"
-                            className={`rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] flex-grow ${
+                            className={`rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] flex-grow focus:border-[#E1E1E1] outline-none ${
                               isSubmitted && errors.rewardAmount
                                 ? "border border-red-500"
                                 : "border border-[#F3F3F3]"
@@ -771,22 +873,23 @@ const ProjectRegister = () => {
                 <div className="flex-grow flex flex-col space-y-1">
                   <div className="flex items-center space-x-2">
                     <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
-                      기간<span className="text-[#2FD8F6]">*</span>
+                      기간 <span className="text-[#2FD8F6]">*</span>
                     </label>
                     <div className="flex-grow flex flex-col">
                       <div className="flex items-center space-x-4">
                         {/* 시작일 */}
                         <input
                           type="text"
-                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] bg-[#FFFFFF] border border-[#F3F3F3] cursor-not-allowed`}
+                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] bg-[#FFFFFF] border border-[#F3F3F3] cursor-not-allowed `}
                           value={createdAt}
                           readOnly
                         />
                         <span>-</span>
                         {/* 마감일 */}
                         <input
+                          ref={deadlineRef}
                           type="text"
-                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] ${
+                          className={`w-[87px] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none ${
                             isSubmitted && errors.period
                               ? "border border-red-500"
                               : "border border-[#F3F3F3]"
@@ -820,7 +923,7 @@ const ProjectRegister = () => {
                     </label>
                     <input
                       type="text"
-                      className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3]"
+                      className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard text-[#212121] placeholder:text-[#C3C3C3] focus:border-[#E1E1E1] outline-none"
                       placeholder="공모전의 한 줄 소개를 작성해 주세요."
                       value={aiProjectData.summary}
                       onChange={(e) =>
@@ -958,17 +1061,17 @@ const ProjectRegister = () => {
               </div>
             </section>
             <div className="flex flex-col">
-              <h2 className="text-xl font-pretendard font-semibold text-[#000000]">
+              <h2 className="text-[16px] font-pretendard font-semibold text-[#212121]">
                 공모전 등록 약관 동의
               </h2>
-              <label className="text-xs font-pretendard text-[#828282] mb-4">
+              <label className="text-[12px] font-pretendard text-[#828282] mt-1 mb-4">
                 공모전 등록을 위해 아래 내용을 꼭 확인해 주세요.
               </label>
             </div>
             <div className="w-auto h-[1px] bg-[#A3A3A3] mx-[-0.5rem]" />
             <section className="my-10">
               <div className="flex flex-col space-y-3 text-sm text-gray-600">
-                <label className="flex items-center text-[#000000] gap-2">
+                <label className="flex items-center text-[#212121] gap-2 text-[14px]">
                   <div
                     className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                       agreeAll
@@ -1000,7 +1103,7 @@ const ProjectRegister = () => {
                 <div className="space-y-4 mb-5">
                   {/* 체크리스트 */}
                   <div className="flex items-center justify-between mt-5">
-                    <label className="flex items-center text-[#000000] gap-2">
+                    <label className="flex items-center text-[#212121] text-[14px] gap-2">
                       <div
                         className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           agreeChecklist
@@ -1039,7 +1142,7 @@ const ProjectRegister = () => {
                   </div>
                   {/* 이용 약관 */}
                   <div className="flex items-center justify-between">
-                    <label className="flex items-center text-[#000000] gap-2">
+                    <label className="flex items-center text-[#212121] text-[14px] gap-2">
                       <div
                         className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           agreeTerms
@@ -1078,7 +1181,7 @@ const ProjectRegister = () => {
                   </div>
                   {/* 주의사항 */}
                   <div className="flex items-center justify-between">
-                    <label className="flex items-center text-[#000000] gap-2">
+                    <label className="flex items-center text-[#212121] text-[14px] gap-2">
                       <div
                         className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 cursor-pointer ${
                           agreeCaution
@@ -1120,12 +1223,12 @@ const ProjectRegister = () => {
             </section>
 
             {/* 하단 미리보기, 등록하기 버튼 */}
-            <div className="flex justify-center gap-4 pt-4">
+            <div className="flex justify-center text-[16px] gap-4 pt-4">
               <button
                 className={`w-[180px] h-[45px] rounded-md transition font-medium ${
                   isButtonActive
-                    ? "bg-white text-[#2FD8F6] border border-[#2FD8F6] hover:border-[#2FD8F6] hover:bg-[#EAFBFE] hover:font-bold"
-                    : "bg-white text-[#E1E1E1] border cursor-not-allowed"
+                    ? "bg-white text-[#2FD8F6] border boreder-bg-[#2FD8F6] hover:bg-[#EAFBFE] cursor-pointer"
+                    : "bg-white text-[#E1E1E1] border border-bg-[#E1E1E1] cursor-not-allowed"
                 }`}
                 onClick={handleOpenPreviewModal}
                 disabled={!isButtonActive}
@@ -1135,7 +1238,7 @@ const ProjectRegister = () => {
               <button
                 className={`w-[180px] h-[45px] rounded-md transition font-medium ${
                   isButtonActive
-                    ? "bg-[#2FD8F6] text-white hover:font-bold"
+                    ? "bg-[#2FD8F6] text-white hover:bg-[#2AC2DD] cursor-pointer"
                     : "bg-[#E1E1E1] text-white cursor-not-allowed"
                 }`}
                 onClick={handleRegisterClick}
@@ -1167,10 +1270,10 @@ const ProjectRegister = () => {
       )}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmSubmit}
         title={modalTitle}
         content={modalContent}
-        onConfirm={handleConfirmSubmit}
-        onClose={() => setIsConfirmModalOpen(false)}
       />
       {isEasyHelpModalOpen && (
         <EasyHelpModal onClose={() => setIsEasyHelpModalOpen(false)} />
