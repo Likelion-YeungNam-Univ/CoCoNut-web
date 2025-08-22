@@ -12,9 +12,6 @@ import { fetchProjects } from "../apis/getProjectsApi";
 import { fetchCategories } from "../apis/category";
 import { getBusinessTypes } from "../apis/businessTypes";
 import api from "../apis/api";
-import { selectWinner } from "../apis/rewardsApi";
-
-import AwardConfirmModal from "../components/AwardConfirmModal";
 
 const PAGE_SIZE = 5;
 
@@ -24,7 +21,7 @@ const STATUS_LABEL = {
   CLOSED: "완료",
 };
 
-// 서버/객체 어디에서 와도 우승작 id를 뽑아내는 헬퍼
+// 서버/객체 어디에서 와도 우승작 id를 뽑아내는 헬퍼 (fallback)
 const deriveWinnerId = (p) => {
   if (!p) return null;
   return (
@@ -41,7 +38,6 @@ const deriveWinnerId = (p) => {
 const MerchantMyProject = () => {
   const navigate = useNavigate();
 
-  const [me, setMe] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,73 +51,77 @@ const MerchantMyProject = () => {
     [projects, start]
   );
 
-  // 확정 모달
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [targetProject, setTargetProject] = useState(null);
-
-  const openConfirm = useCallback((p) => {
-    setTargetProject(p);
-    setConfirmOpen(true);
-  }, []);
-
   const getCategoryLabel = (code) =>
     categories.find((c) => c.code === code)?.description || "카테고리 없음";
   const getBusinessTypeLabel = (code) =>
     businessTypes.find((b) => b.code === code)?.description || "업종 없음";
 
-  // 내 공모전 목록 로드 (+ 로컬 캐시 보정)
-  const loadMine = useCallback(
-    async (userForFilter) => {
-      const all = await fetchProjects();
-      const mine = all.filter(
-        (p) =>
-          p?.writerNickname === userForFilter?.nickname ||
-          p?.merchantName === userForFilter?.nickname ||
-          p?.ownerNickname === userForFilter?.nickname
-      );
-
-      const merged = mine.map((p) => {
-        const pid = p.projectId ?? p.id;
-        const cachedWinner = sessionStorage.getItem(`winner:${pid}`);
-        const cachedAward = sessionStorage.getItem(`awarded:${pid}`) === "1";
-
+  // 각 프로젝트의 우승작 여부/ID를 서버에서 직접 조회
+  const enrichWithWinners = useCallback(async (list) => {
+    const fetchOne = async (pid) => {
+      try {
+        const res = await api.get(`/projects/${pid}/submissions`);
+        const arr = Array.isArray(res?.data) ? res.data : res?.data?.data || [];
+        const win = arr.find((s) => s?.winner === true);
         return {
-          ...p,
-          // 우승작 id는 캐시로 보강 가능
-          winnerSubmissionId:
-            p.winnerSubmissionId ??
-            (cachedWinner ? Number(cachedWinner) : undefined),
-          // ✅ 규칙: 완료일 때만 캐시로 '확정됨' 반영
-          // 진행중/투표중에는 항상 비활성 버튼이므로 캐시 무시
-          awardConfirmed: p.status === "CLOSED" ? (p.awardConfirmed || cachedAward) : false,
+          hasWinner: Boolean(win),
+          winnerSubmissionId: win ? (win.submissionId ?? win.id ?? null) : null,
         };
-      });
+      } catch (e) {
+        console.error("submissions fetch failed:", pid, e);
+        return { hasWinner: false, winnerSubmissionId: null };
+      }
+    };
 
-      setProjects(merged);
-    },
-    [setProjects]
-  );
+    const results = await Promise.all(
+      list.map((p) => fetchOne(p.projectId ?? p.id))
+    );
+
+    return list.map((p, i) => ({
+      ...p,
+      hasWinner: results[i].hasWinner,
+      winnerSubmissionId:
+        results[i].winnerSubmissionId ?? deriveWinnerId(p) ?? null,
+      // awardConfirmed는 서버가 주는 값 우선, 없으면 false
+      awardConfirmed: Boolean(p.awardConfirmed),
+    }));
+  }, []);
+
+  // 내 공모전 목록 로드
+  const loadMine = useCallback(async () => {
+    const user = await fetchUserInfo();
+    if (user?.role && user.role !== "ROLE_BUSINESS") {
+      alert("소상공인 전용 페이지입니다.");
+      navigate("/participant-main-page");
+      return [];
+    }
+
+    const [cats, biz, all] = await Promise.all([
+      fetchCategories(),
+      getBusinessTypes(),
+      fetchProjects(),
+    ]);
+
+    setCategories(cats || []);
+    setBusinessTypes(biz || []);
+
+    // 내 프로젝트만
+    const mine = (all || []).filter(
+      (p) =>
+        p?.writerNickname === user?.nickname ||
+        p?.merchantName === user?.nickname ||
+        p?.ownerNickname === user?.nickname
+    );
+
+    const enriched = await enrichWithWinners(mine);
+    setProjects(enriched);
+    return enriched;
+  }, [navigate, enrichWithWinners]);
 
   useEffect(() => {
     (async () => {
       try {
-        const user = await fetchUserInfo();
-        setMe(user);
-
-        if (user?.role && user.role !== "ROLE_BUSINESS") {
-          alert("소상공인 전용 페이지입니다.");
-          navigate("/participant-main-page");
-          return;
-        }
-
-        const [cats, biz] = await Promise.all([
-          fetchCategories(),
-          getBusinessTypes(),
-        ]);
-        setCategories(cats || []);
-        setBusinessTypes(biz || []);
-
-        await loadMine(user);
+        await loadMine();
       } catch (e) {
         console.error(e);
         alert("내 공모전을 불러오는 데 실패했습니다.");
@@ -129,110 +129,44 @@ const MerchantMyProject = () => {
         setLoading(false);
       }
     })();
-  }, [navigate, loadMine]);
+  }, [loadMine]);
 
-  // 수상 확정 처리 (모달 확인)
-  const confirmAward = async () => {
-    if (!targetProject) return;
-    const pid = targetProject.projectId ?? targetProject.id;
-
-    try {
-      // 가능한 모든 소스에서 submissionId 확보
-      let sid =
-        deriveWinnerId(targetProject) ??
-        targetProject.selectedSubmissionId ??
-        targetProject.submissionId ??
-        null;
-
-      if (!sid) {
-        try {
-          const fresh = await api.get(`/projects/${pid}`);
-          const p = fresh?.data;
-          sid = deriveWinnerId(p) ?? p?.selectedSubmissionId ?? null;
-        } catch {}
-      }
-      if (!sid) {
-        const cached = sessionStorage.getItem(`winner:${pid}`);
-        if (cached) sid = Number(cached);
-      }
-
-      // sid가 있으면 보상 확정 API 호출(이미 확정 409/400은 성공으로 간주)
-      if (sid) {
-        try {
-          await selectWinner(pid, sid);
-        } catch (err) {
-          const status = err?.response?.status;
-          if (!(status === 409 || status === 400)) throw err;
-        }
-      }
-
-      // 로컬 캐시: 완료로 표시 유지
-      sessionStorage.setItem(`awarded:${pid}`, "1");
-      if (sid != null) sessionStorage.setItem(`winner:${pid}`, String(sid));
-
-      // 리스트 즉시 갱신(거래 완료로 전환)
-      setProjects((prev) =>
-        prev.map((prj) =>
-          (prj.projectId ?? prj.id) === pid
-            ? {
-                ...prj,
-                winnerSubmissionId: sid ?? prj.winnerSubmissionId,
-                awardConfirmed: true,
-              }
-            : prj
-        )
-      );
-
-      alert("수상확정이 완료되었습니다.");
-    } catch (e) {
-      console.error(e);
-      alert("수상 확정 처리에 실패했어요. 잠시 후 다시 시도해 주세요.");
-    } finally {
-      setConfirmOpen(false);
-      setTargetProject(null);
-    }
-  };
-
-  // ✅ 버튼 렌더링: 너가 말한 규칙 그대로
-  // - 진행중(IN_PROGRESS): 비활성(회색)
-  // - 투표중(VOTING): 비활성(회색)
-  // - 완료(CLOSED):
-  //     * 미확정 → 활성(파랑) "수상 확정"
-  //     * 확정  → "거래 완료"(비활성)
+  // 버튼 렌더링 규칙 (모달 없이 두 가지 라벨만)
+  // - "거래 완료"(비활성): CLOSED && hasWinner === true
+  // - "수상 확정":
+  //    * 활성: (VOTING || CLOSED) && hasWinner === false  → 클릭 시 상세페이지 이동
+  //    * 비활성: 그 외(IN_PROGRESS 등)
   const renderAwardCell = (p) => {
-    if (p.status === "IN_PROGRESS" || p.status === "VOTING") {
+    const hasWinner = Boolean(p.hasWinner);
+    const pid = p.projectId ?? p.id;
+
+    if (p.status === "CLOSED" && hasWinner) {
       return (
         <button
           disabled
-          className="w-[96px] h-[32px] rounded-[6px] bg-[#F3F3F3] text-[#A3A3A3] text-[12px] cursor-not-allowed"
+          className="w-[96px] h-[32px] rounded-[6px] bg-[#EDEDED] text-[#A3A3A3] text-[12px] cursor-not-allowed"
         >
-          수상 확정
+          거래 완료
         </button>
       );
     }
 
-    if (p.status === "CLOSED") {
-      if (p.awardConfirmed) {
-        return (
-          <button
-            disabled
-            className="w-[96px] h-[32px] rounded-[6px] bg-[#EDEDED] text-[#A3A3A3] text-[12px] cursor-not-allowed"
-          >
-            거래 완료
-          </button>
-        );
-      }
+    const canGoConfirm =
+      (p.status === "VOTING" || p.status === "CLOSED") && !hasWinner;
+
+    if (canGoConfirm) {
       return (
         <button
-          onClick={() => openConfirm(p)}
+          onClick={() => navigate(`/project-detail/${pid}`)}
           className="w-[96px] h-[32px] rounded-[6px] bg-[#2FD8F6] hover:bg-[#2AC2DD] text-white text-[12px]"
+          title="선정작을 확정하려면 상세 페이지로 이동합니다"
         >
           수상 확정
         </button>
       );
     }
 
-    // 혹시 모를 기타 상태 대비
+    // 나머지(IN_PROGRESS 등): 비활성 수상 확정
     return (
       <button
         disabled
@@ -262,37 +196,40 @@ const MerchantMyProject = () => {
           </div>
 
           {/* 목록 */}
-          {pageItems.map((p) => (
-            <div
-              key={p.projectId}
-              className="grid grid-cols-12 items-stretch gap-0 border-b border-[#F1F1F1] first:-mt-px"
-            >
-              {/* 좌측 카드 (상세 페이지 링크) */}
-              <div className="col-span-8 py-3">
-                <Link
-                  to={`/project-detail/${p.projectId}`}
-                  className="block cursor-pointer hover:bg-[#FAFAFA] rounded-[6px] transition-colors"
-                  aria-label={`${p.title || "공모전"} 상세보기`}
-                >
-                  <MyProjectsList
-                    getCategoryLabel={getCategoryLabel}
-                    getBusinessTypeLabel={getBusinessTypeLabel}
-                    project={{ project: p }}
-                  />
-                </Link>
-              </div>
+          {pageItems.map((p) => {
+            const pid = p.projectId ?? p.id;
+            return (
+              <div
+                key={pid}
+                className="grid grid-cols-12 items-stretch gap-0 border-b border-[#F1F1F1] first:-mt-px"
+              >
+                {/* 좌측 카드 (상세 페이지 링크) */}
+                <div className="col-span-8 py-3">
+                  <Link
+                    to={`/project-detail/${pid}`}
+                    className="block cursor-pointer hover:bg-[#FAFAFA] rounded-[6px] transition-colors"
+                    aria-label={`${p.title || "공모전"} 상세보기`}
+                  >
+                    <MyProjectsList
+                      getCategoryLabel={getCategoryLabel}
+                      getBusinessTypeLabel={getBusinessTypeLabel}
+                      project={{ project: p }}
+                    />
+                  </Link>
+                </div>
 
-              {/* 상태 */}
-              <div className="col-span-2 border-l border-[#E0E0E0] flex items-center justify-center py-3 text-center text-[14px] text-[#222] font-medium">
-                {STATUS_LABEL[p.status] || p.status}
-              </div>
+                {/* 상태 */}
+                <div className="col-span-2 border-l border-[#E0E0E0] flex items-center justify-center py-3 text-center text-[14px] text-[#222] font-medium">
+                  {STATUS_LABEL[p.status] || p.status}
+                </div>
 
-              {/* 수상/확정 버튼 */}
-              <div className="col-span-2 border-l border-[#E0E0E0] flex items-center justify-center py-3">
-                {renderAwardCell(p)}
+                {/* 수상/확정 버튼 */}
+                <div className="col-span-2 border-l border-[#E0E0E0] flex items-center justify-center py-3">
+                  {renderAwardCell(p)}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           <div className="flex justify-center my-6">
             <Pagination
@@ -309,17 +246,6 @@ const MerchantMyProject = () => {
       <div className="mt-auto">
         <Footer />
       </div>
-
-      {/* 수상 확정 모달 */}
-      <AwardConfirmModal
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
-        onConfirm={confirmAward}
-        title="수상을 확정하시겠습니까?"
-        description="수상을 확정하면 상금이 수상자에게 바로 송금되며,이후 변경이나 환불은 불가능합니다."
-        confirmText="수상 확정하기"
-        cancelText="취소하기"
-      />
     </div>
   );
 };
