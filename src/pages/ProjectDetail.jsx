@@ -35,17 +35,22 @@ const formatCurrency = (amount) => {
   return `${numericAmount.toLocaleString()}원`;
 };
 
-/** ✅ Reward API 및 다양한 서버 필드를 커버해 winnerId를 도출 */
+/** ✅ 우승작 id를 도출 — 서버의 submissions winner(boolean)를 1순위로 사용 */
 const deriveWinnerId = (p, subs = []) => {
-  if (!p) return null;
+  if (!p && !subs?.length) return null;
+
+  // 1) 서버가 각 제출물에 내려주는 winner 플래그 사용
+  const byWinnerFlag = subs.find((s) => s?.winner === true)?.submissionId;
+  if (byWinnerFlag) return byWinnerFlag;
+
+  // 2) (혹시 남아있을 수 있는) 프로젝트/리워드 필드들 대비
   return (
-    p.winnerSubmissionId ??                   // 기대 필드
-    p.winnerId ??                             // 다른 이름
-    p.awardedSubmissionId ??                  // 다른 이름
-    p?.winnerSubmission?.submissionId ??      // 객체로 들어온 경우
-    p?.reward?.submissionId ??                // Reward API 저장됨
-    (Array.isArray(p?.rewards) && p.rewards[0]?.submissionId) ?? // rewards 배열
-    (subs.find((s) => s.isWinner || s.winner || s.awarded)?.submissionId) ??
+    p?.winnerSubmissionId ??
+    p?.winnerId ??
+    p?.awardedSubmissionId ??
+    p?.winnerSubmission?.submissionId ??
+    p?.reward?.submissionId ??
+    (Array.isArray(p?.rewards) && p.rewards[0]?.submissionId) ??
     null
   );
 };
@@ -107,22 +112,10 @@ const ProjectDetail = ({ role }) => {
     fetchProjectDetails();
   }, [projectId, location.state?.refresh, userInfo]);
 
-  // ✅ 서버/제출물에서 우승작 id 계산 (hook 아님: 항상 호출되어 훅 규칙 위반 없음)
+  // ✅ 서버/제출물에서 우승작 id 계산 (hook 아님)
   const winnerIdFromServer = deriveWinnerId(projectData, submissions);
 
-  // ✅ 서버가 아직 우승 id를 못 실어줄 때(지연 응답 등) 캐시된 값 복구
-  useEffect(() => {
-    if (winnerIdFromServer) return;
-    try {
-      const cached = sessionStorage.getItem(`winner:${projectId}`);
-      if (cached) {
-        setProjectData((prev) => ({
-          ...(prev || {}),
-          winnerSubmissionId: Number(cached),
-        }));
-      }
-    } catch {}
-  }, [winnerIdFromServer, projectId]);
+  // ❌ sessionStorage 기반 복구 로직 완전 제거 (이제 서버의 winner만 신뢰)
 
   // ---------------- 조기 리턴 (훅들보다 아래) ----------------
   if (loading) {
@@ -153,11 +146,17 @@ const ProjectDetail = ({ role }) => {
   );
 
   const deadline = projectData.deadline ? new Date(projectData.deadline) : null;
-  const toYMD = (d) =>
-    d instanceof Date && !isNaN(d) ? d.toISOString().slice(0, 10) : null;
+const toYMD = (d) => {
+  if (!(d instanceof Date) || isNaN(d)) return null;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;   // ← 2025.08.23 이런식으로 반환
+};
 
-  const voteStartForGrid =
-    projectData.voteStartDate ?? (deadline ? toYMD(deadline) : null);
+ const voteStartForGrid =
+  projectData.voteStartDate ??
+  (deadline ? toYMD(new Date(deadline.getTime() + 1 * 24 * 60 * 60 * 1000)) : null);
   const voteEndForGrid =
     projectData.voteEndDate ??
     (deadline
@@ -476,73 +475,94 @@ const ProjectDetail = ({ role }) => {
                 </div>
               </div>
             </div>
-         ) : (
-  /* ====== 참여작 탭 ====== */
-  
-  <>
-  
-  {winnerIdFromServer ? (
-  <div className="mt-6">
-    {isMerchant ? (
-      <MerchantVoteManage
-        projectId={projectId}
-        submissions={submissions.map((s) => ({
-          id: s.submissionId,
-          submissionId: s.submissionId,
-          title: s.title,
-          writerNickname: s.writerNickname,
-          imageUrl: s.imageUrl,
-        }))}
-        voteStartDate={voteStartForGrid}
-        voteEndDate={voteEndForGrid}
-        winnerSubmissionId={winnerIdFromServer}
-      />
-    ) : (
-      <ParticipantVoteManage
-        projectId={projectId}
-        submissions={submissions.map((s) => ({
-          id: s.submissionId,
-          submissionId: s.submissionId,
-          title: s.title,
-          writerNickname: s.writerNickname,
-          imageUrl: s.imageUrl,
-        }))}
-        voteStartDate={voteStartForGrid}
-        voteEndDate={voteEndForGrid}
-        winnerSubmissionId={winnerIdFromServer}
-      />
-    )}
-  </div>
-  ) : (isMerchant && isMyProject && projectStatus === "CLOSED") ? (
-    //  우승작이 없고 CLOSED면: 소상공인에게 '투표결과 + 수상작 선정하기'
+          ) : (
+         /* ====== 참여작 탭 ====== */
+<>
+  {winnerIdFromServer ? ( // 선정작 존재
     <div className="mt-6">
-      <MerchantVoteManage
-        projectId={projectId}
-        submissions={submissions.map((s) => ({
-          id: s.submissionId,
-          submissionId: s.submissionId,
-          title: s.title,
-          writerNickname: s.writerNickname,
-          imageUrl: s.imageUrl,
-        }))}
-        voteStartDate={voteStartForGrid}
-        voteEndDate={voteEndForGrid}
-        winnerSubmissionId={null}
-        uiVariant="result"
-        onWinnerSelected={(winnerId, reward) => {
-          setProjectData((prev) => ({
-            ...prev,
-            winnerSubmissionId: winnerId,
-            reward: reward ?? prev?.reward,
-          }));
-          try {
-            sessionStorage.setItem(`winner:${projectId}`, String(winnerId));
-          } catch {}
-        }}
-      />
+      {isMerchant ? ( // 선정작이 존재하고 소상공인일때 
+        <MerchantVoteManage
+          projectId={projectId}
+          submissions={submissions.map((s) => ({
+            id: s.submissionId,
+            submissionId: s.submissionId,
+            title: s.title,
+            writerNickname: s.writerNickname,
+            imageUrl: s.imageUrl,
+          }))}
+          voteStartDate={voteStartForGrid}
+          voteEndDate={voteEndForGrid}
+          winnerSubmissionId={winnerIdFromServer}
+          projectStatus={projectStatus}
+        />
+      ) : (
+        <ParticipantVoteManage // 선정작이 존재하고 참가자일때
+          projectId={projectId}
+          submissions={submissions.map((s) => ({
+            id: s.submissionId,
+            submissionId: s.submissionId,
+            title: s.title,
+            writerNickname: s.writerNickname,
+            imageUrl: s.imageUrl,
+          }))}
+          voteStartDate={voteStartForGrid}
+          voteEndDate={voteEndForGrid}
+          winnerSubmissionId={winnerIdFromServer}
+          projectStatus={projectStatus}
+        />
+      )}
     </div>
+  ) : projectStatus === "CLOSED" ? ( //마감일때 
+    isMerchant && isMyProject ? (
+      <div className="mt-6">
+        <MerchantVoteManage
+          projectId={projectId}
+          submissions={submissions.map((s) => ({
+            id: s.submissionId,
+            submissionId: s.submissionId,
+            title: s.title,
+            writerNickname: s.writerNickname,
+            imageUrl: s.imageUrl,
+          }))}
+          voteStartDate={voteStartForGrid}
+          voteEndDate={voteEndForGrid}
+          winnerSubmissionId={null}
+          uiVariant="result"
+          projectStatus={projectStatus}
+          onWinnerSelected={(winnerId, reward) => {
+            setProjectData((prev) => ({
+              ...prev,
+              winnerSubmissionId: winnerId,
+              reward: reward ?? prev?.reward,
+            }));
+            setSubmissions((prev) =>
+              prev.map((s) => ({
+                ...s,
+                winner: s.submissionId === winnerId, // 당선만 true
+              }))
+            );
+          }}
+        />
+      </div>
+    ) : (
+      <div className="mt-6">
+        <ParticipantVoteManage
+          projectId={projectId}
+          submissions={submissions.map((s) => ({
+            id: s.submissionId,
+            submissionId: s.submissionId,
+            title: s.title,
+            writerNickname: s.writerNickname,
+            imageUrl: s.imageUrl,
+          }))}
+          voteStartDate={voteStartForGrid}
+          voteEndDate={voteEndForGrid}
+          winnerSubmissionId={null}
+          projectStatus={projectStatus}
+        />
+      </div>
+    )
   ) : projectStatus === "VOTING" ? (
-    //  투표 중
     isMerchant && isMyProject ? (
       <div className="mt-6">
         <MerchantVoteManage
@@ -563,9 +583,12 @@ const ProjectDetail = ({ role }) => {
               winnerSubmissionId: winnerId,
               reward: reward ?? prev?.reward,
             }));
-            try {
-              sessionStorage.setItem(`winner:${projectId}`, String(winnerId));
-            } catch {}
+            setSubmissions((prev) =>
+              prev.map((s) => ({
+                ...s,
+                winner: s.submissionId === winnerId,
+              }))
+            );
           }}
         />
       </div>
@@ -575,7 +598,8 @@ const ProjectDetail = ({ role }) => {
           projectId={projectId}
           userId={userInfo?.user_id}
           mySubmissionId={
-            submissions.find((s) => s.userId === userInfo?.user_id)?.submissionId ?? null
+            submissions.find((s) => s.userId === userInfo?.user_id)
+              ?.submissionId ?? null
           }
           submissions={submissions.map((s) => ({
             id: s.submissionId,
@@ -627,8 +651,8 @@ const ProjectDetail = ({ role }) => {
     </div>
   )}
 </>
-)
-}
+
+          )}
         </div>
       </div>
 
@@ -659,8 +683,7 @@ const ProjectDetail = ({ role }) => {
           isOpen={
             !!selectedSubmission &&
             ((isMerchant && isMyProject) ||
-              (isParticipant &&
-                selectedSubmission.userId === userInfo?.user_id))
+              (isParticipant && selectedSubmission.userId === userInfo?.user_id))
           }
           submissionId={selectedSubmission.submissionId}
           onClose={() => setSelectedSubmission(null)}

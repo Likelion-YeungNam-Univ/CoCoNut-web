@@ -77,7 +77,9 @@ const ProjectCardVoting = ({
             <img src={participantIcon} alt="참여작" className="w-[16px] h-[16px]" />
             <span className="text-[12px] text-[#828282] font-medium">참여작</span>
           </div>
-          <span className="text-[12px] text-[#212121] font-medium">100개</span>
+          <span className="text-[12px] text-[#212121] font-medium">
+            {project.submissionCount}개
+          </span>
         </div>
 
         {/* 기간 */}

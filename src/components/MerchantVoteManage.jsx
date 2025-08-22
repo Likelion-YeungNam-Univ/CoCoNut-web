@@ -144,22 +144,23 @@ export default function MerchantVoteManage({
     return () => clearInterval(t);
   }, [loadVotes]);
 
-  // top3 표시
+  // 투표수 기준 정렬된 배열
+  const ranked = useMemo(
+    () => [...items].sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0)),
+    [items]
+  );
+
+  // 상위 3개 뱃지 정보
   const top3ById = useMemo(() => {
-    const ranked = [...items].sort(
-      (a, b) => (b.voteCount || 0) - (a.voteCount || 0)
-    );
     const map = new Map();
-    ranked
-      .slice(0, 3)
-      .forEach((it, idx) =>
-        map.set(toKey(it.submissionId), {
-          rank: idx + 1,
-          votes: it.voteCount || 0,
-        })
-      );
+    ranked.slice(0, 3).forEach((it, idx) =>
+      map.set(toKey(it.submissionId), {
+        rank: idx + 1,
+        votes: it.voteCount || 0,
+      })
+    );
     return map;
-  }, [items]);
+  }, [ranked]);
 
   const onCardClick = (id) => {
     if (!isSelecting) return;
@@ -183,19 +184,6 @@ export default function MerchantVoteManage({
       alert("수상작 선정에 실패했어요. 잠시 후 다시 시도해 주세요.");
     }
   };
-
-  // 디버그 로그를 원하면 주석 해제
-  // useEffect(() => {
-  //   console.log("[MV] winnerId(raw) =", winnerId, typeof winnerId);
-  //   console.log(
-  //     "[MV] items ids =",
-  //     items.map((it) => [it.submissionId, typeof it.submissionId])
-  //   );
-  //   console.log(
-  //     "[MV] submissions ids =",
-  //     submissions.map((it) => [it.submissionId, typeof it.submissionId])
-  //   );
-  // }, [winnerId, items, submissions]);
 
   // ✅ 우승작 화면
   if (winnerId) {
@@ -328,13 +316,13 @@ export default function MerchantVoteManage({
         )}
       </div>
 
-      {/* 카드 그리드: 결과 모드에선 좀 더 조밀하게 */}
+      {/* 카드 그리드: 투표수 많은 순서로 정렬된 ranked 사용 */}
       <div
         className={`mt-[28px] grid ${
           isResult ? "grid-cols-5 gap-[16px]" : "grid-cols-4 gap-[24px]"
         }`}
       >
-        {items.map((it) => {
+        {ranked.map((it) => {
           const badge = top3ById.get(toKey(it.submissionId));
           const selected = toKey(selectedId) === toKey(it.submissionId);
           return (

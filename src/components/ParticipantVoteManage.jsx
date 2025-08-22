@@ -4,16 +4,15 @@ import { IoPersonCircle } from "react-icons/io5";
 import vote1 from "../assets/vote1.png";
 import vote2 from "../assets/vote2.png";
 import vote3 from "../assets/vote3.png";
-import { getProjectVotes, normalizeProjectVotes } from "../apis/votesApi";
-import { Link } from "react-router-dom";
+ import { getProjectVotes, normalizeProjectVotes } from "../apis/votesApi";
 
 const REFRESH_MS = 10000;
 
 const toKey = (v) => {
-   if (v === null || v === undefined) return "";
-   const n = Number(v);
-   return Number.isFinite(n) ? String(n) : String(v);
- };
+  if (v === null || v === undefined) return "";
+  const n = Number(v);
+  return Number.isFinite(n) ? String(n) : String(v);
+};
 
 const fmtYMD = (s) => {
   if (!s) return "-";
@@ -27,188 +26,259 @@ const fmtYMD = (s) => {
   } catch {
     return s;
   }
+}; 
+
+const RankBadge = ({ rank, votes, variant = "voting" }) => {
+  if (!rank) return null;
+  const icon = rank === 1 ? vote1 : rank === 2 ? vote2 : vote3;
+  const isResult = variant === "result";
+  return (
+    <div
+      className={`absolute top-2 left-2 z-10 flex items-center gap-[8px] rounded-[20px]
+        ${isResult ? "px-[12px] h-[40px] w-[91px] text-[16px]" : "px-[10px] h-[28px] text-[14px]"}
+        bg-[#212121] text-[#2FD8F6] font-semibold`}
+    >
+      <img
+        src={icon}
+        alt={`${rank}등`}
+        className={isResult ? "w-[24px] h-[24px]" : "w-[16px] h-[16px]"}
+      />
+      <span>{votes}표</span>
+    </div>
+  );
 };
 
 export default function ParticipantVoteManage({
   projectId,
-  submissions = [],                         // [{submissionId, title, writerNickname, imageUrl}]
+  submissions = [], // [{submissionId, title, writerNickname, imageUrl, voteCount?}]
   voteStartDate,
   voteEndDate,
   winnerSubmissionId: winnerFromServer = null,
+  projectStatus, // "IN_PROGRESS" | "VOTING" | "CLOSED"
 }) {
-  // 서버 집계 주입용 로컬 상태
+  // 기본 아이템 (표수 0으로 시작)
   const [items, setItems] = useState(
-   submissions.map((s) => ({
-     ...s,
-     // 🔑 id는 문자열로 통일
-     submissionId: toKey(s.submissionId),
-     voteCount: typeof s.voteCount === "number" ? s.voteCount : 0,
-   }))
- );
-
+    submissions.map((s) => ({
+      ...s,
+      submissionId: toKey(s.submissionId),
+      voteCount: typeof s.voteCount === "number" ? s.voteCount : 0,
+    }))
+  );
   const [totalVotes, setTotalVotes] = useState(0);
 
-  // 수상작 ID (서버에서 오면 반영)
+  // submissions 변경 시 동기화
+  useEffect(() => {
+    setItems(
+      submissions.map((s) => ({
+        ...s,
+        submissionId: toKey(s.submissionId),
+        voteCount: typeof s.voteCount === "number" ? s.voteCount : 0,
+      }))
+    );
+  }, [submissions]);
+
+  // 서버 우선 수상작 ID
   const [winnerId, setWinnerId] = useState(
-   winnerFromServer != null ? toKey(winnerFromServer) : null
- );
+    winnerFromServer != null ? toKey(winnerFromServer) : null
+  );
   useEffect(() => {
     setWinnerId(winnerFromServer != null ? toKey(winnerFromServer) : null);
   }, [winnerFromServer]);
 
+  // 마감 여부 (서버 상태 최우선 → 없으면 날짜로 판단)
   const isVoteClosed = useMemo(() => {
-    if (!voteEndDate) return true; // 날짜가 없으면 마감으로 간주
+    if (projectStatus) return String(projectStatus).toUpperCase() === "CLOSED";
+    if (!voteEndDate) return true;
     try {
-      return new Date(voteEndDate).getTime() < Date.now();
+      const end = new Date(`${voteEndDate}T23:59:59`);
+      return Date.now() > end.getTime();
     } catch {
       return true;
     }
-  }, [voteEndDate]);
+  }, [projectStatus, voteEndDate]);
 
-  // 집계 로딩
+
   const loadVotes = useCallback(async () => {
     if (!projectId) return;
     try {
       const raw = await getProjectVotes(projectId);
       const { results, totalVotes } = normalizeProjectVotes(raw);
- const map = new Map(results.map((r) => [toKey(r.submissionId), r.votes || 0]));
-      setItems((prev) =>
-        prev.map((s) => ({ ...s, voteCount: map.get(toKey(s.submissionId)) || 0 }))
+
+      // id → votes 맵
+      const map = new Map(
+        results.map((r) => [toKey(r.submissionId), typeof r.votes === "number" ? r.votes : 0])
+      );
+
+      // 현재 submissions 기준으로 병합
+      setItems(
+        submissions.map((s) => {
+          const id = toKey(s.submissionId);
+          const votes = map.get(id);
+          return {
+            ...s,
+            submissionId: id,
+            voteCount: typeof votes === "number" ? votes : 0,
+          };
+        })
       );
       setTotalVotes(typeof totalVotes === "number" ? totalVotes : 0);
     } catch (e) {
-      // 네트워크/서버 오류는 무시하고 UI 유지
-      // console.error(e);
+      // 실패 시 조용히 유지 (필요하면 console.warn 활성화)
+      // console.warn("loadVotes error:", e);
     }
-  }, [projectId]);
+  }, [projectId, submissions]);
 
   useEffect(() => {
     loadVotes();
-    // 수상작이 확정되면 실시간 갱신은 멈춰도 됨(고정 화면)
+    // 수상작 확정 전까지만 폴링
     if (!winnerId) {
       const t = setInterval(loadVotes, REFRESH_MS);
       return () => clearInterval(t);
     }
   }, [loadVotes, winnerId]);
 
-  // 랭킹/상위3 계산
+  // 표수 내림차순 정렬
   const ranked = useMemo(
     () => [...items].sort((a, b) => (b.voteCount || 0) - (a.voteCount || 0)),
     [items]
   );
-  const top3 = ranked.slice(0, 3).map((it, idx) => ({
-    submissionId: it.submissionId,
-    rank: idx + 1,
-  }));
-  const top3Map = useMemo(
-    () => new Map(top3.map((t) => [t.submissionId, t.rank])),
-    [top3]
-  );
 
-const Card = ({ s, dimmed = false }) => {
-  return (
-    <div className="w-[240px] h-[360px] flex flex-col rounded-xl border border-gray-200 overflow-hidden bg-white">
-      <div className="h-[300px] bg-gray-100 flex items-center justify-center overflow-hidden">
-        {s?.imageUrl ? (
-          <img
-            src={s.imageUrl}
-            alt={s?.title ?? "submission"}
-            className={`w-full h-full object-cover ${dimmed ? "opacity-10" : "opacity-100"} transition-opacity`}
-          />
-        ) : (
-          <div className="text-gray-400 text-sm">이미지 없음</div>
-        )}
+  // 상위 3위 정보
+  const top3Map = useMemo(() => {
+    const m = new Map();
+    ranked.slice(0, 3).forEach((it, idx) =>
+      m.set(toKey(it.submissionId), { rank: idx + 1, votes: it.voteCount || 0 })
+    );
+    return m;
+  }, [ranked]);
+
+  // 공통 카드
+  const Card = ({ s, dimmed = false, rankInfo = null, badgeVariant = "voting" }) => {
+    return (
+      <div className="w-[240px] h-[306px] flex flex-col rounded-xl border border-gray-200 overflow-hidden bg-white">
+        <div className="relative h-[300px] bg-gray-100 flex items-center justify-center overflow-hidden">
+          {rankInfo ? (
+            <RankBadge rank={rankInfo.rank} votes={rankInfo.votes} variant={badgeVariant} />
+          ) : null}
+          {s?.imageUrl ? (
+            <img
+              src={s.imageUrl}
+              alt={s?.title ?? "submission"}
+              className={`w-full h-full object-cover ${
+                dimmed ? "opacity-10" : "opacity-100"
+              } transition-opacity`}
+            />
+          ) : (
+            <div className="text-gray-400 text-sm">이미지 없음</div>
+          )}
+        </div>
+
+     
+        <div className="p-3">
+          
+          <div className="ml-[16px] mt-[6px] text-[16px] font-semibold truncate">
+            {s?.title ?? "-"}
+          </div>
+        
+        </div>
       </div>
+    );
+  };
 
-      <div className="p-3">
-        <div className="text-[16px] font-semibold">{s?.title ?? "-"}</div>
-      </div>
-    </div>
-  );
-};
-
-
-
-
-  // 수상작 뷰
- if (winnerId) {
-   // items에서 못찾으면 submissions에서도 한 번 더 시도
-   const winner =
-     items.find((it) => toKey(it.submissionId) === toKey(winnerId)) ||
-     submissions
-       .map((s) => ({ ...s, submissionId: toKey(s.submissionId) }))
-       .find((it) => it.submissionId === toKey(winnerId));
-   const others = items.filter((it) => toKey(it.submissionId) !== toKey(winnerId));
+  // ── 수상작 발표 화면 ──
+  if (winnerId) {
+    const winner =
+      items.find((it) => toKey(it.submissionId) === toKey(winnerId)) ||
+      submissions
+        .map((s) => ({ ...s, submissionId: toKey(s.submissionId) }))
+        .find((it) => it.submissionId === toKey(winnerId));
+    const others = items.filter((it) => toKey(it.submissionId) !== toKey(winnerId));
 
     return (
       <div className="font-pretendard">
-        < div className="flex flex-col items-center">
+        <div className="flex flex-col items-center">
           <span className="mt-5 text-[24px] font-semibold">최종 수상작이 발표되었습니다! 🏆</span>
           <p className="mt-2 text-[#A3A3A3] text-[14px]">
-            모든 참가자 여러분과 투표에 참여해 주신 분들께 감사드립니다.
+            모든 참가자와 투표자분들께 감사드립니다.
           </p>
-  
         </div>
-        
 
-        {/* 수상작 큰 카드 */}
+        {/* 수상작 크게 */}
         <div className="mt-10 rounded-2xl border border-gray-200 bg-white overflow-hidden">
-          <div className="w-[1032px] h-[1032px] bg-gray-100 flex items-center justify-center overflow-hidden">
+          <div className="mx-auto aspect-square max-w-[1032px] w-full bg-gray-100 overflow-hidden">
             {winner?.imageUrl ? (
-              <img src={winner.imageUrl} alt={winner?.title || "winner"} className="w-full h-full object-cover" />
+              <img
+                src={winner.imageUrl}
+                alt={winner?.title || "winner"}
+                className="block w-full h-full object-cover"
+              />
             ) : (
-              <div className="text-gray-400">이미지 없음</div>
+              <div className="flex items-center justify-center w-full h-full text-gray-400">
+                이미지 없음
+              </div>
             )}
           </div>
-          <div className="p-6 text-center">
-  
+
+          {/* 이미지 '아래' 닉네임/제목 */}
+          <div className="p-6">
+            <div className="flex items-center gap-2 text-[16px] text-[#6B7280] justify-center">
+              <IoPersonCircle size={22} />
+              <span className="truncate">{winner?.writerNickname || "참가자"}</span>
+            </div>
+            <div className="mt-[6px] text-[20px] font-semibold text-center truncate">
+              {winner?.title || "제목 없음"}
+            </div>
           </div>
-          
         </div>
-         <div className="text-xl font-semibold flex items-center justify-center mt-[28px]">{winner?.title || "-"}</div>
-            <div className="mt-2 flex items-center justify-center text-gray-500">
-              <IoPersonCircle className="mr-1" size={24} />
-              {winner?.writerNickname || "익명"}
-            </div>
-        {/* 나머지 제출물 */}
+
+        {/* 나머지 제출물 (결과 뱃지 크기) */}
         {others.length > 0 && (
-          <>
-            <div className="flex flex-wrap gap-6 mt-[80px]">
-              {others.map((s) => (
-                <Card key={s.submissionId} s={s} dimmed />
-              ))}
-            </div>
-          </>
+          <div className="flex flex-wrap gap-6 mt-[80px]">
+            {others.map((s) => (
+              <Card
+                key={s.submissionId}
+                s={s}
+                dimmed
+                rankInfo={top3Map.get(toKey(s.submissionId))}
+                badgeVariant="result"
+              />
+            ))}
+          </div>
         )}
       </div>
     );
   }
 
-  // 투표 마감 & 아직 수상 미선정 → 랭킹/표수 화면
+  // ── 마감됐지만 수상작 미선정 → 결과 화면 ──
   if (isVoteClosed) {
     return (
       <div className="font-pretendard">
-        <div className="flex flex-col items-center">
-          <div className="text-xs text-teal-500 bg-teal-50 border border-teal-200 rounded-full px-3 py-1">
-            선정 기간 {fmtYMD(voteStartDate)} - {fmtYMD(voteEndDate)}
+        <div className="flex flex-col items-center  mt-[80px]">
+          <div className="text-[14px] text-[#26ADC5] border bg-[#E0F9FE] border-[#E0F9FE] rounded-[20px] w-[255px] h-[34px] flex gap-[8px] items-center justify-center mr-4">
+            <span>선정 기간 </span>
+            <span className="font-semibold">{fmtYMD(voteStartDate)} - {fmtYMD(voteEndDate)}</span>
           </div>
           <h2 className="mt-5 text-2xl font-semibold">투표 결과가 발표되었습니다! 🎉</h2>
           <p className="mt-2 text-gray-500 text-sm">
-            현재 수상작 선정이 진행 중입니다. 조금만 기다려주세요.
+            현재 수상작 선정이 진행 중입니다. 잠시만 기다려주세요.
           </p>
         </div>
 
-        {/* 상위 3개 뱃지 + 전체 리스트 */}
-        <div className="mt-10 grid grid-cols-4 gap-6">
+        <div className="mt-10 grid grid-cols-4  gap-[24px]">
           {ranked.map((s) => (
-            <Card key={s.submissionId} s={s} />
+            <Card
+              key={s.submissionId}
+              s={s}
+              rankInfo={top3Map.get(toKey(s.submissionId))}
+              badgeVariant="result"
+            />
           ))}
         </div>
 
-        <div className="mt-10 flex justify-center">
+        <div className="mt-[80px] flex justify-center">
           <button
             disabled
-            className="px-5 py-2 rounded-md bg-gray-200 text-gray-500 cursor-not-allowed"
+            className="border rounded-[8px] bg-[#E1E1E1] text-white w-[180px] h-[45px] border-[#E1E1E1]"
           >
             투표 마감
           </button>
@@ -217,7 +287,7 @@ const Card = ({ s, dimmed = false }) => {
     );
   }
 
-  // 안전장치: 혹시 투표 진행 중에 이 컴포넌트가 렌더될 경우
+  // 진행중 (안전 메시지)
   return (
     <div className="font-pretendard text-center text-gray-500">
       현재 투표가 진행 중입니다. 잠시 후 결과가 공개됩니다.

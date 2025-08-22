@@ -266,14 +266,29 @@ const ProjectRegister = () => {
     setLoading(true);
     try {
       const aiData = await analyzeProjectWithAI(assistanceText);
-      setAiProjectData({
-        rewardAmount: aiData.rewardAmount,
-        description: aiData.description,
-        summary: aiData.summary,
-        deadline: aiData.deadline,
-      });
+
+      // Check if the AI data is valid before updating the state
+      if (
+        !aiData ||
+        !aiData.description ||
+        !aiData.summary ||
+        !aiData.rewardAmount ||
+        !aiData.deadline
+      ) {
+        alert("AI가 내용을 불러오지 못했어요.");
+        console.error("AI analysis returned incomplete data:", aiData);
+      } else {
+        setAiProjectData({
+          rewardAmount: aiData.rewardAmount,
+          description: aiData.description,
+          summary: aiData.summary,
+          deadline: aiData.deadline,
+        });
+      }
     } catch (error) {
       console.error("AI analysis error:", error);
+
+      alert("AI가 내용을 불러오지 못했어요.");
     } finally {
       setLoading(false);
     }
@@ -412,11 +427,11 @@ const ProjectRegister = () => {
 
       const projectId = response?.data;
 
-      console.log("추출된 projectId:", projectId);
-
       if (projectId !== null && projectId !== undefined) {
         setIsConfirmModalOpen(false);
         setIsFormDirty(false);
+
+        alert("공모전이 성공적으로 등록되었습니다!");
         navigate(`/project-detail/${projectId}`);
       } else {
         console.error("서버 응답에 유효한 projectId가 없습니다.", response);
@@ -431,6 +446,7 @@ const ProjectRegister = () => {
       setErrors({ general: "프로젝트 등록 중 오류가 발생했습니다." });
     }
   };
+
   // '등록하기' 버튼 클릭을 처리하고 확인 모달을 여는 핸들러
   const handleRegisterClick = () => {
     setIsSubmitted(true);
@@ -643,7 +659,7 @@ const ProjectRegister = () => {
                       onChange={(e) => setAssistanceText(e.target.value)}
                     />
                     <SlArrowUpCircle
-                      className="absolute right-2 bottom-3 text-gray-400 hover:text-[#212121s] cursor-pointer"
+                      className="absolute right-2 bottom-3 text-gray-400 hover:text-[#212121] cursor-pointer"
                       size={24}
                       onClick={analyzeWithAI}
                     />
@@ -1167,10 +1183,10 @@ const ProjectRegister = () => {
       )}
       <ConfirmModal
         isOpen={isConfirmModalOpen}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={handleConfirmSubmit}
         title={modalTitle}
         content={modalContent}
-        onConfirm={handleConfirmSubmit}
-        onClose={() => setIsConfirmModalOpen(false)}
       />
       {isEasyHelpModalOpen && (
         <EasyHelpModal onClose={() => setIsEasyHelpModalOpen(false)} />

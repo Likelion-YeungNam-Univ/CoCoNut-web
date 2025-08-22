@@ -41,20 +41,25 @@ export async function voteSubmission(arg1, arg2) {
   return data;
 }
 
-// (선택) 화면 단에서 모양을 통일하고 싶다면 이 헬퍼로 normalize해서 쓰세요.
+
 export function normalizeProjectVotes(raw) {
   if (Array.isArray(raw)) {
     const results = raw.map(v => ({
       submissionId: v.submissionId,
-      votes: typeof v.votes === "number" ? v.votes : (v.count || 0),
+      votes: typeof v.votes === "number"
+        ? v.votes
+        : typeof v.voteCount === "number"
+        ? v.voteCount
+        : (v.count || 0),
     }));
     const totalVotes = results.reduce((s, r) => s + (r.votes || 0), 0);
     return { totalVotes, results, myVoteSubmissionId: null };
   }
+
   // 객체 형태 그대로 들어온 경우
   const results = (raw?.results || []).map(v => ({
     submissionId: v.submissionId,
-    votes: v.votes ?? v.count ?? 0,
+    votes: v.votes ?? v.voteCount ?? v.count ?? 0,
   }));
   const totalVotes =
     typeof raw?.totalVotes === "number"

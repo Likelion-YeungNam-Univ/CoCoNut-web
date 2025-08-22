@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
@@ -7,45 +6,26 @@ import { IoPersonCircle } from "react-icons/io5";
 import { PiLineVertical } from "react-icons/pi";
 import { formatDate } from "../../utils/dateUtils";
 
-const ProjectCardInProgress = ({
-  project,
-  categories = [],
-  businessTypes = [],
-  role,
-  onRequireLogin,
-}) => {
-  // categories 배열에서 현재 프로젝트 category(code)와 매칭되는 객체 찾기
-  const categoryObj = categories.find((c) => c.code === project.category);
-  const businessTypeObj = businessTypes.find(
-    (b) => b.code === project.businessType
-  );
-
-  // 남은 일 수 계산 함수
+const LandingProjectCard = ({ project }) => {
+  // 남은 일 수 계산
   const getDaysLeft = (deadline) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // 오늘 자정
-
+    today.setHours(0, 0, 0, 0); // 오늘 0시 기준
     const endDate = new Date(deadline);
-    endDate.setHours(0, 0, 0, 0); // 마감일 자정
-
+    endDate.setHours(0, 0, 0, 0); // 마감일 0시 기준
     const diffTime = endDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); // 일 단위로 변환
-
-    return diffDays;
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // 카드 내용 (공통)
-  const cardContent = (
-    <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
+  return (
+    <div className="w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] pl-[28px] font-pretendard bg-white">
       {/* 상단 카테고리/마감일 */}
       <div className="flex gap-[4px] text-[12px] text-[#A3A3A3] font-medium mt-[20px]">
         <span>{getDaysLeft(project.deadline)}일 후 마감</span>
         <PiLineVertical className="mt-[3px]" />
-        <span>{categoryObj ? categoryObj.description : project.category}</span>
+        <span>{project.category}</span>
         <span>·</span>
-        <span>
-          {businessTypeObj ? businessTypeObj.description : project.businessType}
-        </span>
+        <span>{project.businessType}</span>
       </div>
 
       {/* 제목 */}
@@ -81,7 +61,7 @@ const ProjectCardInProgress = ({
             </span>
           </div>
           <span className="text-[12px] text-[#212121] font-medium">
-            {project.submissionCount}개
+            {project.submissionsCount}개
           </span>
         </div>
 
@@ -108,31 +88,6 @@ const ProjectCardInProgress = ({
       </div>
     </div>
   );
-
-  // role이 merchant -> 소상공인 공모전 상세 페이지 이동, participant -> 참가자 공모전 상세 페이지 이동, guest -> 로그인 모달
-  if (role === "merchant") {
-    return (
-      <Link to={`/project-detail/${project.projectId}`}>{cardContent}</Link>
-    );
-  }
-
-  if (role === "participant") {
-    return (
-      <Link to={`/project-detail-participant/${project.projectId}`}>
-        {cardContent}
-      </Link>
-    );
-  }
-
-  if (role === "guest") {
-    return (
-      <div onClick={() => onRequireLogin?.()} className="cursor-pointer">
-        {cardContent}
-      </div>
-    );
-  }
-
-  return cardContent;
 };
 
-export default ProjectCardInProgress;
+export default LandingProjectCard;
