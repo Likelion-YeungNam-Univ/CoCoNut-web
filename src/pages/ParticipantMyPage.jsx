@@ -61,10 +61,9 @@ const MyPageContent = ({
   switch (selectedTab) {
     case "profile":
       const totalParticipations = userSubmissions.length;
-      // 'userAwards'를 사용하여 수상작 목록으로 직접 사용
+
       const winningCount = userData?.winningCount || 0;
 
-      // 'userAwards'를 사용하여 상금 합산
       const totalPrizeMoney = userAwards.reduce((total, award) => {
         const reward = award.rewardAmount || 0;
         return total + reward;
@@ -361,7 +360,7 @@ const MyPageContent = ({
 const ParticipantMyPage = () => {
   const [userData, setUserData] = useState(null);
   const [userSubmissions, setUserSubmissions] = useState([]);
-  const [userAwards, setUserAwards] = useState([]); // 추가된 state
+  const [userAwards, setUserAwards] = useState([]);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const location = useLocation();
@@ -506,7 +505,7 @@ const ParticipantMyPage = () => {
                 selectedTab={selectedTab}
                 userData={userData}
                 userSubmissions={userSubmissions}
-                userAwards={userAwards} // 추가
+                userAwards={userAwards}
                 openLogoutModal={openLogoutModal}
                 openWithdrawalModal={openWithdrawalModal}
                 navigate={navigate}
