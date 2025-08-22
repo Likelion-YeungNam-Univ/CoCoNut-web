@@ -9,6 +9,7 @@ import api from "../apis/api";
 const MerchantHeader = ({ defaultValue = "" }) => {
   const [value, setValue] = useState(defaultValue);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
 
@@ -31,9 +32,30 @@ const MerchantHeader = ({ defaultValue = "" }) => {
     navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
   };
 
+  const handleLogout = () => {
+    setIsLogoutModalOpen(true);
+    setIsMenuOpen(false);
+  };
+
+  const closeLogoutModal = () => {
+    setIsLogoutModalOpen(false);
+  };
+
+  const handleConfirmLogout = async () => {
+    try {
+      await api.post("/users/logout");
+      sessionStorage.removeItem("accessToken");
+      console.log("로그아웃 성공");
+      closeLogoutModal();
+      navigate("/signin");
+    } catch (error) {
+      console.error("로그아웃 실패:", error);
+      alert("로그아웃에 실패했습니다. 다시 시도해 주세요.");
+    }
+  };
+
   return (
     <div className="w-full h-[60px] flex items-center px-[120px] border-b border-[#E1E1E1] font-pretendard">
-      {/* 로고 */}
       <div className="flex-1 flex justify-start">
         <Link to="/merchant-main-page">
           <img
@@ -44,7 +66,6 @@ const MerchantHeader = ({ defaultValue = "" }) => {
         </Link>
       </div>
 
-      {/* 검색창 */}
       <div className="flex-1 flex justify-center">
         <form
           onSubmit={submit}
@@ -71,7 +92,6 @@ const MerchantHeader = ({ defaultValue = "" }) => {
         </form>
       </div>
 
-      {/* 버튼들 */}
       <div className="flex-1 flex justify-end gap-8">
         <button
           onClick={() => navigate("/merchant-myproject")}
@@ -86,7 +106,6 @@ const MerchantHeader = ({ defaultValue = "" }) => {
           공모전 등록하기
         </Link>
 
-        {/* 사용자 아이콘 및 드롭다운 메뉴 */}
         <div className="relative">
           <IoPersonCircle
             className="text-[#B9B9B9] w-[32px] h-[32px] cursor-pointer"
@@ -120,8 +139,11 @@ const MerchantHeader = ({ defaultValue = "" }) => {
                         고객센터
                       </Link>
                     </li>
-                    <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
-                      <Link to="/merchant-mypage?tab=account">계정 관리</Link>
+                    <li
+                      className="p-1 cursor-pointer hover:bg-gray-100 rounded"
+                      onClick={handleLogout}
+                    >
+                      <span className="block w-full">로그아웃</span>
                     </li>
                   </ul>
                 </>
@@ -130,6 +152,32 @@ const MerchantHeader = ({ defaultValue = "" }) => {
           )}
         </div>
       </div>
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center w-[420px] h-[200px]">
+            <h3 className="text-[20px] font-semibold mb-2 text-[#212121] text-left">
+              로그아웃 하시겠습니까?
+            </h3>
+            <p className="text-[14px] text-[#828282] mb-6 text-left">
+              로그아웃하시면 서비스 이용을 위해 재로그인이 필요해요.
+            </p>
+            <div className="flex justify-end space-x-4 mt-14">
+              <button
+                onClick={closeLogoutModal}
+                className="px-4 py-2 bg-[#FFFFFF] text-[#4C4C4C] text-[12px] border border-[#E1E1E1] rounded-md font-medium hover:bg-gray-200"
+              >
+                취소하기
+              </button>
+              <button
+                onClick={handleConfirmLogout}
+                className="px-4 py-2 bg-[#EE4343] text-white text-[12px] rounded-md font-medium hover:bg-[#D35A5A]"
+              >
+                로그아웃
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
