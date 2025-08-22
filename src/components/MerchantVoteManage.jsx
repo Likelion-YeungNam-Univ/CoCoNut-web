@@ -285,7 +285,7 @@ export default function MerchantVoteManage({
               <div className="border rounded-[24px] bg-[#E0F9FE] text-[#26ADC5] border-[#E0F9FE] px-[12px] py-[8px] text-[14px] flex items-center gap-[8px]">
                 <div className="font-medium">선정 기간</div>
                 <div className="font-semibold">
-                  {fmtYMD(voteStartDate)} - {fmtYMD(voteEndDate)}
+                  {fmtYMD(voteStartDate)+7} - {fmtYMD(voteEndDate)+7}
                 </div>
               </div>
             </div>
