@@ -146,17 +146,19 @@ const ProjectDetail = ({ role }) => {
   );
 
   const deadline = projectData.deadline ? new Date(projectData.deadline) : null;
-const toYMD = (d) => {
-  if (!(d instanceof Date) || isNaN(d)) return null;
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}.${m}.${day}`;   // ← 2025.08.23 이런식으로 반환
-};
+  const toYMD = (d) => {
+    if (!(d instanceof Date) || isNaN(d)) return null;
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}.${m}.${day}`; // ← 2025.08.23 이런식으로 반환
+  };
 
- const voteStartForGrid =
-  projectData.voteStartDate ??
-  (deadline ? toYMD(new Date(deadline.getTime() + 1 * 24 * 60 * 60 * 1000)) : null);
+  const voteStartForGrid =
+    projectData.voteStartDate ??
+    (deadline
+      ? toYMD(new Date(deadline.getTime() + 1 * 24 * 60 * 60 * 1000))
+      : null);
   const voteEndForGrid =
     projectData.voteEndDate ??
     (deadline
@@ -198,8 +200,7 @@ const toYMD = (d) => {
     ETC: "기타",
   };
   const getCategoryLabel = (code) => CATEGORIES_MAP[code] || "카테고리 없음";
-  const getBusinessTypeLabel = (code) =>
-    BUSINESSTYPES_MAP[code] || "업종 없음";
+  const getBusinessTypeLabel = (code) => BUSINESSTYPES_MAP[code] || "업종 없음";
 
   const daysLeft = projectData.deadline
     ? Math.ceil(
@@ -255,7 +256,9 @@ const toYMD = (d) => {
             </h1>
             {isMerchant && isMyProject && (
               <div className="relative">
-                <button onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}>
+                <button
+                  onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}
+                >
                   <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121]" />
                 </button>
                 {isOptionsModalOpen && (
@@ -272,7 +275,9 @@ const toYMD = (d) => {
                     >
                       <div className="flex space-x-2">
                         <AiFillDelete className="text-[#C3C3C3]" />
-                        <span className="text-[#828282] text-[12px]">삭제하기</span>
+                        <span className="text-[#828282] text-[12px]">
+                          삭제하기
+                        </span>
                       </div>
                     </button>
                   </div>
@@ -306,7 +311,11 @@ const toYMD = (d) => {
             </div>
 
             <div className="flex items-center space-x-2">
-              <img src={participantIcon} alt="참여작 아이콘" className="h-4 w-4" />
+              <img
+                src={participantIcon}
+                alt="참여작 아이콘"
+                className="h-4 w-4"
+              />
               <span className="text-[14px] text-[#828282] font-medium w-[80px]">
                 참여작
               </span>
@@ -322,7 +331,9 @@ const toYMD = (d) => {
               </span>
               <p className="text-[14px] font-medium text-[#212121]">
                 {projectData.deadline
-                  ? `${projectData.createdAt || "기간 없음"} ~ ${projectData.deadline}`
+                  ? `${projectData.createdAt || "기간 없음"} ~ ${
+                      projectData.deadline
+                    }`
                   : "기간 없음"}
               </p>
             </div>
@@ -332,7 +343,8 @@ const toYMD = (d) => {
           {role === "participant" && (
             <button
               onClick={() =>
-                !hasMySubmission && navigate(`/projects/${projectId}/submission`)
+                !hasMySubmission &&
+                navigate(`/projects/${projectId}/submission`)
               }
               className={`w-[95px] h-[45px] px-[20px] py-[12px] text-[16px] font-medium rounded-[8px] leading-[130%] tracking-[-0.02em]  ${
                 hasMySubmission
@@ -359,7 +371,9 @@ const toYMD = (d) => {
                   <h2 className="text-[16px] font-semibold text-[#212121] mb-2">
                     한 줄 소개
                   </h2>
-                  <p className="text-[16px] font-normal">{projectData.summary}</p>
+                  <p className="text-[16px] font-normal">
+                    {projectData.summary}
+                  </p>
                 </div>
               )}
 
@@ -372,8 +386,12 @@ const toYMD = (d) => {
                   내용
                 </h2>
                 {projectData.imageUrl && (
-                  <div className="p-4 bg-[#EBEBEB] rounded-md text-[#4C4C4C] whitespace-pre-wrap w-full font-pretendard">
-                    <img src={projectData.imageUrl} alt="업로드 이미지" className="..." />
+                  <div className="p-4 rounded-md text-[#4C4C4C] whitespace-pre-wrap w-full font-pretendard">
+                    <img
+                      src={projectData.imageUrl}
+                      alt="업로드 이미지"
+                      className="..."
+                    />
                   </div>
                 )}
                 <div className="text-base font-normal whitespace-pre-wrap">
@@ -407,7 +425,9 @@ const toYMD = (d) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-3">선택 안 함</span>
+                      <span className="text-[#A3A3A3] text-sm col-span-3">
+                        선택 안 함
+                      </span>
                     )}
                   </div>
                 </div>
@@ -438,7 +458,9 @@ const toYMD = (d) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-6">선택 안 함</span>
+                      <span className="text-[#A3A3A3] text-sm col-span-6">
+                        선택 안 함
+                      </span>
                     )}
                   </div>
                 </div>
@@ -469,189 +491,192 @@ const toYMD = (d) => {
                         })
                       )
                     ) : (
-                      <span className="text-[#A3A3A3] text-sm col-span-6">선택 안 함</span>
+                      <span className="text-[#A3A3A3] text-sm col-span-6">
+                        선택 안 함
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-         /* ====== 참여작 탭 ====== */
-<>
-  {winnerIdFromServer ? ( // 선정작 존재
-    <div className="mt-6">
-      {isMerchant ? ( // 선정작이 존재하고 소상공인일때 
-        <MerchantVoteManage
-          projectId={projectId}
-          submissions={submissions.map((s) => ({
-            id: s.submissionId,
-            submissionId: s.submissionId,
-            title: s.title,
-            writerNickname: s.writerNickname,
-            imageUrl: s.imageUrl,
-          }))}
-          voteStartDate={voteStartForGrid}
-          voteEndDate={voteEndForGrid}
-          winnerSubmissionId={winnerIdFromServer}
-          projectStatus={projectStatus}
-        />
-      ) : (
-        <ParticipantVoteManage // 선정작이 존재하고 참가자일때
-          projectId={projectId}
-          submissions={submissions.map((s) => ({
-            id: s.submissionId,
-            submissionId: s.submissionId,
-            title: s.title,
-            writerNickname: s.writerNickname,
-            imageUrl: s.imageUrl,
-          }))}
-          voteStartDate={voteStartForGrid}
-          voteEndDate={voteEndForGrid}
-          winnerSubmissionId={winnerIdFromServer}
-          projectStatus={projectStatus}
-        />
-      )}
-    </div>
-  ) : projectStatus === "CLOSED" ? ( //마감일때 
-    isMerchant && isMyProject ? (
-      <div className="mt-6">
-        <MerchantVoteManage
-          projectId={projectId}
-          submissions={submissions.map((s) => ({
-            id: s.submissionId,
-            submissionId: s.submissionId,
-            title: s.title,
-            writerNickname: s.writerNickname,
-            imageUrl: s.imageUrl,
-          }))}
-          voteStartDate={voteStartForGrid}
-          voteEndDate={voteEndForGrid}
-          winnerSubmissionId={null}
-          uiVariant="result"
-          projectStatus={projectStatus}
-          onWinnerSelected={(winnerId, reward) => {
-            setProjectData((prev) => ({
-              ...prev,
-              winnerSubmissionId: winnerId,
-              reward: reward ?? prev?.reward,
-            }));
-            setSubmissions((prev) =>
-              prev.map((s) => ({
-                ...s,
-                winner: s.submissionId === winnerId, // 당선만 true
-              }))
-            );
-          }}
-        />
-      </div>
-    ) : (
-      <div className="mt-6">
-        <ParticipantVoteManage
-          projectId={projectId}
-          submissions={submissions.map((s) => ({
-            id: s.submissionId,
-            submissionId: s.submissionId,
-            title: s.title,
-            writerNickname: s.writerNickname,
-            imageUrl: s.imageUrl,
-          }))}
-          voteStartDate={voteStartForGrid}
-          voteEndDate={voteEndForGrid}
-          winnerSubmissionId={null}
-          projectStatus={projectStatus}
-        />
-      </div>
-    )
-  ) : projectStatus === "VOTING" ? (
-    isMerchant && isMyProject ? (
-      <div className="mt-6">
-        <MerchantVoteManage
-          projectId={projectId}
-          submissions={submissions.map((s) => ({
-            id: s.submissionId,
-            submissionId: s.submissionId,
-            title: s.title,
-            writerNickname: s.writerNickname,
-            imageUrl: s.imageUrl,
-          }))}
-          voteStartDate={voteStartForGrid}
-          voteEndDate={voteEndForGrid}
-          winnerSubmissionId={null}
-          onWinnerSelected={(winnerId, reward) => {
-            setProjectData((prev) => ({
-              ...prev,
-              winnerSubmissionId: winnerId,
-              reward: reward ?? prev?.reward,
-            }));
-            setSubmissions((prev) =>
-              prev.map((s) => ({
-                ...s,
-                winner: s.submissionId === winnerId,
-              }))
-            );
-          }}
-        />
-      </div>
-    ) : (
-      <div className="mt-6">
-        <ParticipantVoteGrid
-          projectId={projectId}
-          userId={userInfo?.user_id}
-          mySubmissionId={
-            submissions.find((s) => s.userId === userInfo?.user_id)
-              ?.submissionId ?? null
-          }
-          submissions={submissions.map((s) => ({
-            id: s.submissionId,
-            submissionId: s.submissionId,
-            title: s.title,
-            writerNickname: s.writerNickname,
-            imageUrl: s.imageUrl,
-          }))}
-          voteStartDate={voteStartForGrid}
-          voteEndDate={voteEndForGrid}
-          forceOpen
-        />
-      </div>
-    )
-  ) : (
-    // ✅ 그 외: 썸네일 뷰
-    <div className="flex flex-col">
-      {submissions.length > 0 ? (
-        <div className="grid grid-cols-4 gap-8 mt-16">
-          {displayedSubmissions.map((submission) => {
-            const blurForParticipant =
-              isParticipant && submission.userId !== userInfo?.user_id;
-            const blurForMerchant = isMerchant && !isMyProject;
-            return (
-              <SubmissionThumbnail
-                key={submission.submissionId}
-                submission={submission}
-                onClick={(s) => {
-                  const canOpenDetail =
-                    (isMerchant && isMyProject) ||
-                    (isParticipant && s.userId === userInfo?.user_id);
-                  if (canOpenDetail) setSelectedSubmission(s);
-                }}
-                isBlur={blurForParticipant || blurForMerchant}
-              />
-            );
-          })}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center h-[300px] mt-16">
-          <CgMenuBoxed size={120} className="text-[#E1E1E1]" />
-          <div className="flex flex-col items-center mt-10">
-            <label className="text-[#A3A3A3] text-[12px] font-medium">
-              아직 참여작이 없습니다.
-            </label>
-          </div>
-        </div>
-      )}
-    </div>
-  )}
-</>
-
+            /* ====== 참여작 탭 ====== */
+            <>
+              {winnerIdFromServer ? ( // 선정작 존재
+                <div className="mt-6">
+                  {isMerchant ? ( // 선정작이 존재하고 소상공인일때
+                    <MerchantVoteManage
+                      projectId={projectId}
+                      submissions={submissions.map((s) => ({
+                        id: s.submissionId,
+                        submissionId: s.submissionId,
+                        title: s.title,
+                        writerNickname: s.writerNickname,
+                        imageUrl: s.imageUrl,
+                      }))}
+                      voteStartDate={voteStartForGrid}
+                      voteEndDate={voteEndForGrid}
+                      winnerSubmissionId={winnerIdFromServer}
+                      projectStatus={projectStatus}
+                    />
+                  ) : (
+                    <ParticipantVoteManage // 선정작이 존재하고 참가자일때
+                      projectId={projectId}
+                      submissions={submissions.map((s) => ({
+                        id: s.submissionId,
+                        submissionId: s.submissionId,
+                        title: s.title,
+                        writerNickname: s.writerNickname,
+                        imageUrl: s.imageUrl,
+                      }))}
+                      voteStartDate={voteStartForGrid}
+                      voteEndDate={voteEndForGrid}
+                      winnerSubmissionId={winnerIdFromServer}
+                      projectStatus={projectStatus}
+                    />
+                  )}
+                </div>
+              ) : projectStatus === "CLOSED" ? ( //마감일때
+                isMerchant && isMyProject ? (
+                  <div className="mt-6">
+                    <MerchantVoteManage
+                      projectId={projectId}
+                      submissions={submissions.map((s) => ({
+                        id: s.submissionId,
+                        submissionId: s.submissionId,
+                        title: s.title,
+                        writerNickname: s.writerNickname,
+                        imageUrl: s.imageUrl,
+                      }))}
+                      voteStartDate={voteStartForGrid}
+                      voteEndDate={voteEndForGrid}
+                      winnerSubmissionId={null}
+                      uiVariant="result"
+                      projectStatus={projectStatus}
+                      onWinnerSelected={(winnerId, reward) => {
+                        setProjectData((prev) => ({
+                          ...prev,
+                          winnerSubmissionId: winnerId,
+                          reward: reward ?? prev?.reward,
+                        }));
+                        setSubmissions((prev) =>
+                          prev.map((s) => ({
+                            ...s,
+                            winner: s.submissionId === winnerId, // 당선만 true
+                          }))
+                        );
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-6">
+                    <ParticipantVoteManage
+                      projectId={projectId}
+                      submissions={submissions.map((s) => ({
+                        id: s.submissionId,
+                        submissionId: s.submissionId,
+                        title: s.title,
+                        writerNickname: s.writerNickname,
+                        imageUrl: s.imageUrl,
+                      }))}
+                      voteStartDate={voteStartForGrid}
+                      voteEndDate={voteEndForGrid}
+                      winnerSubmissionId={null}
+                      projectStatus={projectStatus}
+                    />
+                  </div>
+                )
+              ) : projectStatus === "VOTING" ? (
+                isMerchant && isMyProject ? (
+                  <div className="mt-6">
+                    <MerchantVoteManage
+                      projectId={projectId}
+                      submissions={submissions.map((s) => ({
+                        id: s.submissionId,
+                        submissionId: s.submissionId,
+                        title: s.title,
+                        writerNickname: s.writerNickname,
+                        imageUrl: s.imageUrl,
+                      }))}
+                      voteStartDate={voteStartForGrid}
+                      voteEndDate={voteEndForGrid}
+                      winnerSubmissionId={null}
+                      onWinnerSelected={(winnerId, reward) => {
+                        setProjectData((prev) => ({
+                          ...prev,
+                          winnerSubmissionId: winnerId,
+                          reward: reward ?? prev?.reward,
+                        }));
+                        setSubmissions((prev) =>
+                          prev.map((s) => ({
+                            ...s,
+                            winner: s.submissionId === winnerId,
+                          }))
+                        );
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="mt-6">
+                    <ParticipantVoteGrid
+                      projectId={projectId}
+                      userId={userInfo?.user_id}
+                      mySubmissionId={
+                        submissions.find((s) => s.userId === userInfo?.user_id)
+                          ?.submissionId ?? null
+                      }
+                      submissions={submissions.map((s) => ({
+                        id: s.submissionId,
+                        submissionId: s.submissionId,
+                        title: s.title,
+                        writerNickname: s.writerNickname,
+                        imageUrl: s.imageUrl,
+                      }))}
+                      voteStartDate={voteStartForGrid}
+                      voteEndDate={voteEndForGrid}
+                      forceOpen
+                    />
+                  </div>
+                )
+              ) : (
+                // ✅ 그 외: 썸네일 뷰
+                <div className="flex flex-col">
+                  {submissions.length > 0 ? (
+                    <div className="grid grid-cols-4 gap-8 mt-16">
+                      {displayedSubmissions.map((submission) => {
+                        const blurForParticipant =
+                          isParticipant &&
+                          submission.userId !== userInfo?.user_id;
+                        const blurForMerchant = isMerchant && !isMyProject;
+                        return (
+                          <SubmissionThumbnail
+                            key={submission.submissionId}
+                            submission={submission}
+                            onClick={(s) => {
+                              const canOpenDetail =
+                                (isMerchant && isMyProject) ||
+                                (isParticipant &&
+                                  s.userId === userInfo?.user_id);
+                              if (canOpenDetail) setSelectedSubmission(s);
+                            }}
+                            isBlur={blurForParticipant || blurForMerchant}
+                          />
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-[300px] mt-16">
+                      <CgMenuBoxed size={120} className="text-[#E1E1E1]" />
+                      <div className="flex flex-col items-center mt-10">
+                        <label className="text-[#A3A3A3] text-[12px] font-medium">
+                          아직 참여작이 없습니다.
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -683,7 +708,8 @@ const toYMD = (d) => {
           isOpen={
             !!selectedSubmission &&
             ((isMerchant && isMyProject) ||
-              (isParticipant && selectedSubmission.userId === userInfo?.user_id))
+              (isParticipant &&
+                selectedSubmission.userId === userInfo?.user_id))
           }
           submissionId={selectedSubmission.submissionId}
           onClose={() => setSelectedSubmission(null)}
