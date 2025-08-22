@@ -21,16 +21,23 @@ const ProjectCardClosed = ({
     (b) => b.code === project.businessType
   );
 
-  // 클릭 시 상세 페이지로 이동하는 핸들러 함수
+ 
   const handleCardClick = () => {
-    if (project.projectId) {
-      navigate(`/project-detail-participant/${project.projectId}`);
+    
+    if (role === "guest" && onRequireLogin) {
+      onRequireLogin();
+    } else if (project.projectId) {
+     
+      if (role === "participant") {
+        navigate(`/project-detail-participant/${project.projectId}`);
+      } else {
+        navigate(`/project-detail/${project.projectId}`);
+      }
     } else {
       console.error("projectId가 없어 상세 페이지로 이동할 수 없습니다.");
     }
   };
 
-  // 카드 내용 공통 (클릭 이벤트 포함)
   const cardContent = (
     <div
       className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3] cursor-pointer"
@@ -125,15 +132,6 @@ const ProjectCardClosed = ({
       </div>
     </div>
   );
-
-  // role 분기
-  if (role === "guest") {
-    return (
-      <div onClick={() => onRequireLogin?.()} className="cursor-pointer">
-        {cardContent}
-      </div>
-    );
-  }
 
   return cardContent;
 };
