@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Layout from "./pages/Layout";
-import Rending from "./pages/Rending";
 import ProjectRegister from "./pages/ProjectRegister";
 import ProjectDetail from "./pages/ProjectDetail.jsx";
 import MerchantMainPage from "./pages/MerchantMainPage";
@@ -14,7 +13,8 @@ import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
 import MerchantMyProject from "./pages/MerchantMyProject.jsx";
 import ParticipantMyProject from "./pages/ParticipantMyProject.jsx";
 import GuestMainPage from "./pages/GuestMainPage.jsx";
-import ParticipantMyPage from "./pages/ParticipantMyPage.jsx"; // ParticipantMyPage 컴포넌트 import
+import ParticipantMyPage from "./pages/ParticipantMyPage.jsx";
+import Landing from "./pages/Landing.jsx";
 
 export default function App() {
   return (
@@ -22,7 +22,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
-            <Route index element={<Rending />} />
+            <Route index element={<Landing />} />
             <Route path="signup" element={<Signup />} />
             <Route path="signin" element={<Signin />} />
             <Route path="/project-register" element={<ProjectRegister />} />
