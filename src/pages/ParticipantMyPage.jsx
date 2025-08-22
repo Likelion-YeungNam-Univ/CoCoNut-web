@@ -6,12 +6,16 @@ import { LiaTrophySolid } from "react-icons/lia";
 import api from "../apis/api";
 import Footer from "../components/Footer";
 import ProjectCardClosed from "../main/projectCard/ProjectCardClosed";
-import { SERVICE_TERMS_DATA, PERSONAL_INFO_CONSENT } from "../utils/termsData";
+import {
+  SERVICE_TERMS_DATA,
+  PERSONAL_INFO_CONSENT,
+  WITHDRAWAL_DATA,
+} from "../utils/termsData";
 
 const MyPageContent = ({
   selectedTab,
   userData,
-  userProjects,
+  userSubmissions,
   openLogoutModal,
   openWithdrawalModal,
   navigate,
@@ -55,6 +59,21 @@ const MyPageContent = ({
 
   switch (selectedTab) {
     case "profile":
+      const totalParticipations = userSubmissions.length;
+      const winningSubmissions = userSubmissions.filter(
+        (submission) => submission.isWinner
+      );
+      const winningCount = userData?.winningCount || 0;
+
+      const totalPrizeMoney = winningSubmissions.reduce((total, submission) => {
+        const rewardValue = String(submission.rewardAmount || "0").replace(
+          /[^0-9]/g,
+          ""
+        );
+        const reward = parseInt(rewardValue, 10);
+        return total + (isNaN(reward) ? 0 : reward);
+      }, 0);
+
       return (
         <div className="p-8">
           <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
@@ -80,7 +99,7 @@ const MyPageContent = ({
                     총 참여 횟수
                   </span>
                   <span className="text-[#212121] text-[16px] font-semibold mt-1">
-                    {userProjects.length}회
+                    {totalParticipations}회
                   </span>
                 </div>
                 <div className="flex-1 border-l border-gray-200 pl-8 flex">
@@ -89,7 +108,7 @@ const MyPageContent = ({
                       수상 횟수
                     </span>
                     <span className="text-[#212121] text-[16px] font-semibold mt-1">
-                      00회
+                      {winningCount}회
                     </span>
                   </div>
                 </div>
@@ -99,7 +118,7 @@ const MyPageContent = ({
                       보유 상금
                     </span>
                     <span className="text-[#212121] text-[16px] font-semibold mt-1">
-                      0000000원
+                      {totalPrizeMoney.toLocaleString()}원
                     </span>
                   </div>
                 </div>
@@ -107,7 +126,22 @@ const MyPageContent = ({
             </div>
             <hr className="text-[#E1E1E1]" />
 
-            {userProjects.length === 0 ? (
+            {winningSubmissions.length > 0 ? (
+              <div className="flex flex-col space-y-4">
+                <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
+                  수상 내역
+                </h2>
+                {winningSubmissions.map((submission) => (
+                  <ProjectCardClosed
+                    key={submission.projectId}
+                    project={submission}
+                    categories={categories}
+                    businessTypes={businessTypes}
+                    role="participant"
+                  />
+                ))}
+              </div>
+            ) : (
               <div className="flex flex-col space-y-2 items-center justify-center p-36 bg-white">
                 <LiaTrophySolid className="w-[120px] h-[120px] text-[#F3F3F3]" />
                 <p className="text-[16px] font-semibold text-[#212121]">
@@ -116,20 +150,6 @@ const MyPageContent = ({
                 <p className="text-[12px] font-medium text-[#A3A3A3]">
                   프로필에서는 선정된 작품만 확인할 수 있어요.
                 </p>
-              </div>
-            ) : (
-              <div className="flex flex-col space-y-4">
-                <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
-                  수상 내역
-                </h2>
-                {userProjects.map((project) => (
-                  <ProjectCardClosed
-                    key={project.projectId}
-                    project={project}
-                    categories={categories}
-                    businessTypes={businessTypes}
-                  />
-                ))}
               </div>
             )}
           </div>
@@ -267,55 +287,71 @@ const MyPageContent = ({
               <p className="font-medium text-[16px] text-[#212121] whitespace-nowrap">
                 회원 탈퇴
               </p>
-              <div className="flex flex-col space-y-3">
-                <div className="w-full h-[280px] p-6 border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto text-[14px] text-[#626262]"></div>
-                <div className="flex justify-end">
-                  <label className="flex items-center text-[#000000] gap-2 cursor-pointer">
-                    <div
-                      className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 ${
-                        isWithdrawalAgreed
-                          ? "bg-[#2FD8F6] border-[#2FD8F6]"
-                          : "bg-white border-[#F3F3F3]"
-                      }`}
-                      onClick={() => setIsWithdrawalAgreed(!isWithdrawalAgreed)}
-                    >
-                      {isWithdrawalAgreed && (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="4"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="w-3 h-3"
-                        >
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      )}
+              <div className="w-full h-[280px] border border-[#F3F3F3] mt-4 rounded-lg overflow-y-auto">
+                <div className="p-6">
+                  <h3 className="font-semibold text-base text-[#212121]">
+                    {WITHDRAWAL_DATA.withdrawal.title}
+                  </h3>
+                  {WITHDRAWAL_DATA.withdrawal.sections.map((section, index) => (
+                    <div key={index} className="mt-4">
+                      <h4 className="font-medium text-sm text-[#212121]">
+                        {section.subtitle}
+                      </h4>
+                      <ul className="list-disc list-inside text-sm text-[#626262] mt-2 space-y-1">
+                        {section.points.map((point, pointIndex) => (
+                          <li key={pointIndex}>{point}</li>
+                        ))}
+                      </ul>
                     </div>
-                    탈퇴 시 안내사항을 모두 확인하였으며, 동의합니다.
-                  </label>
+                  ))}
                 </div>
-                <div className="flex justify-end mt-4 space-x-4">
-                  <button
-                    className="text-left px-4 py-2 text-[16px] text-[#212121] font-medium rounded-md border border-[#E1E1E1] hover:bg-gray-100"
-                    onClick={() => navigate("/participant-main-page")}
-                  >
-                    메인으로 이동
-                  </button>
-                  <button
-                    className={`text-left px-4 py-2 text-[16px] font-medium rounded-md transition-colors duration-200 ${
+              </div>
+              <div className="flex justify-end">
+                <label className="flex items-center text-[#000000] gap-2 cursor-pointer">
+                  <div
+                    className={`w-4 h-4 rounded border-1 flex items-center justify-center transition-all duration-200 ${
                       isWithdrawalAgreed
-                        ? "bg-[#EE4343] text-white hover:bg-[#D35A5A]"
-                        : "bg-[#E1E1E1] text-[#FFFFFF] cursor-not-allowed"
+                        ? "bg-[#2FD8F6] border-[#2FD8F6]"
+                        : "bg-white border-[#F3F3F3]"
                     }`}
-                    onClick={openWithdrawalModal}
-                    disabled={!isWithdrawalAgreed}
+                    onClick={() => setIsWithdrawalAgreed(!isWithdrawalAgreed)}
                   >
-                    탈퇴하기
-                  </button>
-                </div>
+                    {isWithdrawalAgreed && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="white"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="w-3 h-3"
+                      >
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    )}
+                  </div>
+                  탈퇴 시 안내사항을 모두 확인하였으며, 동의합니다.
+                </label>
+              </div>
+              <div className="flex justify-end mt-4 space-x-4">
+                <button
+                  className="text-left px-4 py-2 text-[16px] text-[#212121] font-medium rounded-md border border-[#E1E1E1] hover:bg-gray-100"
+                  onClick={() => navigate("/participant-main-page")}
+                >
+                  메인으로 이동
+                </button>
+                <button
+                  className={`text-left px-4 py-2 text-[16px] font-medium rounded-md transition-colors duration-200 ${
+                    isWithdrawalAgreed
+                      ? "bg-[#EE4343] text-white hover:bg-[#D35A5A]"
+                      : "bg-[#E1E1E1] text-[#FFFFFF] cursor-not-allowed"
+                  }`}
+                  onClick={openWithdrawalModal}
+                  disabled={!isWithdrawalAgreed}
+                >
+                  탈퇴하기
+                </button>
               </div>
             </div>
           </div>
@@ -328,7 +364,7 @@ const MyPageContent = ({
 
 const ParticipantMyPage = () => {
   const [userData, setUserData] = useState(null);
-  const [userProjects, setUserProjects] = useState([]);
+  const [userSubmissions, setUserSubmissions] = useState([]);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
   const location = useLocation();
@@ -384,25 +420,32 @@ const ParticipantMyPage = () => {
   }, [location.search]);
 
   useEffect(() => {
-    const fetchUserDataAndProjects = async () => {
+    const fetchUserDataAndSubmissions = async () => {
       try {
         const userResponse = await api.get("/users");
         setUserData(userResponse.data);
 
-        // 참가자용 API 엔드포인트가 따로 있다면 수정해야 합니다.
-        const projectsResponse = await api.get("/projects");
-        const myProjects = projectsResponse.data.filter(
-          (project) => project.writerNickname === userResponse.data.nickname
-        );
-        setUserProjects(myProjects);
+        // `/rewards/me/awards/count` API를 호출하여 수상 횟수를 가져옵니다.
+        const winningCountResponse = await api.get("/rewards/me/awards/count");
+        const winningCount = winningCountResponse.data || 0;
+        setUserData((prevData) => ({
+          ...prevData,
+          winningCount,
+        }));
+
+        // `/submissions` API만 호출하여 데이터를 가져옵니다.
+        const submissionsResponse = await api.get("/submissions");
+        const submissions = submissionsResponse.data;
+
+        setUserSubmissions(submissions);
       } catch (err) {
         console.error("데이터를 가져오는 데 실패했습니다:", err);
         setUserData(null);
-        setUserProjects([]);
+        setUserSubmissions([]);
       }
     };
 
-    fetchUserDataAndProjects();
+    fetchUserDataAndSubmissions();
   }, []);
 
   return (
@@ -434,7 +477,7 @@ const ParticipantMyPage = () => {
                 약관 및 정책
               </li>
               <li
-                className={`p-6 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
+                className={`p-6 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F3] ${
                   selectedTab === "customer-service"
                     ? "font-medium text-[#212121]"
                     : "text-[#4C4C4C]"
@@ -461,7 +504,7 @@ const ParticipantMyPage = () => {
               <MyPageContent
                 selectedTab={selectedTab}
                 userData={userData}
-                userProjects={userProjects}
+                userSubmissions={userSubmissions}
                 openLogoutModal={openLogoutModal}
                 openWithdrawalModal={openWithdrawalModal}
                 navigate={navigate}
