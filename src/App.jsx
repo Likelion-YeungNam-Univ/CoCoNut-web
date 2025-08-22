@@ -9,10 +9,11 @@ import Signin from "./pages/Signin";
 import AuthProvider from "./contexts/AuthProvider";
 import ParticipantMainPage from "./pages/ParticipantMainPage";
 import ProjectSubmissionPage from "./pages/ProjectSubmissionPage";
-
+import MerchantMyPage from "./pages/MerchantMyPage";
 import MerchantMyProject from "./pages/MerchantMyProject.jsx";
 import ParticipantMyProject from "./pages/ParticipantMyProject.jsx";
 import GuestMainPage from "./pages/GuestMainPage.jsx";
+import ParticipantMyPage from "./pages/ParticipantMyPage.jsx";
 import Landing from "./pages/Landing.jsx";
 
 export default function App() {
@@ -47,11 +48,13 @@ export default function App() {
             path="/projects/:projectId/submission"
             element={<ProjectSubmissionPage />}
           />
+          <Route path="merchant-mypage" element={<MerchantMyPage />} />
           <Route path="merchant-myproject" element={<MerchantMyProject />} />
           <Route
             path="participant-myproject"
             element={<ParticipantMyProject />}
           />
+          <Route path="participant-mypage" element={<ParticipantMyPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
