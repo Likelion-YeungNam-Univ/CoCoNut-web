@@ -5,7 +5,7 @@ const TermsModal = ({ isOpen, onClose, title, content }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center font-pretendard p-4">
+    <div className="fixed inset-0 z-50 bg-black/50 overflow-y-auto flex items-center justify-center font-pretendard p-4">
       <div className="flex items-start">
         <div className="bg-white rounded-lg shadow-xl w-[840px] h-[650px] overflow-hidden flex flex-col relative">
           <div className="p-12 pb-4 flex-shrink-0">
@@ -49,7 +49,7 @@ const TermsModal = ({ isOpen, onClose, title, content }) => {
         </div>
         <button
           onClick={onClose}
-          className="ml-4 flex-shrink-0 text-white transition hover:text-[#A3A3A3]"
+          className="ml-4 flex-shrink-0 text-white transition cursor-pointer"
         >
           <IoIosCloseCircle size={40} />
         </button>
