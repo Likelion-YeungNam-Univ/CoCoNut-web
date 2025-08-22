@@ -10,6 +10,7 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
   const [value, setValue] = useState(defaultValue);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -141,10 +142,11 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
                         고객센터
                       </Link>
                     </li>
-                    <li className="p-1 cursor-pointer hover:bg-gray-100 rounded">
-                      <Link to="/participant-mypage?tab=account">
-                        계정 관리
-                      </Link>
+                    <li
+                      className="p-1 cursor-pointer hover:bg-gray-100 rounded"
+                      onClick={handleLogout}
+                    >
+                      <span className="block w-full">로그아웃</span>
                     </li>
                   </ul>
                 </>
@@ -153,6 +155,32 @@ const ParticipantHeader = ({ defaultValue = "" }) => {
           )}
         </div>
       </div>
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center w-[420px] h-[200px]">
+            <h3 className="text-[20px] font-semibold mb-2 text-[#212121] text-left">
+              로그아웃 하시겠습니까?
+            </h3>
+            <p className="text-[14px] text-[#828282] mb-6 text-left">
+              로그아웃하시면 서비스 이용을 위해 재로그인이 필요해요.
+            </p>
+            <div className="flex justify-end space-x-4 mt-14">
+              <button
+                onClick={closeLogoutModal}
+                className="px-4 py-2 bg-[#FFFFFF] text-[#4C4C4C] text-[12px] border border-[#E1E1E1] rounded-md font-medium hover:bg-gray-200"
+              >
+                취소하기
+              </button>
+              <button
+                onClick={handleConfirmLogout}
+                className="px-4 py-2 bg-[#EE4343] text-white text-[12px] rounded-md font-medium hover:bg-[#D35A5A]"
+              >
+                로그아웃
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
