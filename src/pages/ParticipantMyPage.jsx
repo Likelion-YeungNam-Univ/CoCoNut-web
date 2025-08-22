@@ -478,7 +478,7 @@ const ParticipantMyPage = () => {
                 약관 및 정책
               </li>
               <li
-                className={`p-6 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F3] ${
+                className={`p-6 cursor-pointer border-b border-[#F3F3F3] bg-[#F9F9F9] ${
                   selectedTab === "customer-service"
                     ? "font-medium text-[#212121]"
                     : "text-[#4C4C4C]"
