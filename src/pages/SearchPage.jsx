@@ -9,24 +9,24 @@ import { BiSolidPencil } from "react-icons/bi";
 import MerchantBanner from "../main/MerchantBanner";
 import ParticipantHeader from "../header/ParticipantHeader";
 import ParticipantBanner from "../main/ParticipantBanner";
-import LoginRequiredModal from "../components/LoginRequiredModal"; // 🔹 추가
+import LoginRequiredModal from "../components/LoginRequiredModal";
 import GuestHeader from "../header/GuestHeader";
+import DropdownSort from "../main/DropdownSort";
 
 const SearchPage = () => {
   const [params, setParams] = useSearchParams();
   const q = (params.get("q") ?? "").trim();
   const location = useLocation();
-  const isMerchant = location.pathname.startsWith("/search");
 
   const [activeTab, setActiveTab] = useState("IN_PROGRESS");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBusinesses, setSelectedBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [businessTypes, setBusinessTypes] = useState([]);
+  const [sortOption, setSortOption] = useState("최신순");
 
   const [showLoginModal, setShowLoginModal] = useState(false);
 
-  // role 설정 (경로 기반)
   let role = "guest";
   if (location.pathname.startsWith("/search")) {
     role = "merchant";
@@ -57,29 +57,24 @@ const SearchPage = () => {
           <MerchantBanner />
         </>
       )}
-
       {role === "participant" && (
         <>
           <ParticipantHeader />
           <ParticipantBanner />
         </>
       )}
-
       {role === "guest" && (
         <>
           <GuestHeader />
           <MerchantBanner />
         </>
       )}
-      {/* 상단 요약 바 */}
       <div
         id="search-title"
         className="pt-[40px] pb-[28px] pl-[416px] font-pretendard text-[20px] text-[#212121] font-semibold"
       >
         {q ? <>‘{q}’ 검색 결과</> : <>검색어를 입력해 주세요</>}
       </div>
-
-      {/* 상태 탭(검색 전용 디자인) */}
       <div className="flex px-[240px] gap-[40px]" id="search-results">
         <CategoryFilter
           categories={categories}
@@ -91,8 +86,17 @@ const SearchPage = () => {
           selectedBusinesses={selectedBusinesses}
           setSelectedBusinesses={setSelectedBusinesses}
         />
-        <div>
-          <SearchStatusTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+        <div className="flex-1">
+          <div className="flex flex-row justify-between items-center mb-4">
+            <SearchStatusTabs
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+            />
+            <DropdownSort
+              sortOption={sortOption}
+              setSortOption={setSortOption}
+            />
+          </div>
           <ProjectList
             q={q}
             isSearched={!!q}
@@ -103,9 +107,11 @@ const SearchPage = () => {
             selectedBusinesses={selectedBusinesses}
             searchMode
             onClearSearch={onClearSearch}
-            hideHeader
+            hideHeader={true}
             role={role}
             onRequireLogin={() => setShowLoginModal(true)}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
           />
         </div>
       </div>
