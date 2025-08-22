@@ -12,15 +12,26 @@ const ProjectCardClosed = ({
   businessTypes = [],
   role,
   onRequireLogin,
+  navigate,
 }) => {
   const categoryObj = categories.find((c) => c.code === project.category);
   const businessTypeObj = businessTypes.find(
     (b) => b.code === project.businessType
   );
 
-  // 카드 내용 공통
+  const handleCardClick = () => {
+    if (navigate && role !== "guest") {
+      navigate(`/project-detail/${project.projectId}`);
+    } else if (onRequireLogin && role === "guest") {
+      onRequireLogin();
+    }
+  };
+
   const cardContent = (
-    <div className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3]">
+    <div
+      className="flex space-x-[24px] w-[856px] h-[252px] border border-[#E1E1E1] rounded-[12px] font-pretendard hover:opacity-60 hover:border-[#A3A3A3] cursor-pointer"
+      onClick={handleCardClick}
+    >
       {/* 수상작 대표 이미지 */}
       <img
         src={projectImgExample}
@@ -111,16 +122,6 @@ const ProjectCardClosed = ({
     </div>
   );
 
-  // role 분기
-  if (role === "guest") {
-    return (
-      <div onClick={() => onRequireLogin?.()} className="cursor-pointer">
-        {cardContent}
-      </div>
-    );
-  }
-
-  // 추후 상세 페이지 연결 예정
   return cardContent;
 };
 
