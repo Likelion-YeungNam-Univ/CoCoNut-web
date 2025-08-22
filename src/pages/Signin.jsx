@@ -41,7 +41,7 @@ const SignIn = () => {
     try {
       /** 로그인 API 호출 */
       const result = await SignInApi(body);
-    const accessToken = result?.data?.accessToken ?? result?.accessToken;
+      const accessToken = result?.data?.accessToken ?? result?.accessToken;
       const role =
         result?.data?.role ??
         result?.role ??
@@ -53,9 +53,9 @@ const SignIn = () => {
       login(accessToken);
       alert("로그인이 완료되었습니다!");
       /** 성공 시 이동 (role에 따라 분기하면 여기서 처리) */
-       if (role === "ROLE_BUSINESS") {
+      if (role === "ROLE_BUSINESS") {
         navigate("/merchant-main-page");
-     } else if (role === "ROLE_USER") {
+      } else if (role === "ROLE_USER") {
         navigate("/participant-main-page");
       } else {
         // role이 없거나 예상치 못한 값인 경우 기본 페이지로
@@ -93,9 +93,9 @@ const SignIn = () => {
   };
 
   return (
-    <div className="flex justify-center mt-[142px] font-pretendard">
-      <fieldset className="border rounded-[12px] w-[504px] h-[480px] bg-white flex flex-col justify-center items-center border-white">
-        <span className="font-semibold text-[32px] mt-[42px]">로그인</span>
+    <div className="flex justify-center mt-[120px] font-pretendard ">
+      <fieldset className="border rounded-[12px] w-[504px] h-[428px] bg-white flex flex-col justify-center items-center border-white pt-[44px] pb-[57px]">
+        <span className="font-semibold text-[32px]">로그인</span>
 
         <form className="flex flex-col" onSubmit={SignInHandler}>
           {/* 아이디(이메일) */}
@@ -109,13 +109,13 @@ const SignIn = () => {
               placeholder="아이디(이메일)"
               type="email"
               autoComplete="username"
-              className="flex items-center mt-[32px] focus:outline-none text-[14px] border rounded-[6px] w-[360px] h-[48px] pt-[15px] pr-[16px] pb-[15px] pl-[16px] border-[#F3F3F3]"
+              className="flex items-center mt-[32px] focus:outline-none text-[14px] border rounded-[6px] w-[360px] h-[48px] pt-[15px] pr-[16px] pb-[15px] pl-[16px] border-[#F3F3F3] placeholder-[#C3C3C3]"
               aria-invalid={!!emailError}
               aria-describedby="email-error"
             />
             <span
               id="email-error"
-              className="min-h-[18px] text-[12px] text-[#EE4343] mt-[2px]"
+              className="min-h-[18px] text-[12px] text-[#EE4343] pl-[4px] py-[8px]"
             >
               {emailError}
             </span>
@@ -132,13 +132,13 @@ const SignIn = () => {
               placeholder="비밀번호"
               type="password"
               autoComplete="current-password"
-              className="text-[14px] border focus:outline-none rounded-[6px] w=[360px] h-[48px]w-[360px] h-[48px] pt-[15px] pr-[16px] pb-[15px] pl-[16px]  border-[#F3F3F3]"
+              className="text-[14px] border focus:outline-none rounded-[6px] w-[360px] h-[48px] pt-[15px] pr-[16px] pb-[15px] pl-[16px] border-[#F3F3F3] placeholder-[#C3C3C3]"
               aria-invalid={!!passwordError}
               aria-describedby="password-error"
             />
             <span
               id="password-error"
-              className="min-h-[18px] text-[12px] text-[#EE4343] mt-[2px]"
+              className="min-h-[18px] text-[12px] text-[#EE4343] pl-[4px] py-[8px]"
             >
               {passwordError}
             </span>
@@ -146,7 +146,7 @@ const SignIn = () => {
 
           <button
             type="submit"
-            className="mt-[12px] text-white border border-[#2FD8F6] bg-[#2FD8F6] rounded-[8px] w-[360px] h-[45px] text-[16px]"
+            className="mt-[12px] text-white border border-[#2FD8F6] bg-[#2FD8F6] rounded-[8px] w-[360px] h-[45px] text-[16px] hover:bg-[#2AC2DD] cursor-pointer"
           >
             로그인
           </button>
