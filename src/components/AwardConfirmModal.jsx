@@ -15,7 +15,7 @@ import React, { useEffect } from "react";
 const AwardConfirmModal = ({
   open,
   title = "수상을 확정하시겠습니까?",
-  description = "수상을 확정하면 당선작에게 보상이 지급되며, 이후 변경이 불가능합니다.",
+  description = "수상을 확정하면 상금이 수상자에게 바로 송금되며, 이무 변경이나 환불은 불가능합니다.",
   confirmText = "수상 확정하기",
   cancelText = "취소하기",
   onConfirm,
@@ -46,7 +46,7 @@ const AwardConfirmModal = ({
       {/* panel */}
       <div
         className="
-          relative w-[520px] max-w-[92vw]
+          relative w-[420px] h-[200px]
           rounded-[12px] bg-white shadow-[0_8px_30px_rgba(0,0,0,0.18)]
           p-6
           animate-[fadeIn_.14s_ease-out]
@@ -65,7 +65,7 @@ const AwardConfirmModal = ({
         ) : null}
 
         {/* Actions (오른쪽 정렬) */}
-        <div className="mt-6 flex justify-end gap-2">
+        <div className="mt-[36px] flex justify-end gap-2">
           <button
             onClick={onClose}
             className="
@@ -80,7 +80,7 @@ const AwardConfirmModal = ({
             onClick={onConfirm}
             className="
               h-[36px] px-4 rounded-[8px] text-[14px]
-              bg-[#212121] text-white
+              bg-[#4C4C4C] text-white
               hover:bg-black active:scale-[0.99] transition
             "
           >

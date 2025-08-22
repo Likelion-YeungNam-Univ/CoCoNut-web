@@ -481,10 +481,9 @@ const ProjectDetail = ({ role }) => {
   
   <>
   
-   {winnerIdFromServer ? (
-    
-    <div className="mt-6">
-      {isMerchant ? (
+  {winnerIdFromServer ? (
+  <div className="mt-6">
+    {isMerchant ? (
       <MerchantVoteManage
         projectId={projectId}
         submissions={submissions.map((s) => ({
@@ -515,7 +514,7 @@ const ProjectDetail = ({ role }) => {
     )}
   </div>
   ) : (isMerchant && isMyProject && projectStatus === "CLOSED") ? (
-    // ✅ 우승작이 없고 CLOSED면: 소상공인에게 '투표결과 + 수상작 선정하기'
+    //  우승작이 없고 CLOSED면: 소상공인에게 '투표결과 + 수상작 선정하기'
     <div className="mt-6">
       <MerchantVoteManage
         projectId={projectId}
@@ -543,7 +542,7 @@ const ProjectDetail = ({ role }) => {
       />
     </div>
   ) : projectStatus === "VOTING" ? (
-    // ✅ 투표 중
+    //  투표 중
     isMerchant && isMyProject ? (
       <div className="mt-6">
         <MerchantVoteManage

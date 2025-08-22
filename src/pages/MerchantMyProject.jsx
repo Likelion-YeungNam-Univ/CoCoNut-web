@@ -316,7 +316,7 @@ const MerchantMyProject = () => {
         onClose={() => setConfirmOpen(false)}
         onConfirm={confirmAward}
         title="수상을 확정하시겠습니까?"
-        description="수상을 확정하면 당선작에게 보상이 지급되며, 이후 변경이 불가능합니다."
+        description="수상을 확정하면 상금이 수상자에게 바로 송금되며,이후 변경이나 환불은 불가능합니다."
         confirmText="수상 확정하기"
         cancelText="취소하기"
       />
