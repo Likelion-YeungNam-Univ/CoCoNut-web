@@ -43,7 +43,7 @@ const Signup = () => {
 
   const validatePassword = (value) => {
     const passwordRegex =
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};':"\\|,.<>/?]).{8,16}$/;
+      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*()_+\[\]{};':"\\|,.<>/?~]).{8,16}$/;
     const isValid = passwordRegex.test(value);
     setPasswordMessage(
       isValid ? "" : "영문, 숫자, 특수기호 조합 8자~16자를 입력해 주세요."
@@ -370,8 +370,8 @@ const Signup = () => {
                             nicknameMessage.includes("사용 가능한")
                               ? "text-[#2CCC41]"
                               : nicknameMessage.includes("이미")
-                              ? "text-[#EE4343]"
-                              : "text-[#828282]"
+                              ? "text-[#828282]"
+                              : "text-[#EE4343]"
                           }`}
                         >
                           {nicknameMessage}
