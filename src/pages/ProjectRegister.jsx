@@ -270,13 +270,12 @@ const ProjectRegister = () => {
     }
   };
 
-  // AI 분석을 실행하는 비동기 함수
+  // AI 분석
   const analyzeWithAI = async () => {
     setLoading(true);
     try {
       const aiData = await analyzeProjectWithAI(assistanceText);
 
-      // Check if the AI data is valid before updating the state
       if (
         !aiData ||
         !aiData.description ||
@@ -293,16 +292,21 @@ const ProjectRegister = () => {
           summary: aiData.summary,
           deadline: aiData.deadline,
         });
+
+        setErrors((prev) => ({
+          ...prev,
+          content: "",
+          rewardAmount: "",
+          period: "",
+        }));
       }
     } catch (error) {
       console.error("AI analysis error:", error);
-
       alert("AI가 내용을 불러오지 못했어요.");
     } finally {
       setLoading(false);
     }
   };
-
   // 색상 클릭을 처리하는 핸들러
   const handleColorClick = (code) => {
     if (code === "color_free") {
