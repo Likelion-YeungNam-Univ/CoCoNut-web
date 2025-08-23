@@ -57,13 +57,14 @@ const MyPageContent = ({
     description: BUSINESSTYPES_MAP[key],
   }));
 
+  const closedProjects = userProjects.filter(
+    (project) => project.status === "CLOSED"
+  );
+  const totalProjectsCount = userProjects.length;
+  const completedCount = closedProjects.length;
+
   switch (selectedTab) {
     case "profile":
-      const closedProjects = userProjects.filter(
-        (project) => project.status === "CLOSED"
-      );
-      const completedCount = closedProjects.length;
-
       return (
         <div className="p-8">
           <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
@@ -89,7 +90,7 @@ const MyPageContent = ({
                     공모전 등록
                   </span>
                   <span className=" text-[#212121] text-[16px] font-semibold mt-1">
-                    {userProjects.length}회
+                    {totalProjectsCount}회
                   </span>
                 </div>
                 <div className="flex-1 border-l border-gray-200 pl-8 flex">
@@ -105,13 +106,13 @@ const MyPageContent = ({
               </div>
             </div>
             <hr className="text-[#E1E1E1]" />
-            {userProjects && userProjects.length > 0 ? (
+            {closedProjects && closedProjects.length > 0 ? (
               <>
                 <h2 className="font-semibold text-[20px] mt-8 mb-4 text-[#212121]">
-                  등록한 공모전
+                  선정한 공모전
                 </h2>
                 <div className="flex flex-col space-y-4">
-                  {userProjects.map((project) => (
+                  {closedProjects.map((project) => (
                     <ProjectCardClosed
                       key={project.projectId}
                       project={project}
@@ -258,7 +259,7 @@ const MyPageContent = ({
                 로그아웃
               </p>
               <button
-                className="w-[98px] h-[45px] px-4 py-2 text-[16px] text-gray-400 font-medium rounded-md border border-[#F3F3F3] hover:bg-gray-100 text-center"
+                className="w-[98px] h-[45px] px-4 py-2 text-[16px] text-[#212121] font-medium rounded-md border border-[#E1E1E1] hover:bg-gray-100 text-center"
                 onClick={openLogoutModal}
               >
                 로그아웃
@@ -375,7 +376,6 @@ const MerchantMyPage = () => {
       await api.post("/users/logout");
     } catch (error) {
       console.error("로그아웃 API 호출 실패:", error);
-      alert("로그아웃에 실패했습니다. 다시 시도해 주세요.");
     }
     sessionStorage.removeItem("accessToken");
     console.log("로그아웃 완료.");

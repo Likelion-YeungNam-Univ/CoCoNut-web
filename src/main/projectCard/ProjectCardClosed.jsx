@@ -4,7 +4,7 @@ import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
-import projectImgExample from "../../assets/projectImgExample.png";
+import defaultImg from "../../assets/defaultImg.png";
 import { formatDate } from "../../utils/dateUtils";
 
 const ProjectCardClosed = ({
@@ -21,13 +21,10 @@ const ProjectCardClosed = ({
     (b) => b.code === project.businessType
   );
 
- 
   const handleCardClick = () => {
-    
     if (role === "guest" && onRequireLogin) {
       onRequireLogin();
     } else if (project.projectId) {
-     
       if (role === "participant") {
         navigate(`/project-detail-participant/${project.projectId}`);
       } else {
@@ -45,10 +42,11 @@ const ProjectCardClosed = ({
     >
       {/* 수상작 대표 이미지 */}
       <img
-        src={projectImgExample}
-        className="w-[228px] h-[228px] mt-[12px] ml-[12px] rounded-[8px]"
-        alt="대표 이미지"
+        src={project.winnerImageUrl || defaultImg}
+        className="w-[228px] h-[228px] mt-[12px] ml-[12px] rounded-[8px] object-cover"
+        alt="우승작 이미지"
       />
+
       <div>
         {/* 카테고리/업종 */}
         <div className="flex gap-[4px] text-[12px] text-[#A3A3A3] font-medium mt-[20px]">
