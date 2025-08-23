@@ -584,7 +584,7 @@ const Signup = () => {
       <ScriptModal
         isOpen={isPrivacyOpen}
         onClose={() => setIsPrivacyOpen(false)}
-        title="개인정보 수집 및 이용"
+        title="개인정보 수집 및 이용 동의"
       >
         <PolicyContent type="privacy" />
       </ScriptModal>

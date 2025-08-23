@@ -1,52 +1,168 @@
 import React from "react";
-import { TERMS_DATA } from "../utils/termsData";
 
 const PolicyContent = ({ type }) => {
-  let data;
-  let ListComponent;
-  let listStyleClass;
-
-  switch (type) {
-    case "terms":
-      data = TERMS_DATA.serviceTerms;
-      ListComponent = "ol";
-      listStyleClass = "list-decimal pl-5";
-      break;
-    case "privacy":
-      data = TERMS_DATA.personalInfo;
-      ListComponent = "ul";
-      listStyleClass = "list-none";
-      break;
-    default:
-      return null;
-  }
-
-  if (!data || !data.sections) {
-    return (
-      <div className="text-gray-700 p-5">약관 정보를 불러올 수 없습니다.</div>
-    );
-  }
-
-  const isNumbered = (text) => /^\(\d+\)/.test(text.trim());
-
   return (
-    <div className="pr-20 pb-10 text-[14px] font-pretendard">
-      {data.sections.map((section, index) => (
-        <div key={index} className="mb-6">
-          <h3 className="font-semibold mb-2 text-[12px]">{section.subtitle}</h3>
-          <ListComponent className={listStyleClass}>
-            {section.points.map((point, pointIndex) => (
-              <li
-                key={pointIndex}
-                className="mb-1 text-[#212121] font-normal text-[12px]"
-              >
-                {type === "privacy" && !isNumbered(point) && "- "}
-                {point}
-              </li>
-            ))}
-          </ListComponent>
-        </div>
-      ))}
+    <div className="text-[#212121] text-[12px] mt-[28px] font-pretendard leading-5">
+      {type === "terms" && (
+        <>
+          <h4 className="font-semibold mb-2">제1조 (목적)</h4>
+          <p>
+            이 약관은 브릿지(이하 “서비스”)가 제공하는 공모전 플랫폼 서비스의
+            이용과 관련하여 서비스와 회원 간의 권리, 의무, 책임사항 및 기타
+            필요한 사항을 규정함을 목적으로 합니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">제2조 (정의)</h4>
+          <p>
+            1. “회원”이라 함은 본 약관에 동의하고 서비스를 이용하는 소상공인 및
+            참가자를 말합니다. <br />
+            2. “소상공인”은 공모전을 등록하고 운영하며, 필요한
+            디자인·홍보물·아이디어 등을 요청하는 이용자를 말합니다. <br />
+            3. “참가자”는 소상공인의 공모전에 참여하여 아이디어 또는 결과물을
+            제출하고, 투표할 수 있는 이용자를 말합니다. <br />
+            4. “공모전”이라 함은 소상공인이 서비스에 등록한 요청 활동으로,
+            참가자가 이에 참여하는 활동을 의미합니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">
+            제3조 (약관의 효력 및 변경)
+          </h4>
+          <p>
+            1. 본 약관은 서비스 화면 또는 홈페이지에 게시함으로써 효력이
+            발생합니다. <br />
+            2. 서비스는 운영상 필요에 따라 약관을 변경할 수 있으며, 변경 시
+            적용일 및 내용을 공지합니다. <br />
+            3. 회원이 변경된 약관에 동의하지 않는 경우 회원 탈퇴를 요청할 수
+            있으며, 계속 사용 시 동의한 것으로 간주됩니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">
+            제4조 (회원 가입 및 계정 관리)
+          </h4>
+          <p>
+            1. 회원은 서비스에서 정한 절차에 따라 가입해야 하며, 약관 동의가
+            필요합니다. <br />
+            2. 회원은 본인 계정 정보를 안전하게 관리할 책임이 있으며, 타인에게
+            양도·대여·공유할 수 없습니다. <br />
+            3. 계정 정보 관리 소홀로 발생한 손해에 대해 서비스는 책임을 지지
+            않습니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">
+            제5조 (서비스 제공 및 변경)
+          </h4>
+          <p>
+            1. 서비스는 공모전 등록, 참가, 투표, 결과 확인, 상금 지급 등의
+            기능을 제공합니다. <br />
+            2. 필요 시 제공 기능을 추가·변경·중단할 수 있으며, 사전 공지합니다.{" "}
+            <br />
+            3. 이용 중 일시적 장애가 발생할 수 있으며, 서비스는 이를 최소화하기
+            위해 노력합니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">제6조 (회원의 의무)</h4>
+          <p>
+            1. 회원은 서비스 이용 시 관련 법령 및 본 약관을 준수해야 합니다.{" "}
+            <br />
+            2. 타인의 지적재산권, 개인정보를 침해하거나 부정한 방법으로 서비스를
+            이용해서는 안 됩니다. <br />
+            3. 제출한 결과물은 타인의 권리를 침해하지 않아야 하며, 위반 시
+            책임은 제출자에게 있습니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">제7조 (상금 지급 및 환불)</h4>
+          <p>
+            1. 상금은 소상공인이 수상작을 확정한 후 서비스 절차에 따라
+            지급됩니다. <br />
+            2. 공모전 삭제·취소 시 환불은 진행 단계에 따라 차등 지급됩니다.{" "}
+            <br />
+            3. 상세 환불 기준은 서비스 내 안내를 참고하며, 문의는 고객센터를
+            통해 처리합니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">
+            제8조 (서비스 중단 및 면책)
+          </h4>
+          <p>
+            1. 천재지변, 서버 오류, 통신 장애 등 불가항력 사유로 제공 불가 시
+            서비스는 책임을 지지 않습니다. <br />
+            2. 회원 간 거래·분쟁은 당사자 간 해결을 원칙으로 하며, 서비스는 중재
+            역할만 수행합니다. <br />
+            3. 데이터 손실·손해는 고의 또는 중대한 과실이 없는 한 서비스 책임이
+            아닙니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">제9조 (이용 계약의 해지)</h4>
+          <p>
+            1. 회원은 언제든 계정 삭제로 서비스 이용을 해지할 수 있습니다.{" "}
+            <br />
+            2. 탈퇴 시 진행 중인 공모전, 제출 작품, 상금 지급 등은 서비스 정책에
+            따라 처리됩니다.
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">
+            제10조 (준거법 및 재판관할)
+          </h4>
+          <p>
+            1. 본 약관은 대한민국 법률을 준거법으로 합니다. <br />
+            2. 분쟁 발생 시 서비스 제공자의 소재지를 관할하는 법원을 1심 관할
+            법원으로 합니다.
+          </p>
+        </>
+      )}
+
+      {type === "privacy" && (
+        <>
+          <h4 className="font-semibold mb-2">1. 수집하는 개인정보 항목</h4>
+          <p>
+            - 필수 항목: 이름, 이메일, 계정 비밀번호 <br />- 선택 항목: 프로필
+            사진, 소상공인 가게 정보(업종, 가게명 등)
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">2. 개인정보 수집 목적</h4>
+          <p>
+            - 서비스 가입 및 관리 <br />
+            - 공모전 등록, 참여, 결과 확인 및 상금 지급 <br />
+            - 고객 문의 대응 및 공지사항 전달 <br />- 맞춤형 서비스 제공 및 통계
+            분석
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">
+            3. 개인정보 보유 및 이용 기간
+          </h4>
+          <p>
+            - 회원 탈퇴 시 즉시 파기 <br />
+            - 법령에 따라 일부 정보는 일정 기간 보관 <br />
+            (1) 상금 지급 관련 기록: 5년 <br />
+            (2) 세금 관련 자료: 5년 <br />
+            (3) 서비스 이용 기록: 3년
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">4. 개인정보 제공</h4>
+          <p>
+            - 원칙적으로 외부 제공 없음 <br />- 단, 법령에 의하거나 서비스 제공
+            필요 시 제한적으로 제공 가능
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">5. 개인정보 처리 위탁</h4>
+          <p>
+            - 일부 서비스(결제, 이메일 발송 등)는 외부 업체에 위탁될 수 있음{" "}
+            <br />- 위탁 시 회원에게 안내하며, 안전하게 처리되도록 관리
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">6. 회원 권리 및 행사 방법</h4>
+          <p>
+            - 회원은 언제든 개인정보 열람·정정·삭제·처리 정지 요구 가능 <br />-
+            서비스 내 개인정보 설정 또는 고객센터 문의로 행사 가능
+          </p>
+
+          <h4 className="font-semibold mt-6 mb-2">7. 동의 거부 권리 안내</h4>
+          <p>
+            - 회원은 개인정보 제공 동의를 거부할 권리가 있음 <br />- 단, 필수
+            정보 거부 시 서비스 가입 및 일부 기능 이용이 제한될 수 있음
+          </p>
+        </>
+      )}
     </div>
   );
 };
