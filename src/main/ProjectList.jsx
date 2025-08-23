@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import api from "../apis/api";
+import axios from "axios";
 import ProjectCardInProgress from "./projectCard/ProjectCardInProgress";
 import ProjectCardVoting from "./projectCard/ProjectCardVoting";
 import ProjectCardClosed from "./projectCard/ProjectCardClosed";
@@ -72,15 +73,28 @@ const ProjectList = ({
           data.map(async (p) => {
             if (p.status === "CLOSED") {
               try {
-                const winnerRes = await api.get(
-                  `/rewards/winner/project/${p.projectId}`
-                );
-                return {
-                  ...p,
-                  winnerImageUrl: winnerRes.data.submissionImageUrl,
-                };
+                if (role === "guest") {
+                  const { data: res } = await axios.get(
+                    `http://15.165.164.49:8080/api/v1/rewards/finish/project/${p.projectId}/image`
+                  );
+
+                  return {
+                    ...p,
+                    winnerImageUrl: res?.imageUrl || null,
+                  };
+                } else {
+                  const { data: res } = await api.get(
+                    `/rewards/finish/project/${p.projectId}/image`
+                  );
+
+                  return {
+                    ...p,
+                    winnerImageUrl:
+                      res?.submissionImageUrl || res?.imageUrl || null,
+                  };
+                }
               } catch (err) {
-                console.error("우승작 조회 실패:", err);
+                console.error("우승 이미지 조회 실패:", err);
                 return p;
               }
             }
@@ -95,8 +109,9 @@ const ProjectList = ({
         setLoading(false);
       }
     };
+
     loadProjects();
-  }, []);
+  }, [role]);
 
   const filtered = useMemo(() => {
     const rx = toSafeRegex(q);
