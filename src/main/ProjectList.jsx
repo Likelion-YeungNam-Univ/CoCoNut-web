@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import api from "../apis/api";
 import ProjectCardInProgress from "./projectCard/ProjectCardInProgress";
 import ProjectCardVoting from "./projectCard/ProjectCardVoting";
 import ProjectCardClosed from "./projectCard/ProjectCardClosed";
@@ -66,7 +67,28 @@ const ProjectList = ({
     const loadProjects = async () => {
       try {
         const data = await fetchProjects();
-        setProjects(data);
+
+        const projectsWithWinner = await Promise.all(
+          data.map(async (p) => {
+            if (p.status === "CLOSED") {
+              try {
+                const winnerRes = await api.get(
+                  `/rewards/winner/project/${p.projectId}`
+                );
+                return {
+                  ...p,
+                  winnerImageUrl: winnerRes.data.submissionImageUrl,
+                };
+              } catch (err) {
+                console.error("우승작 조회 실패:", err);
+                return p;
+              }
+            }
+            return p;
+          })
+        );
+
+        setProjects(projectsWithWinner);
       } catch (err) {
         console.error("프로젝트 불러오기 실패", err);
       } finally {
