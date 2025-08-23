@@ -553,7 +553,7 @@ const ProjectSubmissionPage = () => {
                     {label}
                   </div>
                   <span
-                    className="text-[12px] text-[#A3A3A3] cursor-pointer underline"
+                    className="text-[12px] text-[#A3A3A3] cursor-pointer underline hover:text-[#828282]"
                     onClick={() => handleOpen(key)}
                   >
                     자세히 보기
