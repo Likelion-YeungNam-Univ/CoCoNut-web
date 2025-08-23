@@ -10,3 +10,7 @@
 body.modal-open {
   overflow: hidden;
 }
+
+input::placeholder {
+  text-align: left;
+}
