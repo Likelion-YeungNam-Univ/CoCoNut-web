@@ -51,6 +51,7 @@ const ProjectSubmissionPage = () => {
   const handleOpen = (type) => setOpenModal(type);
   const handleClose = () => setOpenModal(null);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMode, setSuccessMode] = useState("submit");
 
   // 미리보기 모달 상태
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -151,6 +152,7 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
+      setSuccessMode("submit");
       setIsSuccessModalOpen(true);
     } catch (error) {
       handleApiError(error, "submit");
@@ -166,11 +168,8 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
-
-      alert("작품이 성공적으로 수정되었습니다!");
-      navigate(`/project-detail-participant/${projectId}`, {
-        state: { initialTab: "SUBMISSIONS", refresh: true },
-      });
+      setSuccessMode("edit");
+      setIsSuccessModalOpen(true);
     } catch (error) {
       handleApiError(error, "update");
     }
@@ -804,6 +803,7 @@ const ProjectSubmissionPage = () => {
       )}
       {isSuccessModalOpen && (
         <SuccessSubmissionModal
+          mode={successMode}
           onClose={() => {
             setIsSuccessModalOpen(false);
             navigate(`/project-detail-participant/${projectId}`, {

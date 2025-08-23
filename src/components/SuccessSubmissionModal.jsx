@@ -1,4 +1,6 @@
-const SuccessSubmissionModal = ({ onClose }) => {
+const SuccessSubmissionModal = ({ onClose, mode = "submit" }) => {
+  const isEdit = mode === "edit";
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/50 overflow-y-auto font-pretendard"
@@ -9,11 +11,20 @@ const SuccessSubmissionModal = ({ onClose }) => {
           {/* 모달 박스 */}
           <div className="bg-white rounded-[12px] w-[420px] h-[200px] flex flex-col items-center justify-center text-center">
             <h3 className="text-[#212121] text-[20px] font-semibold mt-2 mb-2">
-              제출이 완료되었습니다!
+              {isEdit ? "수정이 완료되었습니다!" : "제출이 완료되었습니다!"}
             </h3>
             <span className="text-[#828282] text-[14px] mb-6">
-              작품이 성공적으로 제출되었습니다. <br />
-              확인을 누르면 작품 목록으로 이동합니다.
+              {isEdit ? (
+                <>
+                  작품이 성공적으로 수정되었습니다. <br />
+                  확인을 누르면 작품 목록으로 이동합니다.
+                </>
+              ) : (
+                <>
+                  작품이 성공적으로 제출되었습니다. <br />
+                  확인을 누르면 작품 목록으로 이동합니다.
+                </>
+              )}
             </span>
             <button
               onClick={onClose}
