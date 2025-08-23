@@ -20,6 +20,7 @@ import checklistIcon6 from "../assets/checklistIcon6.png";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SubEasyHelpModal from "../components/SubEasyHelpModal";
 import { checkSubmissionValid } from "../apis/submissionValidApi";
+import SuccessSubmissionModal from "../components/SuccessSubmissionModal";
 
 const ProjectSubmissionPage = () => {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ const ProjectSubmissionPage = () => {
   const [openModal, setOpenModal] = useState(null);
   const handleOpen = (type) => setOpenModal(type);
   const handleClose = () => setOpenModal(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   // 미리보기 모달 상태
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -149,10 +151,7 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
-      alert("작품이 성공적으로 제출되었습니다!");
-      navigate(`/project-detail-participant/${projectId}`, {
-        state: { initialTab: "SUBMISSIONS", refresh: true },
-      });
+      setIsSuccessModalOpen(true);
     } catch (error) {
       handleApiError(error, "submit");
     }
@@ -801,6 +800,16 @@ const ProjectSubmissionPage = () => {
           onClose={() => setIsConfirmSubmissionOpen(false)}
           onSubmit={handleSubmitProject}
           mode={isEditMode ? "edit" : "submit"}
+        />
+      )}
+      {isSuccessModalOpen && (
+        <SuccessSubmissionModal
+          onClose={() => {
+            setIsSuccessModalOpen(false);
+            navigate(`/project-detail-participant/${projectId}`, {
+              state: { initialTab: "SUBMISSIONS", refresh: true },
+            });
+          }}
         />
       )}
     </div>
