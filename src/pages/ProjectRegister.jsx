@@ -30,6 +30,7 @@ import { TERMS_DATA } from "../utils/termsData";
 import { STYLES_DATA } from "../utils/stylesData";
 import { TARGETS_DATA } from "../utils/targetData";
 import { COLORS_DATA } from "../utils/colorData";
+import SuccessSubmissionModal from "../components/SuccessSubmissionModal";
 
 const ProjectRegister = () => {
   const navigate = useNavigate();
@@ -59,6 +60,8 @@ const ProjectRegister = () => {
   const [isEasyHelpModalOpen, setIsEasyHelpModalOpen] = useState(false);
   const [isPrizeInfoModalOpen, setIsPrizeInfoModalOpen] = useState(false);
   const [isBackModalOpen, setIsBackModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successProjectId, setSuccessProjectId] = useState(null);
 
   // AI 분석 관련 상태
   const [assistanceText, setAssistanceText] = useState("");
@@ -162,6 +165,14 @@ const ProjectRegister = () => {
     }
     return newErrors;
   };
+
+  useEffect(() => {
+    if (agreeChecklist && agreeTerms && agreeCaution) {
+      setAgreeAll(true);
+    } else {
+      setAgreeAll(false);
+    }
+  }, [agreeChecklist, agreeTerms, agreeCaution]);
 
   // 약관 동의 상태에 따라 버튼 활성화 여부를 결정
   useEffect(() => {
@@ -372,6 +383,12 @@ const ProjectRegister = () => {
     }
   };
 
+  const handleRemoveImage = (e) => {
+    e.stopPropagation();
+    setUploadedImage(null);
+    setImagePreviewUrl(null);
+  };
+
   // 미리보기 핸들러
   const handleOpenPreviewModal = () => {
     setIsSubmitted(true);
@@ -449,8 +466,8 @@ const ProjectRegister = () => {
         setIsConfirmModalOpen(false);
         setIsFormDirty(false);
 
-        alert("공모전이 성공적으로 등록되었습니다!");
-        navigate(`/project-detail/${projectId}`);
+        setSuccessProjectId(projectId);
+        setIsSuccessModalOpen(true);
       } else {
         console.error("서버 응답에 유효한 projectId가 없습니다.", response);
         setIsConfirmModalOpen(false);
@@ -813,19 +830,36 @@ const ProjectRegister = () => {
                               isSubmitted && errors.rewardAmount
                                 ? "border border-red-500"
                                 : "border border-[#F3F3F3]"
-                            }`}
+                            } text-right`}
                             placeholder="공모전의 상금을 책정해 주세요."
                             value={aiProjectData.rewardAmount}
                             onChange={(e) => {
-                              setAiProjectData({
-                                ...aiProjectData,
-                                rewardAmount: e.target.value,
-                              });
-                              if (isSubmitted) {
-                                setErrors((prev) => ({
-                                  ...prev,
-                                  rewardAmount: "",
-                                }));
+                              const { value } = e.target;
+                              const sanitizedValue = value.replace(/,/g, "");
+                              if (!isNaN(sanitizedValue)) {
+                                setAiProjectData({
+                                  ...aiProjectData,
+                                  rewardAmount: sanitizedValue,
+                                });
+                                if (isSubmitted) {
+                                  setErrors((prev) => ({
+                                    ...prev,
+                                    rewardAmount: "",
+                                  }));
+                                }
+                              }
+                            }}
+                            onBlur={(e) => {
+                              const { value } = e.target;
+                              const sanitizedValue = value.replace(/,/g, "");
+                              if (sanitizedValue) {
+                                const formattedValue = new Intl.NumberFormat(
+                                  "ko-KR"
+                                ).format(parseInt(sanitizedValue, 10));
+                                setAiProjectData({
+                                  ...aiProjectData,
+                                  rewardAmount: formattedValue,
+                                });
                               }
                             }}
                           />
@@ -839,37 +873,41 @@ const ProjectRegister = () => {
                           </p>
                         )}
                       </div>
-                      {aiProjectData.rewardAmount && (
-                        <div className="relative group flex items-center">
-                          <span
-                            className="flex-shrink-0 rounded-3xl text-[#2AC2DD] font-pretendard pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF] max-w-[300px] overflow-hidden whitespace-nowrap overflow-ellipsis"
-                            style={{
-                              fontSize:
-                                (
-                                  parseInt(
-                                    aiProjectData.rewardAmount.replace(
-                                      /,/g,
-                                      ""
-                                    ),
-                                    10
-                                  ) * 0.77
-                                ).toLocaleString().length > 15
-                                  ? "8px"
-                                  : "12px",
-                            }}
-                          >
-                            상금의 약 77%인{" "}
-                            {(
-                              parseInt(
-                                aiProjectData.rewardAmount.replace(/,/g, ""),
-                                10
-                              ) * 0.77
-                            ).toLocaleString()}
-                            원만 내면 돼요.
-                          </span>
-                          <PrizeInfoModal />
-                        </div>
-                      )}
+                      {aiProjectData.rewardAmount &&
+                        parseInt(
+                          aiProjectData.rewardAmount.replace(/,/g, ""),
+                          10
+                        ) > 0 && (
+                          <div className="relative group flex items-center">
+                            <span
+                              className="flex-shrink-0 rounded-3xl text-[#2AC2DD] font-pretendard pt-2 pb-2 px-4 text-center bg-[#E0F9FE] hover:bg-[#2FD8F6] hover:text-[#FFFFFF] max-w-[300px] overflow-hidden whitespace-nowrap overflow-ellipsis"
+                              style={{
+                                fontSize:
+                                  (
+                                    parseInt(
+                                      aiProjectData.rewardAmount.replace(
+                                        /,/g,
+                                        ""
+                                      ),
+                                      10
+                                    ) * 0.77
+                                  ).toLocaleString().length > 15
+                                    ? "8px"
+                                    : "12px",
+                              }}
+                            >
+                              상금의 약 77%인{" "}
+                              {(
+                                parseInt(
+                                  aiProjectData.rewardAmount.replace(/,/g, ""),
+                                  10
+                                ) * 0.77
+                              ).toLocaleString()}
+                              원만 내면 돼요.
+                            </span>
+                            <PrizeInfoModal />
+                          </div>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -944,15 +982,29 @@ const ProjectRegister = () => {
                     <label className="w-44 text-sm font-pretendard font-normal text-[#212121]">
                       이미지 첨부하기
                     </label>
-                    <div className="flex-grow">
-                      <label
-                        htmlFor="image-upload"
-                        className={`flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard ${
-                          uploadedImage ? "text-[#212121]" : "text-[#C3C3C3]"
-                        } cursor-pointer flex items-center bg-[#F3F3F3]`}
-                      >
-                        {uploadedImage ? uploadedImage.name : "파일 선택"}
-                      </label>
+                    <div className="flex-grow flex items-center relative">
+                      {uploadedImage ? (
+                        <div className="flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard text-[#212121] flex items-center bg-[#F3F3F3]">
+                          <span className="truncate flex-grow">
+                            {uploadedImage.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="ml-2 flex-shrink-0 text-[#A3A3A3] text-lg hover:text-gray-500 transition-colors"
+                            aria-label="Remove image"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      ) : (
+                        <label
+                          htmlFor="image-upload"
+                          className={`flex-grow border border-[#F3F3F3] rounded p-2 h-10 text-xs font-pretendard text-[#C3C3C3] cursor-pointer flex items-center bg-[#F3F3F3]`}
+                        >
+                          파일 선택
+                        </label>
+                      )}
                       <input
                         id="image-upload"
                         type="file"
@@ -1290,6 +1342,15 @@ const ProjectRegister = () => {
           isOpen={isBackModalOpen}
           onClose={() => setIsBackModalOpen(false)}
           onConfirm={handleConfirmBack}
+        />
+      )}
+      {isSuccessModalOpen && (
+        <SuccessSubmissionModal
+          mode="register"
+          onClose={() => {
+            setIsSuccessModalOpen(false);
+            navigate(`/project-detail/${successProjectId}`);
+          }}
         />
       )}
     </div>
