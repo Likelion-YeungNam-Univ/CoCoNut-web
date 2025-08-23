@@ -49,6 +49,11 @@ const SearchPage = () => {
     setParams(params, { replace: true });
   };
 
+  useEffect(() => {
+    setSelectedCategories([]);
+    setSelectedBusinesses([]);
+  }, [activeTab]);
+
   return (
     <div>
       {role === "merchant" && (

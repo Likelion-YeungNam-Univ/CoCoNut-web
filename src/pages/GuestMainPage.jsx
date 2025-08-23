@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ProjectStatusTabs from "../main/ProjectStatusTabs";
 import CategoryFilter from "../main/CategoryFilter";
 import ProjectList from "../main/ProjectList";
@@ -17,6 +17,11 @@ const GuestMainPage = () => {
   const [categories, setCategories] = useState([]);
   const [businessTypes, setBusinessTypes] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  useEffect(() => {
+    setSelectedCategories([]);
+    setSelectedBusinesses([]);
+  }, [activeTab]);
 
   return (
     <div>

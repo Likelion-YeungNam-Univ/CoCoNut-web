@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MerchantHeader from "../header/MerchantHeader";
 import ProjectStatusTabs from "../main/ProjectStatusTabs";
 import CategoryFilter from "../main/CategoryFilter";
@@ -16,6 +16,11 @@ const MerchantMainPage = () => {
   const [isSearched, setIsSearched] = useState(false); // 검색 제출 여부
   const [categories, setCategories] = useState([]); // 카테고리 API 상태
   const [businessTypes, setBusinessTypes] = useState([]); // 업종 목록 상태
+
+  useEffect(() => {
+    setSelectedCategories([]);
+    setSelectedBusinesses([]);
+  }, [activeTab]);
 
   return (
     <div>
