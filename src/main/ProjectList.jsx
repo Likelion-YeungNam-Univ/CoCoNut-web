@@ -108,9 +108,13 @@ const ProjectList = ({
       selectedCategories.length === 0 && selectedBusinesses.length === 0
         ? byStatus
         : byStatus.filter((p) => {
-            const categoryMatch = selectedCategories.includes(p.category);
-            const businessMatch = selectedBusinesses.includes(p.businessType);
-            return categoryMatch || businessMatch;
+            const categoryMatch =
+              selectedCategories.length === 0 ||
+              selectedCategories.includes(p.category);
+            const businessMatch =
+              selectedBusinesses.length === 0 ||
+              selectedBusinesses.includes(p.businessType);
+            return categoryMatch && businessMatch;
           });
 
     const byTitle = rx
