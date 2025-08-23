@@ -20,6 +20,7 @@ import checklistIcon6 from "../assets/checklistIcon6.png";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SubEasyHelpModal from "../components/SubEasyHelpModal";
 import { checkSubmissionValid } from "../apis/submissionValidApi";
+import SuccessSubmissionModal from "../components/SuccessSubmissionModal";
 
 const ProjectSubmissionPage = () => {
   const navigate = useNavigate();
@@ -49,6 +50,8 @@ const ProjectSubmissionPage = () => {
   const [openModal, setOpenModal] = useState(null);
   const handleOpen = (type) => setOpenModal(type);
   const handleClose = () => setOpenModal(null);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successMode, setSuccessMode] = useState("submit");
 
   // 미리보기 모달 상태
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -86,6 +89,8 @@ const ProjectSubmissionPage = () => {
         setErrors((prev) => ({ ...prev, image: null }));
       }
     }
+
+    e.target.value = "";
   };
 
   // 공통 에러 핸들링
@@ -147,10 +152,9 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
-      alert("작품이 성공적으로 제출되었습니다!");
-      navigate(`/project-detail-participant/${projectId}`, {
-        state: { initialTab: "SUBMISSIONS", refresh: true },
-      });
+      setIsConfirmSubmissionOpen(false);
+      setSuccessMode("submit");
+      setIsSuccessModalOpen(true);
     } catch (error) {
       handleApiError(error, "submit");
     }
@@ -165,11 +169,9 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
-
-      alert("작품이 성공적으로 수정되었습니다!");
-      navigate(`/project-detail-participant/${projectId}`, {
-        state: { initialTab: "SUBMISSIONS", refresh: true },
-      });
+      setIsConfirmSubmissionOpen(false);
+      setSuccessMode("edit");
+      setIsSuccessModalOpen(true);
     } catch (error) {
       handleApiError(error, "update");
     }
@@ -400,6 +402,9 @@ const ProjectSubmissionPage = () => {
                           ...prev,
                           image: "작품 이미지를 업로드해 주세요.",
                         }));
+                        if (imageRef.current) {
+                          imageRef.current.value = "";
+                        }
                       }}
                       className="absolute top-[16px] right-[16px] p-[10.04px] bg-black/20 rounded-full w-[32px] h-[32px] flex items-center justify-center cursor-pointer"
                     >
@@ -412,10 +417,14 @@ const ProjectSubmissionPage = () => {
                     <span className="text-[#C3C3C3] text-[14px]">
                       파일 업로드
                     </span>
+                    <span className="text-[#2AC2DD] text-[12px] mt-3">
+                      작품 이미지를 업로드하려면 여기를 눌러주세요
+                    </span>
                   </>
                 )}
 
                 <input
+                  ref={imageRef}
                   id="imageUpload"
                   type="file"
                   accept="image/*"
@@ -547,7 +556,7 @@ const ProjectSubmissionPage = () => {
                     {label}
                   </div>
                   <span
-                    className="text-[12px] text-[#A3A3A3] cursor-pointer underline"
+                    className="text-[12px] text-[#A3A3A3] cursor-pointer underline hover:text-[#828282]"
                     onClick={() => handleOpen(key)}
                   >
                     자세히 보기
@@ -602,6 +611,7 @@ const ProjectSubmissionPage = () => {
             ? "공모전 이용 주의사항"
             : ""
         }
+        height={openModal === "caution" ? "550px" : "800px"}
       >
         {openModal === "checklist" && (
           <div className="text-[#212121]">
@@ -791,6 +801,17 @@ const ProjectSubmissionPage = () => {
           onClose={() => setIsConfirmSubmissionOpen(false)}
           onSubmit={handleSubmitProject}
           mode={isEditMode ? "edit" : "submit"}
+        />
+      )}
+      {isSuccessModalOpen && (
+        <SuccessSubmissionModal
+          mode={successMode}
+          onClose={() => {
+            setIsSuccessModalOpen(false);
+            navigate(`/project-detail-participant/${projectId}`, {
+              state: { initialTab: "SUBMISSIONS", refresh: true },
+            });
+          }}
         />
       )}
     </div>
