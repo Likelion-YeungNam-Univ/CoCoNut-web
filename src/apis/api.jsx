@@ -5,8 +5,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-
-
 api.interceptors.request.use(
   (config) => {
     const accessToken = sessionStorage.getItem("accessToken");
@@ -28,8 +26,11 @@ api.interceptors.response.use(
   },
   async (error) => {
     if (error.response.status === 401) {
-      sessionStorage.clear();
-      window.location.href = "/signin";
+      const currentPath = window.location.pathname;
+      if (currentPath !== "/guest-main-page") {
+        sessionStorage.clear();
+        window.location.href = "/signin";
+      }
     }
     return Promise.reject(error);
   }
