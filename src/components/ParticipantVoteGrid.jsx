@@ -1,11 +1,11 @@
 // src/components/ParticipantVoteGrid.jsx
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { BsCheckCircleFill } from "react-icons/bs";
 import VoteConfirmModal from "./VoteConfirmModal";
 import vote1 from "../assets/vote1.png";
 import vote2 from "../assets/vote2.png";
 import vote3 from "../assets/vote3.png";
-import { getProjectVotes, voteSubmission } from "../apis/votesApi";
+import { getProjectVotes, voteSubmission, getSubmissionVotes } from "../apis/votesApi";
 
 const REFRESH_MS = 10000;
 
@@ -43,6 +43,14 @@ const ParticipantVoteGrid = ({
       userId && projectId ? `voted:${String(userId)}:${String(projectId)}` : null,
     [userId, projectId]
   );
+  // 내가 어느 제출물에 투표했는지도 저장(서버 신호 없을 때 1회 검증용)
+  const votedSubmissionKey = useMemo(
+    () =>
+      userId && projectId ? `votedSubmission:${String(userId)}:${String(projectId)}` : null,
+    [userId, projectId]
+  );
+  // 단건 검증은 최초 1회만
+  const verifiedOnceRef = useRef(false);
 
   // 초기: userId가 준비된 뒤 로컬 키 확인
   useEffect(() => {
@@ -84,6 +92,30 @@ const ParticipantVoteGrid = ({
     );
   }, [submissions]);
 
+  // (보조) 단건 조회로 투표 여부 1회 검증
+ const verifyFromSubmission = useCallback(async () => {
+  // 1순위: 로컬 저장된 sid, 2순위: 프로젝트 내 임의의 제출물 id
+   const sidLocal = votedSubmissionKey ? localStorage.getItem(votedSubmissionKey) : null;
+   const sidAny = items[0]?.submissionId ?? items[0]?.id ?? null;
+   const sid = sidLocal || sidAny;
+   if (!sid) return false;
+    try {
+      const res = await getSubmissionVotes(sid);
+      const voted = Boolean(res?.voted ?? res?.voteresult);
+    // ✅ 서버 값으로 무조건 덮어쓰기
+     setHasVoted(voted);
+     if (votedKey) {
+       if (voted) localStorage.setItem(votedKey, "1");
+       else localStorage.removeItem(votedKey);
+     }
+     if (!voted && votedSubmissionKey) localStorage.removeItem(votedSubmissionKey);
+     return voted;
+    } catch (e) {
+      console.error("verifyFromSubmission failed:", e);
+      return false;
+    }
+  }, [items, votedSubmissionKey, votedKey]);
+
   // 서버 집계 + 내 투표 여부
   const loadProjectVotes = useCallback(async () => {
     if (!projectId) return;
@@ -122,35 +154,52 @@ const ParticipantVoteGrid = ({
       setTotalVotes(total);
       if (totalKey) sessionStorage.setItem(totalKey, String(total));
 
-      const serverHasVoted = Boolean(
-        data?.myVoteSubmissionId ??
-          data?.my_vote_submission_id ?? // 백엔드 snake_case 대비
-          data?.hasVoted ??
-          data?.has_voted ??
-          data?.voted ??
-          (data?.myVote && data.myVote.submissionId) ??
-          (data?.my_vote && data.my_vote.submission_id)
-      );
+      // 서버가 '내가 투표했는지'를 "명시적으로" 보냈는지 확인
+      const rawFlags = [
+        data?.myVoteSubmissionId,
+        data?.my_vote_submission_id, // snake_case 대비
+        data?.hasVoted,
+        data?.has_voted,
+        data?.voted,
+        data?.myVote?.submissionId,
+        data?.my_vote?.submission_id,
+      ];
+      const hasSignal = rawFlags.some((v) => v !== undefined && v !== null);
+      const serverHasVoted = hasSignal && Boolean(rawFlags.find(Boolean));
 
-     setHasVoted(serverHasVoted);
-if (votedKey) {
-  if (serverHasVoted) localStorage.setItem(votedKey, "1");
-  else localStorage.removeItem(votedKey);
-}
+      // 서버가 명시했을 때만 덮어쓰기 (안 주면 기존 값 유지)
+          if (hasSignal) {
+        setHasVoted(serverHasVoted);
+        if (votedKey) {
+          if (serverHasVoted) {
+            localStorage.setItem(votedKey, "1");
+          } else {
+            localStorage.removeItem(votedKey);
+            if (votedSubmissionKey) localStorage.removeItem(votedSubmissionKey);
+          }
+        }
+      } else {
+        // 서버 신호가 없고, 로컬에 "어느 제출물에 투표했는지"가 있으면 단건으로 1회 검증
+          if (!verifiedOnceRef.current) {
+      verifiedOnceRef.current = true;
+      await verifyFromSubmission();
+    }
+      }
     } catch (e) {
       console.error("loadProjectVotes failed:", e);
     } finally {
       setChecking(false);
     }
-  }, [projectId, totalKey, votedKey]);
+  }, [projectId, totalKey, votedKey, verifyFromSubmission]);
 
   // userId가 준비되어야 최종 판단 가능
-  useEffect(() => {
-    if (!userId) return; // 로그인 정보 대기
-    setChecking(true);
-    loadProjectVotes();
-  }, [userId, loadProjectVotes]);
-
+ useEffect(() => {
+   if (!projectId) return;
+   setChecking(true);
+   (async () => {
+     await loadProjectVotes();
+   })();
+ }, [projectId, userId]);
   // 투표 중이면 주기적 새로고침
   useEffect(() => {
     if (!canVote) return;
@@ -210,37 +259,37 @@ if (votedKey) {
       setOpenConfirm(false);
 
       if (votedKey) localStorage.setItem(votedKey, "1");
+      if (votedSubmissionKey) localStorage.setItem(votedSubmissionKey, String(selKey));
       if (typeof onVote === "function") onVote(selected);
-  } catch (e) {
-  console.error("voteSubmission failed:", e);
-  const resp = e?.response;
-  const dup = resp?.status === 409;
+    } catch (e) {
+      console.error("voteSubmission failed:", e);
+      const resp = e?.response;
+      const dup = resp?.status === 409;
 
-  // 서버가 내려주는 메시지 우선 사용, 없으면 기본 문구
-  const serverMsg = resp?.data?.message;
-  const msg = dup
-    ? (serverMsg || "해당 공모전에 대한 작품에 이미 투표하셨습니다.")
-    : (serverMsg || "투표에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      // 서버가 내려주는 메시지 우선 사용, 없으면 기본 문구
+      const serverMsg = resp?.data?.message;
+      const msg = dup
+        ? serverMsg || "해당 공모전에 대한 작품에 이미 투표하셨습니다."
+        : serverMsg || "투표에 실패했습니다. 잠시 후 다시 시도해 주세요.";
 
-  alert(msg);
+      alert(msg);
 
-  if (dup) {
-    // 즉시 '이미 투표했어요' 상태로 전환
-    setHasVoted(true);
-    setIsSelecting(false);
-    setSelected(null);
-    setOpenConfirm(false);
-    if (votedKey) localStorage.setItem(votedKey, "1");
+      if (dup) {
+        // 즉시 '이미 투표했어요' 상태로 전환
+        setHasVoted(true);
+        setIsSelecting(false);
+        setSelected(null);
+        setOpenConfirm(false);
+        if (votedKey) localStorage.setItem(votedKey, "1");
+        // ⚠️ dup인 경우, 실제 내가 찍은 제출물이 selKey와 다를 수 있으므로
+        // votedSubmissionKey는 여기서는 설정하지 않고 서버 집계에 맡긴다.
+        await loadProjectVotes(); // 최신 집계 반영(표 수 등)
+        return; // 여기서 종료
+      }
 
-    // 최신 집계 반영(표 수 등)
-    await loadProjectVotes();
-    return; // 여기서 종료
-  }
-
-  setOpenConfirm(false);
-  await loadProjectVotes();
-}
-
+      setOpenConfirm(false);
+      await loadProjectVotes();
+    }
   };
 
   const top3Map = useMemo(() => {

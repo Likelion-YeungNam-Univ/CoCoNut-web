@@ -12,14 +12,13 @@ import { Link } from "react-router-dom";
 
 const REFRESH_MS = 10000;
 
-// id 비교를 문자열 key로 통일
 function toKey(v) {
   if (v === null || v === undefined) return "";
   const n = Number(v);
   return Number.isFinite(n) ? String(n) : String(v);
 }
 
-// 닉네임 fallback
+
 const getNick = (s) =>
   s?.writerNickname ??
   s?.nickname ??
@@ -41,7 +40,6 @@ const fmtYMD = (s) => {
   }
 };
 
-// ✅ 결과 화면(두 번째 이미지)용 큰 배지 스타일 지원
 const RankBadge = ({ rank, votes, variant = "voting" }) => {
   if (!rank) return null;
   const icon = rank === 1 ? vote1 : rank === 2 ? vote2 : vote3;
@@ -64,15 +62,14 @@ const RankBadge = ({ rank, votes, variant = "voting" }) => {
 
 export default function MerchantVoteManage({
   projectId,
-  submissions = [], // [{submissionId, title, writerNickname, imageUrl}]
+  submissions = [],
   voteStartDate,
   voteEndDate,
   winnerSubmissionId: winnerFromServer = null,
-  onWinnerSelected, // (winnerId, rewardJSON) => void
-  // ✅ UI 변형 플래그: "voting" | "result"
+  onWinnerSelected, 
   uiVariant = "voting",
 }) {
-  // 서버 투표수 섞어 넣은 목록
+
   const [items, setItems] = useState(
     submissions.map((s) => ({
       ...s,
@@ -81,7 +78,7 @@ export default function MerchantVoteManage({
   );
   const [totalVotes, setTotalVotes] = useState(0);
 
-  // submissions 변경시 기본 동기화
+
   useEffect(() => {
     setItems(
       submissions.map((s) => ({
@@ -91,10 +88,27 @@ export default function MerchantVoteManage({
     );
   }, [submissions]);
 
-  // 선택/확정 흐름
+
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
+
+const fmtYMD = (s, addDays = 0) => {
+  if (!s) return "-";
+  try {
+    const d = new Date(s);
+    if (isNaN(d)) return s;
+    d.setDate(d.getDate() + addDays); 
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${y}.${m}.${dd}`;
+  } catch {
+    return s;
+  }
+};
+
+
 
   // 우승작 상태(서버값 우선)
   const [winnerId, setWinnerId] = useState(winnerFromServer);
@@ -285,7 +299,7 @@ export default function MerchantVoteManage({
               <div className="border rounded-[24px] bg-[#E0F9FE] text-[#26ADC5] border-[#E0F9FE] px-[12px] py-[8px] text-[14px] flex items-center gap-[8px]">
                 <div className="font-medium">선정 기간</div>
                 <div className="font-semibold">
-                  {fmtYMD(voteStartDate)+7} - {fmtYMD(voteEndDate)+7}
+                 {`${fmtYMD(voteStartDate, 7)} - ${fmtYMD(voteEndDate, 7)}`}
                 </div>
               </div>
             </div>
