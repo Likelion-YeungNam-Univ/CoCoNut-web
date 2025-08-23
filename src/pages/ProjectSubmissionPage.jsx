@@ -152,6 +152,7 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
+      setIsConfirmSubmissionOpen(false);
       setSuccessMode("submit");
       setIsSuccessModalOpen(true);
     } catch (error) {
@@ -168,6 +169,7 @@ const ProjectSubmissionPage = () => {
         link,
         image: uploadedImage,
       });
+      setIsConfirmSubmissionOpen(false);
       setSuccessMode("edit");
       setIsSuccessModalOpen(true);
     } catch (error) {
