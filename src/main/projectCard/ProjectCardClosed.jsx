@@ -4,7 +4,7 @@ import prizeIcon from "../../assets/prizeIcon.png";
 import participantIcon from "../../assets/participantIcon.png";
 import calendarIcon from "../../assets/calendarIcon.png";
 import { IoPersonCircle } from "react-icons/io5";
-import projectImgExample from "../../assets/projectImgExample.png";
+import defaultImg from "../../assets/defaultImg.png";
 import { formatDate } from "../../utils/dateUtils";
 
 const ProjectCardClosed = ({
@@ -42,7 +42,7 @@ const ProjectCardClosed = ({
     >
       {/* 수상작 대표 이미지 */}
       <img
-        src={project.winnerImageUrl || projectImgExample}
+        src={project.winnerImageUrl || defaultImg}
         className="w-[228px] h-[228px] mt-[12px] ml-[12px] rounded-[8px] object-cover"
         alt="우승작 이미지"
       />
