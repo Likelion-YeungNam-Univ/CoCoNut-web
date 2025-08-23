@@ -417,6 +417,9 @@ const ProjectSubmissionPage = () => {
                     <span className="text-[#C3C3C3] text-[14px]">
                       파일 업로드
                     </span>
+                    <span className="text-[#2AC2DD] text-[12px] mt-3">
+                      작품 이미지를 업로드하려면 여기를 눌러주세요
+                    </span>
                   </>
                 )}
 
