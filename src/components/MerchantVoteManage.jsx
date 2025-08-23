@@ -234,8 +234,8 @@ const fmtYMD = (s, addDays = 0) => {
         </div>
 
         {/* 우승작 크게 */}
-        <div className="mt-10 rounded-2xl border border-gray-200 bg-white overflow-hidden">
-          <div className="w-[1032px] h-[1032px] bg-gray-100 flex items-center justify-center overflow-hidden">
+        <div className="mx-auto mt-10 border border-gray-200 w-[600px] rounded-2xl  bg-white overflow-hidden justify-center">
+          <div className="mx-auto aspect-square max-w-[600px] w-full bg-gray-100 overflow-hidden">
             {winner?.imageUrl ? (
               <img
                 src={winner.imageUrl}
