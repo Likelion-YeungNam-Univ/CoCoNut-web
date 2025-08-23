@@ -86,6 +86,8 @@ const ProjectSubmissionPage = () => {
         setErrors((prev) => ({ ...prev, image: null }));
       }
     }
+
+    e.target.value = "";
   };
 
   // 공통 에러 핸들링
@@ -400,6 +402,9 @@ const ProjectSubmissionPage = () => {
                           ...prev,
                           image: "작품 이미지를 업로드해 주세요.",
                         }));
+                        if (imageRef.current) {
+                          imageRef.current.value = "";
+                        }
                       }}
                       className="absolute top-[16px] right-[16px] p-[10.04px] bg-black/20 rounded-full w-[32px] h-[32px] flex items-center justify-center cursor-pointer"
                     >
@@ -416,6 +421,7 @@ const ProjectSubmissionPage = () => {
                 )}
 
                 <input
+                  ref={imageRef}
                   id="imageUpload"
                   type="file"
                   accept="image/*"
