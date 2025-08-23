@@ -61,5 +61,16 @@ export function toAwardedSubmissionIdSet(awards = []) {
   return s;
 }
 
+
+
+/** 프로젝트별 우승자 정보 조회 (이메일, 닉네임 등) */
+export async function getProjectWinner(projectId) {
+  const { data } = await api.get(`/rewards/winner/project/${projectId}`); 
+  // baseURL이 /api/v1 라면 위 경로 그대로 OK
+  return data; // { winnerId, winnerEmail, winnerNickname, rewardId, submissionId, projectId, projectOwnerId, ... }
+}
+
+
+
 /** 과거 이름 호환용(이미 사용 중인 곳이 있다면 유지) */
 export const fetchMyAwards = getMyAwards;

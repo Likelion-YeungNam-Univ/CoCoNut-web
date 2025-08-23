@@ -7,7 +7,7 @@ import vote2 from "../assets/vote2.png";
 import vote3 from "../assets/vote3.png";
 import VoteConfirmModal from "./VoteConfirmModal";
 import { getProjectVotes } from "../apis/votesApi";
-import { selectWinner } from "../apis/rewardsApi";
+import { selectWinner, getProjectWinner } from "../apis/rewardsApi";
 import { Link } from "react-router-dom";
 
 const REFRESH_MS = 10000;
@@ -92,6 +92,13 @@ export default function MerchantVoteManage({
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
+ const [winnerEmail, setWinnerEmail] = useState(null);
+ const [loadingWinnerEmail, setLoadingWinnerEmail] = useState(false);
+ const [winnerId, setWinnerId] = useState(winnerFromServer ?? null);
+
+  useEffect(() => {
+   setWinnerId(winnerFromServer ?? null);
+ }, [winnerFromServer]);
 
 const fmtYMD = (s, addDays = 0) => {
   if (!s) return "-";
@@ -109,12 +116,21 @@ const fmtYMD = (s, addDays = 0) => {
 };
 
 
-
-  // 우승작 상태(서버값 우선)
-  const [winnerId, setWinnerId] = useState(winnerFromServer);
-  useEffect(() => {
-    setWinnerId(winnerFromServer ?? null);
-  }, [winnerFromServer]);
+useEffect(() => {
+   if (!projectId || !winnerId) return;
+   (async () => {
+     setLoadingWinnerEmail(true);
+     try {
+       const info = await getProjectWinner(projectId);
+       setWinnerEmail(info?.winnerEmail ?? null);
+     } catch (e) {
+       console.error("getProjectWinner failed:", e);
+       setWinnerEmail(null);
+     } finally {
+       setLoadingWinnerEmail(false);
+     }
+   })();
+ }, [projectId, winnerId]);
 
   // 투표수 로딩
   const loadVotes = useCallback(async () => {
@@ -222,15 +238,26 @@ const fmtYMD = (s, addDays = 0) => {
             선정하신 수상작은 모든 사용자에게 공개됩니다
           </div>
 
-          <div className="flex flex-row mt-[40px] items-center gap-[16px] border bg-[#E0F9FE] border-[#E0F9FE] rounded-[24px] justify-center text-[16px] text-[#26ADC5] px-[16px] py-[10px]">
-            <div>
-              {winnerNick} 님의 작품이 수상작으로 선정되었습니다. 프로필 내 연락처를
-              통해 거래를 완료해주세요
-            </div>
-            <Link className="font-semibold underline" to="/profile">
-              프로필로 가기
-            </Link>
-          </div>
+        <div className="flex flex-row mt-[40px] items-center gap-[16px] border bg-[#E0F9FE] border-[#E0F9FE] rounded-[24px] justify-center text-[16px] text-[#26ADC5] px-[16px] py-[10px]">
+   <div className="text-center">
+     <div className="font-medium">
+       {winnerNick} 님의 작품이 수상작으로 선정되었습니다.
+     </div>
+     {loadingWinnerEmail ? (
+       <div className="mt-1 text-[#26ADC5]/70">이메일 불러오는 중…</div>
+     ) : winnerEmail ? (
+       <div className="mt-1">
+         수상자 연락처:&nbsp;
+         <a href={`mailto:${winnerEmail}`} className="underline font-semibold">
+           {winnerEmail}
+         </a>
+        
+       </div>
+     ) : (
+       <div className="mt-1 text-[#26ADC5]/70">이메일 정보를 찾을 수 없습니다.</div>
+     )}
+   </div>
+ </div>
         </div>
 
         {/* 우승작 크게 */}
