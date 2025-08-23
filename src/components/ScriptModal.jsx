@@ -1,8 +1,14 @@
-// components/ScriptModal.jsx
 import React, { useEffect } from "react";
 import { IoIosClose } from "react-icons/io";
 
-const ScriptModal = ({ isOpen, onClose, title, children }) => {
+const ScriptModal = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  width = "840px",
+  height = "800px",
+}) => {
   useEffect(() => {
     if (!isOpen) return;
 
@@ -34,7 +40,10 @@ const ScriptModal = ({ isOpen, onClose, title, children }) => {
           </button>
 
           {/* 모달 박스 */}
-          <div className="bg-white rounded-[12px] w-[840px] h-[800px] overflow-y-auto pt-[48px] pl-[60px]">
+          <div
+            className="bg-white rounded-[12px] overflow-y-auto pt-[48px] pl-[60px]"
+            style={{ width, height }}
+          >
             {title && (
               <h2 className="text-[16px] font-semibold mb-6">{title}</h2>
             )}

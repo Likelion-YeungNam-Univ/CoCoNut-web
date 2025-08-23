@@ -608,6 +608,7 @@ const ProjectSubmissionPage = () => {
             ? "공모전 이용 주의사항"
             : ""
         }
+        height={openModal === "caution" ? "550px" : "800px"}
       >
         {openModal === "checklist" && (
           <div className="text-[#212121]">
