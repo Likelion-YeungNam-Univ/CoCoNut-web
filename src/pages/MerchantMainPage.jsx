@@ -4,11 +4,13 @@ import ProjectStatusTabs from "../main/ProjectStatusTabs";
 import CategoryFilter from "../main/CategoryFilter";
 import ProjectList from "../main/ProjectList";
 import { BiSolidPencil } from "react-icons/bi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import MerchantBanner from "../main/MerchantBanner";
+import { fetchUserInfo } from "../apis/userApi";
 
 const MerchantMainPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("CLOSED"); // 진행중, 투표중, 완료 탭 상태
   const [selectedCategories, setSelectedCategories] = useState([]); // 카테고리 선택 상태
   const [selectedBusinesses, setSelectedBusinesses] = useState([]); // 업종 선택 상태
@@ -21,6 +23,23 @@ const MerchantMainPage = () => {
     setSelectedCategories([]);
     setSelectedBusinesses([]);
   }, [activeTab]);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const user = await fetchUserInfo();
+        if (user.role !== "ROLE_BUSINESS") {
+          alert("접근 권한이 없습니다.");
+          navigate("/participant-main-page");
+        }
+      } catch (err) {
+        console.error("권한 확인 실패:", err);
+        navigate("/signin");
+      }
+    };
+
+    checkRole();
+  }, [navigate]);
 
   return (
     <div>
