@@ -615,7 +615,7 @@ const ProjectSubmissionPage = () => {
       >
         {openModal === "checklist" && (
           <div className="text-[#212121]">
-            <h2 className="text-[16px]  ml-[289px] font-semibold mb-[80px] ">
+            <h2 className="text-[16px] ml-[289px] font-semibold mb-[80px] ">
               공모전 참가 체크리스트
             </h2>
             <div className="grid grid-cols-3 gap-y-[80px] gap-x-[8px] ml-[20px] mr-[80px]">
