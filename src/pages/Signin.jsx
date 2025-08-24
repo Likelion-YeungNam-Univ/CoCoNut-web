@@ -29,6 +29,10 @@ const SignIn = () => {
       setEmailError("아이디(이메일)를 입력해 주세요.");
       hasError = true;
     }
+    else if(!email.includes("@")){
+      setEmailError("이메일 주소에 '@'를 포함해주세요")
+      hasError = true;
+    }
     if (!password) {
       setPasswordError("비밀번호를 입력해 주세요.");
       hasError = true;
