@@ -281,7 +281,7 @@ const handleSubmitCustomerService = async () => {
 
         <div className="flex justify-end mt-4 space-x-4">
           <button
-            className="px-4 py-2 text-[16px] text-[#212121] rounded-md border border-[#E1E1E1] hover:bg-gray-100"
+            className="cursor-pointer px-4 py-2 text-[16px] text-[#212121] rounded-md border border-[#E1E1E1] hover:bg-gray-100"
             onClick={() => setCsText("")}
           >
             전체 삭제
@@ -289,7 +289,7 @@ const handleSubmitCustomerService = async () => {
 
        
          <button
-            className="px-4 py-2 text-[16px] text-white rounded-md bg-[#212121] hover:bg-[#4C4C4C]"
+            className="cursor-pointer px-4 py-2 text-[16px] text-white rounded-md bg-[#212121] hover:bg-[#4C4C4C]"
             onClick={handleSubmitCustomerService}
           >
             작성 완료
