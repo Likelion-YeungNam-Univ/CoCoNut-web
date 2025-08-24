@@ -255,6 +255,9 @@ const ProjectDetail = ({ role }) => {
     }
   }
 
+  // winner 속성을 사용하여 우승자 여부 확인
+  const isWinner = submissions.some((sub) => sub.winner === true);
+
   return (
     <div className="flex flex-col min-h-screen font-pretendard">
       {isMerchant ? <MerchantHeader /> : <ParticipantHeader />}
@@ -263,10 +266,14 @@ const ProjectDetail = ({ role }) => {
         <div className="p-15">
           <div className="flex items-center justify-between text-gray-500 text-sm mb-4">
             <div className="flex items-center space-x-2 text-[#828282]">
-              <span className="text-[#A3A3A3] text-[12px] font-normal">
-                {daysLeft === 0 ? "오늘 마감" : `${daysLeft}일 후 마감`}
-              </span>
-              <span className="text-[#E1E1E1] text-[10px]">|</span>
+              {projectStatus === "IN_PROGRESS" && (
+                <>
+                  <span className="text-[#A3A3A3] text-[12px] font-normal">
+                    {daysLeft === 0 ? "오늘 마감" : `${daysLeft}일 후 마감`}
+                  </span>
+                  <span className="text-[#E1E1E1] text-[10px]">|</span>
+                </>
+              )}
               <span className="text-[#a3a3a3] text-[12px] font-normal">
                 {getCategoryLabel(projectData.category)}
               </span>
@@ -281,11 +288,23 @@ const ProjectDetail = ({ role }) => {
               <h1 className="text-[28px] font-semibold text-[#212121] ">
                 {projectData.title || "공모전 제목 없음"}
               </h1>
-              {/* 투표 마감일 계산 및 표시 */}
               {projectStatus === "VOTING" && daysLeftToVote !== null && (
                 <span className="text-[12px] w-[100px] h-[28px] flex items-center justify-center rounded-3xl font-medium bg-[#E0F9FE] text-[#26ADC5]">
                   {daysLeftToVote}일 후 투표 마감
                 </span>
+              )}
+              {projectStatus === "CLOSED" && (
+                <>
+                  {isWinner ? (
+                    <span className="bg-[#F3F3F3] text-[#AEAEAE] text-[12px] font-medium rounded-3xl w-[68px] h-[28px] flex items-center justify-center">
+                      선정 완료
+                    </span>
+                  ) : (
+                    <span className="bg-[#F3F3F3] text-[#AEAEAE] text-[12px] font-medium rounded-3xl w-[58px] h-[28px] flex items-center justify-center">
+                      선정 중
+                    </span>
+                  )}
+                </>
               )}
             </div>
             {isMerchant && isMyProject && (
