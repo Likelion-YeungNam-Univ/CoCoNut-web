@@ -340,7 +340,7 @@ const ProjectDetail = ({ role }) => {
           </div>
 
           {/* 참가자로 로그인한 경우 참가하기 버튼 */}
-          {role === "participant" && (
+          {role === "participant" && projectStatus === "IN_PROGRESS"  &&  (
             <button
               onClick={() =>
                 !hasMySubmission &&
