@@ -153,7 +153,7 @@ const MerchantHeader = ({ defaultValue = "" }) => {
         </div>
       </div>
       {isLogoutModalOpen && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[10000]">
           <div className="bg-white p-6 rounded-lg shadow-lg text-center w-[420px] h-[200px]">
             <h3 className="text-[20px] font-semibold mb-2 text-[#212121] text-left">
               로그아웃 하시겠습니까?
