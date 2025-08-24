@@ -35,7 +35,7 @@ const formatCurrency = (amount) => {
   return `${numericAmount.toLocaleString()}원`;
 };
 
-/** ✅ 우승작 id를 도출 — 서버의 submissions winner(boolean)를 1순위로 사용 */
+/** 우승작 id를 도출 — 서버의 submissions winner(boolean)를 1순위로 사용 */
 const deriveWinnerId = (p, subs = []) => {
   if (!p && !subs?.length) return null;
 
@@ -185,13 +185,21 @@ const ProjectDetail = ({ role }) => {
       : null);
 
   let fallbackStatus = "IN_PROGRESS";
+  let daysLeftToVote = null;
   if (deadline) {
     const now = new Date();
     const votingEnd = new Date(deadline);
     votingEnd.setDate(votingEnd.getDate() + 7);
-    if (now <= deadline) fallbackStatus = "IN_PROGRESS";
-    else if (now > deadline && now <= votingEnd) fallbackStatus = "VOTING";
-    else fallbackStatus = "CLOSED";
+    if (now <= deadline) {
+      fallbackStatus = "IN_PROGRESS";
+    } else if (now > deadline && now <= votingEnd) {
+      fallbackStatus = "VOTING";
+      daysLeftToVote = Math.ceil(
+        (votingEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      );
+    } else {
+      fallbackStatus = "CLOSED";
+    }
   }
   const projectStatus = projectData?.status ?? fallbackStatus;
 
@@ -269,9 +277,17 @@ const ProjectDetail = ({ role }) => {
             </div>
           </div>
           <div className="flex items-start justify-between mb-2">
-            <h1 className="text-[28px] font-semibold text-[#212121] ">
-              {projectData.title || "공모전 제목 없음"}
-            </h1>
+            <div className="flex flex-row items-center space-x-3">
+              <h1 className="text-[28px] font-semibold text-[#212121] ">
+                {projectData.title || "공모전 제목 없음"}
+              </h1>
+              {/* 투표 마감일 계산 및 표시 */}
+              {projectStatus === "VOTING" && daysLeftToVote !== null && (
+                <span className="text-[12px] w-[100px] h-[28px] flex items-center justify-center rounded-3xl font-medium bg-[#E0F9FE] text-[#26ADC5]">
+                  {daysLeftToVote}일 후 투표 마감
+                </span>
+              )}
+            </div>
             {isMerchant && isMyProject && (
               <div className="relative">
                 <button
@@ -358,7 +374,7 @@ const ProjectDetail = ({ role }) => {
           </div>
 
           {/* 참가자로 로그인한 경우 참가하기 버튼 */}
-          {role === "participant" && projectStatus === "IN_PROGRESS"  &&  (
+          {role === "participant" && projectStatus === "IN_PROGRESS" && (
             <button
               onClick={() =>
                 !hasMySubmission &&
@@ -657,7 +673,7 @@ const ProjectDetail = ({ role }) => {
                   </div>
                 )
               ) : (
-                // ✅ 그 외: 썸네일 뷰
+                // 썸네일 뷰
                 <div className="flex flex-col">
                   {submissions.length > 0 ? (
                     <div className="grid grid-cols-4 gap-8 mt-16">
