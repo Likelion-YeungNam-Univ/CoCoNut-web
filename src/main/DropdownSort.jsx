@@ -47,7 +47,7 @@ const DropdownSort = ({ sortOption, setSortOption }) => {
       <div className="rounded-md border border-[#E1E1E1] bg-white">
         <button
           type="button"
-          className="w-full h-[40px] inline-flex items-center px-4 py-2 bg-white text-[12px] font-medium text-[#212121] hover:bg-[#E1E1E1] focus:outline-none"
+          className="w-full h-[40px] inline-flex items-center px-4 py-2 bg-white text-[12px] font-medium text-[#212121] hover:bg-[#E1E1E1] focus:outline-none cursor-pointer"
           onClick={() => setIsOpen(!isOpen)}
         >
           <div className="flex justify-between items-center w-full">
@@ -61,13 +61,13 @@ const DropdownSort = ({ sortOption, setSortOption }) => {
             <div className="flex flex-col">
               <button
                 onClick={() => handleSelect("최신순")}
-                className="block px-4 py-2 text-[12px] font-medium text-[#212121] w-full text-left hover:bg-[#E1E1E1]"
+                className="block px-4 py-2 text-[12px] font-medium text-[#212121] w-full text-left hover:bg-[#E1E1E1] cursor-pointer"
               >
                 최신순
               </button>
               <button
                 onClick={() => handleSelect("총상금순")}
-                className="block px-4 py-2 text-[12px] font-medium text-[#212121] w-full text-left hover:bg-[#E1E1E1]"
+                className="block px-4 py-2 text-[12px] font-medium text-[#212121] w-full text-left hover:bg-[#E1E1E1] cursor-pointer"
               >
                 총상금순
               </button>
