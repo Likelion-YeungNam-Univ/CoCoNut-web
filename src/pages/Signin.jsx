@@ -29,6 +29,10 @@ const SignIn = () => {
       setEmailError("아이디(이메일)를 입력해 주세요.");
       hasError = true;
     }
+    else if(!email.includes("@")){
+      setEmailError("이메일 주소에 '@'를 포함해주세요")
+      hasError = true;
+    }
     if (!password) {
       setPasswordError("비밀번호를 입력해 주세요.");
       hasError = true;
@@ -107,7 +111,7 @@ const SignIn = () => {
                 if (emailError) setEmailError("");
               }}
               placeholder="아이디(이메일)"
-              type="email"
+              type="text"
               autoComplete="username"
               className="flex items-center mt-[32px] focus:outline-none text-[14px] border rounded-[6px] w-[360px] h-[48px] pt-[15px] pr-[16px] pb-[15px] pl-[16px] border-[#F3F3F3] placeholder-[#C3C3C3]"
               aria-invalid={!!emailError}
