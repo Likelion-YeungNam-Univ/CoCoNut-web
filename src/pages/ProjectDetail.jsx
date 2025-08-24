@@ -99,9 +99,23 @@ const ProjectDetail = ({ role }) => {
       } catch (err) {
         console.error("Failed to fetch project details:", err);
         if (err?.response?.status === 404) {
-          setError("해당 프로젝트를 찾을 수 없습니다.");
+          alert("해당 프로젝트를 찾을 수 없습니다.");
+          if (userInfo?.role === "ROLE_BUSINESS") {
+            navigate("/merchant-main-page");
+          } else if (userInfo?.role === "ROLE_USER") {
+            navigate("/participant-main-page");
+          } else {
+            navigate("/guest-main-page");
+          }
         } else {
-          setError("프로젝트 정보를 불러오는 데 실패했습니다.");
+          alert("프로젝트 정보를 불러오는 데 실패했습니다.");
+          if (userInfo?.role === "ROLE_BUSINESS") {
+            navigate("/merchant-main-page");
+          } else if (userInfo?.role === "ROLE_USER") {
+            navigate("/participant-main-page");
+          } else {
+            navigate("/guest-main-page");
+          }
         }
         setProjectData(null);
       } finally {
@@ -112,12 +126,8 @@ const ProjectDetail = ({ role }) => {
     fetchProjectDetails();
   }, [projectId, location.state?.refresh, userInfo]);
 
-  // ✅ 서버/제출물에서 우승작 id 계산 (hook 아님)
   const winnerIdFromServer = deriveWinnerId(projectData, submissions);
 
-  // ❌ sessionStorage 기반 복구 로직 완전 제거 (이제 서버의 winner만 신뢰)
-
-  // ---------------- 조기 리턴 (훅들보다 아래) ----------------
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
