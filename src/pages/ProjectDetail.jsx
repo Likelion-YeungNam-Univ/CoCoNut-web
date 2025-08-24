@@ -79,6 +79,8 @@ const ProjectDetail = ({ role }) => {
         setUserInfo(data);
       } catch (err) {
         console.error("사용자 정보 불러오기 실패:", err);
+        setUserInfo({ role: "ROLE_GUEST" });
+        setLoading(false);
       }
     };
     loadUserInfo();
@@ -86,6 +88,8 @@ const ProjectDetail = ({ role }) => {
 
   useEffect(() => {
     if (!userInfo) return;
+    if (userInfo.role === "ROLE_GUEST") return;
+
     const fetchProjectDetails = async () => {
       try {
         setLoading(true);
@@ -104,8 +108,6 @@ const ProjectDetail = ({ role }) => {
             navigate("/merchant-main-page");
           } else if (userInfo?.role === "ROLE_USER") {
             navigate("/participant-main-page");
-          } else {
-            navigate("/guest-main-page");
           }
         } else {
           alert("프로젝트 정보를 불러오는 데 실패했습니다.");
@@ -113,8 +115,6 @@ const ProjectDetail = ({ role }) => {
             navigate("/merchant-main-page");
           } else if (userInfo?.role === "ROLE_USER") {
             navigate("/participant-main-page");
-          } else {
-            navigate("/guest-main-page");
           }
         }
         setProjectData(null);
@@ -125,6 +125,15 @@ const ProjectDetail = ({ role }) => {
 
     fetchProjectDetails();
   }, [projectId, location.state?.refresh, userInfo]);
+
+  useEffect(() => {
+    if (userInfo === null) return;
+
+    if (userInfo.role === "ROLE_GUEST") {
+      alert("로그인이 필요한 서비스입니다.");
+      navigate("/signin");
+    }
+  }, [userInfo, navigate]);
 
   const winnerIdFromServer = deriveWinnerId(projectData, submissions);
 
