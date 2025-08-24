@@ -13,8 +13,6 @@ import {
   WITHDRAWAL_DATA,
 } from "../utils/termsData";
 
-
-
 const MyPageContent = ({
   selectedTab,
   userData,
@@ -39,28 +37,25 @@ const MyPageContent = ({
     ETC: "기타",
   };
 
-const [csText, setCsText] = useState("");
-const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+  const [csText, setCsText] = useState("");
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
 
-const handleSubmitCustomerService = async () => {
-  const content = csText.trim();
-  if (!content) {
-    alert("내용을 입력해 주세요.");
-    textareaRef.current?.focus();
-    return;
-  }
-  try {
-   
-    setIsSubmitModalOpen(true); 
-    setCsText("");              
-   
-    setTimeout(() => textareaRef.current?.focus(), 0);
-  } catch (e) {
-    console.error("고객센터 전송 실패:", e);
-    alert("전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-  }
-};
-
+  const handleSubmitCustomerService = async () => {
+    const content = csText.trim();
+    if (!content) {
+      alert("내용을 입력해 주세요.");
+      textareaRef.current?.focus();
+      return;
+    }
+    try {
+      setIsSubmitModalOpen(true);
+      setCsText("");
+      setTimeout(() => textareaRef.current?.focus(), 0);
+    } catch (e) {
+      console.error("고객센터 전송 실패:", e);
+      alert("전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    }
+  };
 
   const BUSINESSTYPES_MAP = {
     FOOD_BEVERAGE: "식당/카페/주점",
@@ -87,9 +82,7 @@ const handleSubmitCustomerService = async () => {
   switch (selectedTab) {
     case "profile":
       const totalParticipations = userSubmissions.length;
-
       const winningCount = userData?.winningCount || 0;
-
       const totalPrizeMoney = userAwards.reduce((total, award) => {
         const reward = award.rewardAmount || 0;
         return total + reward;
@@ -146,7 +139,6 @@ const handleSubmitCustomerService = async () => {
               </div>
             </div>
             <hr className="text-[#E1E1E1]" />
-
             {userAwards.length > 0 ? (
               <div className="flex flex-col space-y-4">
                 <h2 className="font-semibold text-[20px] mt-16 mb-4 text-[#212121]">
@@ -155,7 +147,7 @@ const handleSubmitCustomerService = async () => {
                 {userAwards.map((award) => (
                   <ProjectCardClosed
                     key={award.projectId}
-                    project={award}
+                    project={{ ...award, winnerImageUrl: award.winnerImageUrl }}
                     categories={categories}
                     businessTypes={businessTypes}
                     role="participant"
@@ -259,55 +251,49 @@ const handleSubmitCustomerService = async () => {
           </div>
         </div>
       );
-  case "customer-service":
-  return (
-    <div className="p-8">
-      <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
-        고객센터
-      </h2>
-      <hr className="mb-4" />
-      <div className="flex flex-col space-y-4">
-        <p className="mt-5 text-[#212121] text-[16px] font-medium">
-          도움이 필요하신가요?
-        </p>
-
-     
-        <textarea
-          className="w-[full] h-[288px] p-4 border border-[#F3F3F3] text-[14px] text-[#212121] rounded-md focus:outline-none"
-          placeholder="불편한 점이나 질문을 자유롭게 남겨주세요."
-          value={csText}
-          onChange={(e) => setCsText(e.target.value)}
-        />
-
-        <div className="flex justify-end mt-4 space-x-4">
-          <button
-            className="cursor-pointer px-4 py-2 text-[16px] text-[#212121] rounded-md border border-[#E1E1E1] hover:bg-gray-100"
-            onClick={() => setCsText("")}
-          >
-            전체 삭제
-          </button>
-
-       
-         <button
-            className="cursor-pointer px-4 py-2 text-[16px] text-white rounded-md bg-[#212121] hover:bg-[#4C4C4C]"
-            onClick={handleSubmitCustomerService}
-          >
-            작성 완료
-          </button>
+    case "customer-service":
+      return (
+        <div className="p-8">
+          <h2 className="font-semibold text-[20px] mb-4 text-[#212121]">
+            고객센터
+          </h2>
+          <hr className="mb-4" />
+          <div className="flex flex-col space-y-4">
+            <p className="mt-5 text-[#212121] text-[16px] font-medium">
+              도움이 필요하신가요?
+            </p>
+            <textarea
+              className="w-[full] h-[288px] p-4 border border-[#F3F3F3] text-[14px] text-[#212121] rounded-md focus:outline-none"
+              placeholder="불편한 점이나 질문을 자유롭게 남겨주세요."
+              value={csText}
+              onChange={(e) => setCsText(e.target.value)}
+            />
+            <div className="flex justify-end mt-4 space-x-4">
+              <button
+                className="cursor-pointer px-4 py-2 text-[16px] text-[#212121] rounded-md border border-[#E1E1E1] hover:bg-gray-100"
+                onClick={() => setCsText("")}
+              >
+                전체 삭제
+              </button>
+              <button
+                className="cursor-pointer px-4 py-2 text-[16px] text-white rounded-md bg-[#212121] hover:bg-[#4C4C4C]"
+                onClick={handleSubmitCustomerService}
+              >
+                작성 완료
+              </button>
+            </div>
+          </div>
+          <BasicModal
+            open={isSubmitModalOpen}
+            title="문의사항 작성 완료"
+            message={
+              "회원님의 소중한 의견 감사합니다.\n빠른 처리 후 연락드리겠습니다."
+            }
+            confirmLabel="확인"
+            onClose={() => setIsSubmitModalOpen(false)}
+          />
         </div>
-      </div>
-
-
-  
-      <BasicModal
-        open={isSubmitModalOpen}
-        title="문의사항 작성 완료"
-        message={"회원님의 소중한 의견 감사합니다.\n빠른 처리 후 연락드리겠습니다."}
-        confirmLabel="확인"
-        onClose={() => setIsSubmitModalOpen(false)}
-      />
-    </div>
-  );
+      );
     case "account":
       return (
         <div className="p-8">
@@ -485,7 +471,23 @@ const ParticipantMyPage = () => {
         setUserSubmissions(submissionsResponse.data);
 
         const awardsResponse = await api.get("/rewards/me/awards");
-        setUserAwards(awardsResponse.data);
+        const awardsWithImages = await Promise.all(
+          awardsResponse.data.map(async (award) => {
+            try {
+              const imageResponse = await api.get(
+                `/rewards/finish/project/${award.projectId}/image`
+              );
+              return { ...award, winnerImageUrl: imageResponse.data.imageUrl };
+            } catch (imageErr) {
+              console.error(
+                `Error fetching image for project ${award.projectId}:`,
+                imageErr
+              );
+              return { ...award, winnerImageUrl: null };
+            }
+          })
+        );
+        setUserAwards(awardsWithImages);
       } catch (err) {
         console.error("데이터를 가져오는 데 실패했습니다:", err);
         setUserData(null);
