@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MerchantHeader from "../header/MerchantHeader";
 import { IoPersonCircle } from "react-icons/io5";
 import { PiNotebook } from "react-icons/pi";
 import api from "../apis/api";
 import Footer from "../components/Footer";
+import BasicModal from "../components/BasicModal";
 import {
   PERSONAL_INFO_CONSENT,
   SERVICE_TERMS_DATA,
@@ -34,6 +35,28 @@ const MyPageContent = ({
     IT_WEB_MOBILE: "IT/웹/모바일",
     ETC: "기타",
   };
+
+  const [csText, setCsText] = useState("");
+const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+
+const handleSubmitCustomerService = async () => {
+  const content = csText.trim();
+  if (!content) {
+    alert("내용을 입력해 주세요.");
+    textareaRef.current?.focus();
+    return;
+  }
+  try {
+
+    setIsSubmitModalOpen(true); 
+    setCsText("");              
+
+    setTimeout(() => textareaRef.current?.focus(), 0);
+  } catch (e) {
+    console.error("고객센터 전송 실패:", e);
+    alert("전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+  }
+};
 
   const BUSINESSTYPES_MAP = {
     FOOD_BEVERAGE: "식당/카페/주점",
@@ -234,18 +257,30 @@ const MyPageContent = ({
             <textarea
               className="w-[full] h-[288px] p-4 border border-[#F3F3F3] text-[14px] text-[#] rounded-md focus:outline-none"
               placeholder="불편한 점이나 질문을 자유롭게 남겨주세요."
+              value={csText}
+              onChange={(e)=> setCsText(e.target.value)}
             ></textarea>
             <div className="flex justify-end mt-4 space-x-4">
-              <button className="px-4 py-2 text-[16px] text-[#212121] rounded-md border border-[#E1E1E1] hover:bg-gray-100">
+              <button className="px-4 py-2 text-[16px] text-[#212121] rounded-md border border-[#E1E1E1] hover:bg-gray-100"
+              onClick={() => setCsText("")}>
                 전체 삭제
               </button>
-              <button className="px-4 py-2 text-[16px] text-white bg-[#212121] rounded-md hover:bg-[#4C4C4C]">
+              <button className="px-4 py-2 text-[16px] text-white bg-[#212121] rounded-md hover:bg-[#4C4C4C]"
+              onClick={handleSubmitCustomerService}>
                 작성 완료
               </button>
             </div>
           </div>
-        </div>
-      );
+                <BasicModal
+        open={isSubmitModalOpen}
+        title="문의사항 작성 완료"
+        message={"회원님의 소중한 의견 감사합니다.\n빠른 처리 후 연락드리겠습니다."}
+        confirmLabel="확인"
+        onClose={() => setIsSubmitModalOpen(false)}
+      />
+    </div>
+  );
+    
     case "account":
       return (
         <div className="p-8">
