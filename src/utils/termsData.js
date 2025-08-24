@@ -1,36 +1,49 @@
+import checklistIcon1 from "../assets/checklistIcon1.png";
+import checklistIcon3 from "../assets/checklistIcon3.png";
+import checklistIcon4 from "../assets/checklistIcon4.png";
+import checklistIcon5 from "../assets/checklistIcon5.png";
+import checklistIcon6 from "../assets/checklistIcon6.png";
+import checklistIcon7 from "../assets/checklistIcon7.png";
+
 export const TERMS_DATA = {
   checklist: {
     title: "공모전 등록 체크리스트",
     items: [
       {
-        step: "1. 정확한 정보 입력",
+        step: "정확한 정보 입력",
         description:
           "공모전 제목, 가계명, 카테고리, 업종 등 필수 정보를 정확히 입력했는지 확인하세요.",
+        icons: checklistIcon4,
       },
       {
-        step: "2. 공모전 기간 설정",
+        step: "공모전 기간 설정",
         description:
           "시작일과 종료일을 명확히 설정하여 참가자가 일정에 맞춰 참여할 수 있도록 합니다.",
+        icons: checklistIcon5,
       },
       {
-        step: "3. 상금 및 보상 확인",
+        step: "상금 및 보상 확인",
         description:
           "상금을 정확히 기입하고, 지역화폐 지급 비율, 상금 지급 조건 등을 확인하세요.",
+        icons: checklistIcon7,
       },
       {
-        step: "4. 참여 조건 안내",
+        step: "참여 조건 안내",
         description:
           "참가 대상, 제출 형식, 제한 사항 등 필요한 정보를 명확히 안내합니다.",
+        icons: checklistIcon1,
       },
       {
-        step: "5. 작품 활용 권한",
+        step: "작품 활용 권한",
         description:
-          "제출된 결과물의 사용, 거래 범위 및 권리 사항을 명시했는지 확인하세요.",
+          "제출된 결과물의 사용, 거래 범위와 권리 사항을 명시했는지 확인하세요.",
+        icons: checklistIcon3,
       },
       {
-        step: "6. 약관 및 주의사항 동의 확인",
+        step: "약관 및 주의사항 동의 확인",
         description:
           "공모전 이용약관 및 주의사항에 대해 동의 여부를 확인합니다.",
+        icons: checklistIcon6,
       },
     ],
   },
