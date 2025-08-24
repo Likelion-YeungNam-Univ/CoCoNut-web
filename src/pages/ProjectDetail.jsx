@@ -274,7 +274,7 @@ const ProjectDetail = ({ role }) => {
                     >
                       <div className="flex items-center px-4 py-2 space-x-2">
                         <AiFillDelete className="text-[#C3C3C3]" />
-                        <span className="text-[#828282] text-[12px]">
+                        <span className="text-[#828282] text-[12px] cursor-pointer">
                           삭제하기
                         </span>
                       </div>
@@ -689,7 +689,7 @@ const ProjectDetail = ({ role }) => {
               navigate("/participant-main-page");
             }
           }}
-          className="px-6 py-3 bg-[#2FD8F6] text-white rounded-md font-medium text-base hover:bg-[#2AC2DD] transition-colors"
+          className="px-6 py-3 bg-[#2FD8F6] text-white rounded-md font-medium text-base hover:bg-[#2AC2DD] transition-colors cursor-pointer"
         >
           목록으로 돌아가기
         </button>
