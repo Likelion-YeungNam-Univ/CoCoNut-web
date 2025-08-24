@@ -562,7 +562,7 @@ const ProjectDetail = ({ role }) => {
                         setSubmissions((prev) =>
                           prev.map((s) => ({
                             ...s,
-                            winner: s.submissionId === winnerId, // 당선만 true
+                            winner: s.submissionId === winnerId,
                           }))
                         );
                       }}
@@ -681,7 +681,21 @@ const ProjectDetail = ({ role }) => {
         </div>
       </div>
 
-      <Footer />
+      <div className="flex flex-col items-center">
+        <button
+          onClick={() => {
+            if (isMerchant) {
+              navigate("/merchant-main-page");
+            } else if (isParticipant) {
+              navigate("/participant-main-page");
+            }
+          }}
+          className="px-6 py-3 bg-[#2FD8F6] text-white rounded-md font-medium text-base hover:bg-[#2AC2DD] transition-colors"
+        >
+          목록으로 돌아가기
+        </button>
+        <Footer />
+      </div>
 
       {isDeleteModalOpen && (
         <DeleteModal

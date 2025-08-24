@@ -321,7 +321,7 @@ const handleSubmitCustomerService = async () => {
                 로그아웃
               </p>
               <button
-                className="w-[98px] h-[45px] px-4 py-2 text-[16px] text-gray-400 font-medium rounded-md border border-[#F3F3F3] hover:bg-gray-100 text-center"
+                className="w-[98px] h-[45px] px-4 py-2 text-[16px] text-[#212121] font-medium rounded-md border border-[#E1E1E1] hover:bg-gray-100 text-center"
                 onClick={openLogoutModal}
               >
                 로그아웃

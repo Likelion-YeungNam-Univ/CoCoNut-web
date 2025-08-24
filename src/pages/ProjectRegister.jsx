@@ -30,6 +30,7 @@ import { TERMS_DATA } from "../utils/termsData";
 import { STYLES_DATA } from "../utils/stylesData";
 import { TARGETS_DATA } from "../utils/targetData";
 import { COLORS_DATA } from "../utils/colorData";
+import SuccessSubmissionModal from "../components/SuccessSubmissionModal";
 
 const ProjectRegister = () => {
   const navigate = useNavigate();
@@ -59,6 +60,8 @@ const ProjectRegister = () => {
   const [isEasyHelpModalOpen, setIsEasyHelpModalOpen] = useState(false);
   const [isPrizeInfoModalOpen, setIsPrizeInfoModalOpen] = useState(false);
   const [isBackModalOpen, setIsBackModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [successProjectId, setSuccessProjectId] = useState(null);
 
   // AI 분석 관련 상태
   const [assistanceText, setAssistanceText] = useState("");
@@ -270,13 +273,12 @@ const ProjectRegister = () => {
     }
   };
 
-  // AI 분석을 실행하는 비동기 함수
+  // AI 분석
   const analyzeWithAI = async () => {
     setLoading(true);
     try {
       const aiData = await analyzeProjectWithAI(assistanceText);
 
-      // Check if the AI data is valid before updating the state
       if (
         !aiData ||
         !aiData.description ||
@@ -293,16 +295,21 @@ const ProjectRegister = () => {
           summary: aiData.summary,
           deadline: aiData.deadline,
         });
+
+        setErrors((prev) => ({
+          ...prev,
+          content: "",
+          rewardAmount: "",
+          period: "",
+        }));
       }
     } catch (error) {
       console.error("AI analysis error:", error);
-
       alert("AI가 내용을 불러오지 못했어요.");
     } finally {
       setLoading(false);
     }
   };
-
   // 색상 클릭을 처리하는 핸들러
   const handleColorClick = (code) => {
     if (code === "color_free") {
@@ -445,8 +452,8 @@ const ProjectRegister = () => {
         setIsConfirmModalOpen(false);
         setIsFormDirty(false);
 
-        alert("공모전이 성공적으로 등록되었습니다!");
-        navigate(`/project-detail/${projectId}`);
+        setSuccessProjectId(projectId);
+        setIsSuccessModalOpen(true);
       } else {
         console.error("서버 응답에 유효한 projectId가 없습니다.", response);
         setIsConfirmModalOpen(false);
@@ -1286,6 +1293,15 @@ const ProjectRegister = () => {
           isOpen={isBackModalOpen}
           onClose={() => setIsBackModalOpen(false)}
           onConfirm={handleConfirmBack}
+        />
+      )}
+      {isSuccessModalOpen && (
+        <SuccessSubmissionModal
+          mode="register"
+          onClose={() => {
+            setIsSuccessModalOpen(false);
+            navigate(`/project-detail/${successProjectId}`);
+          }}
         />
       )}
     </div>

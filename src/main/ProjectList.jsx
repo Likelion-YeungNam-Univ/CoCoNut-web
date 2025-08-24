@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import api from "../apis/api";
+import axios from "axios";
 import ProjectCardInProgress from "./projectCard/ProjectCardInProgress";
 import ProjectCardVoting from "./projectCard/ProjectCardVoting";
 import ProjectCardClosed from "./projectCard/ProjectCardClosed";
@@ -66,15 +68,50 @@ const ProjectList = ({
     const loadProjects = async () => {
       try {
         const data = await fetchProjects();
-        setProjects(data);
+
+        const projectsWithWinner = await Promise.all(
+          data.map(async (p) => {
+            if (p.status === "CLOSED") {
+              try {
+                if (role === "guest") {
+                  const { data: res } = await axios.get(
+                    `http://15.165.164.49:8080/api/v1/rewards/finish/project/${p.projectId}/image`
+                  );
+
+                  return {
+                    ...p,
+                    winnerImageUrl: res?.imageUrl || null,
+                  };
+                } else {
+                  const { data: res } = await api.get(
+                    `/rewards/finish/project/${p.projectId}/image`
+                  );
+
+                  return {
+                    ...p,
+                    winnerImageUrl:
+                      res?.submissionImageUrl || res?.imageUrl || null,
+                  };
+                }
+              } catch (err) {
+                console.error("우승 이미지 조회 실패:", err);
+                return p;
+              }
+            }
+            return p;
+          })
+        );
+
+        setProjects(projectsWithWinner);
       } catch (err) {
         console.error("프로젝트 불러오기 실패", err);
       } finally {
         setLoading(false);
       }
     };
+
     loadProjects();
-  }, []);
+  }, [role]);
 
   const filtered = useMemo(() => {
     const rx = toSafeRegex(q);
@@ -86,9 +123,13 @@ const ProjectList = ({
       selectedCategories.length === 0 && selectedBusinesses.length === 0
         ? byStatus
         : byStatus.filter((p) => {
-            const categoryMatch = selectedCategories.includes(p.category);
-            const businessMatch = selectedBusinesses.includes(p.businessType);
-            return categoryMatch || businessMatch;
+            const categoryMatch =
+              selectedCategories.length === 0 ||
+              selectedCategories.includes(p.category);
+            const businessMatch =
+              selectedBusinesses.length === 0 ||
+              selectedBusinesses.includes(p.businessType);
+            return categoryMatch && businessMatch;
           });
 
     const byTitle = rx
