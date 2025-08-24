@@ -9,19 +9,27 @@ const TermsModal = ({ isOpen, onClose, title, content }) => {
       <div className="flex items-start">
         <div className="bg-white rounded-lg shadow-xl w-[840px] h-[650px] overflow-hidden flex flex-col relative">
           <div className="p-12 pb-4 flex-shrink-0">
-            <h1 className="text-[16px] font-semibold text-[#212121] text-left">
+            <h1 className="text-[16px] font-semibold text-[#212121] text-center">
               {title}
             </h1>
           </div>
           <div className="px-12 mt-3 flex-grow overflow-y-auto">
             {content.items ? (
-              <div>
+              <div className="grid grid-cols-3 gap-y-16 justify-items-center mb-5">
                 {content.items.map((item, index) => (
-                  <div key={index} className="mb-4">
-                    <h3 className="font-semibold text-[12px] text-base text-[#212121]">
+                  <div
+                    key={index}
+                    className="flex flex-col items-center text-center mx-2"
+                  >
+                    <img
+                      src={item.icons}
+                      alt={`체크리스트 아이콘 ${index + 1}`}
+                      className="w-[140px] h-[140px] mb-2"
+                    />
+                    <span className="text-[14px] text-[#212121] font-pretendard font-semibold">
                       {item.step}
-                    </h3>
-                    <p className="font-normal text-[12px] text-[#212121] mt-2">
+                    </span>
+                    <p className="text-[12px] text-[#828282] mt-1 font-pretendard">
                       {item.description}
                     </p>
                   </div>

@@ -1196,6 +1196,7 @@ const ProjectRegister = () => {
                       자세히 보기
                     </a>
                   </div>
+
                   {/* 이용 약관 */}
                   <div className="flex items-center justify-between">
                     <label className="flex items-center text-[#212121] text-[14px] gap-2">
