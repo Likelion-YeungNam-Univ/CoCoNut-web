@@ -249,7 +249,6 @@ const ProjectDetail = ({ role }) => {
               </span>
             </div>
           </div>
-
           <div className="flex items-start justify-between mb-2">
             <h1 className="text-[28px] font-semibold text-[#212121] ">
               {projectData.title || "공모전 제목 없음"}
@@ -259,7 +258,7 @@ const ProjectDetail = ({ role }) => {
                 <button
                   onClick={() => setIsOptionsModalOpen(!isOptionsModalOpen)}
                 >
-                  <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121]" />
+                  <PiDotsThreeVerticalBold className="w-[30px] h-[30px] text-[#212121] cursor-pointer" />
                 </button>
                 {isOptionsModalOpen && (
                   <div
@@ -267,13 +266,13 @@ const ProjectDetail = ({ role }) => {
                     style={{ zIndex: 100 }}
                   >
                     <button
-                      className="flex items-center px-4 py-2 text-[#4C4C4C] hover:bg-gray-100 w-full text-left"
+                      className="flex items-center w-full text-[#4C4C4C] text-left hover:bg-gray-100"
                       onClick={() => {
                         setIsOptionsModalOpen(false);
                         setIsDeleteModalOpen(true);
                       }}
                     >
-                      <div className="flex space-x-2">
+                      <div className="flex items-center px-4 py-2 space-x-2">
                         <AiFillDelete className="text-[#C3C3C3]" />
                         <span className="text-[#828282] text-[12px]">
                           삭제하기
