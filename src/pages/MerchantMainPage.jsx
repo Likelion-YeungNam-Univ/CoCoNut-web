@@ -4,11 +4,13 @@ import ProjectStatusTabs from "../main/ProjectStatusTabs";
 import CategoryFilter from "../main/CategoryFilter";
 import ProjectList from "../main/ProjectList";
 import { BiSolidPencil } from "react-icons/bi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import MerchantBanner from "../main/MerchantBanner";
+import { fetchUserInfo } from "../apis/userApi";
 
 const MerchantMainPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("CLOSED"); // 진행중, 투표중, 완료 탭 상태
   const [selectedCategories, setSelectedCategories] = useState([]); // 카테고리 선택 상태
   const [selectedBusinesses, setSelectedBusinesses] = useState([]); // 업종 선택 상태
@@ -21,6 +23,23 @@ const MerchantMainPage = () => {
     setSelectedCategories([]);
     setSelectedBusinesses([]);
   }, [activeTab]);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const user = await fetchUserInfo();
+        if (user.role !== "ROLE_BUSINESS") {
+          alert("소상공인 계정으로 로그인해야 이용할 수 있습니다.");
+          navigate("/participant-main-page");
+        }
+      } catch (err) {
+        alert("소상공인 계정으로 로그인해야 이용할 수 있습니다.");
+        navigate("/signin");
+      }
+    };
+
+    checkRole();
+  }, [navigate]);
 
   return (
     <div>

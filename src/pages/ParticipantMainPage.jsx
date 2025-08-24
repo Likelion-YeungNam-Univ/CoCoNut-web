@@ -5,8 +5,11 @@ import ProjectList from "../main/ProjectList";
 import Footer from "../components/Footer";
 import ParticipantHeader from "../header/ParticipantHeader";
 import ParticipantBanner from "../main/ParticipantBanner";
+import { fetchUserInfo } from "../apis/userApi";
+import { useNavigate } from "react-router-dom";
 
 const ParticipantMainPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("IN_PROGRESS"); // 진행중, 투표중, 완료 탭 상태 / 참가자 기본값 : 진행중
   const [selectedCategories, setSelectedCategories] = useState([]); // 카테고리 선택 상태
   const [selectedBusinesses, setSelectedBusinesses] = useState([]); // 업종 선택 상태
@@ -19,6 +22,23 @@ const ParticipantMainPage = () => {
     setSelectedCategories([]);
     setSelectedBusinesses([]);
   }, [activeTab]);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const user = await fetchUserInfo();
+        if (user.role !== "ROLE_USER") {
+          alert("참가자 계정으로 로그인해야 이용할 수 있습니다.");
+          navigate("/merchant-main-page");
+        }
+      } catch (err) {
+        alert("참가자 계정으로 로그인해야 이용할 수 있습니다.");
+        navigate("/signin");
+      }
+    };
+
+    checkRole();
+  }, [navigate]);
 
   return (
     <div>

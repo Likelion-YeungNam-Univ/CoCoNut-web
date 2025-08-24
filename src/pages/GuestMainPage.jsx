@@ -7,8 +7,11 @@ import Footer from "../components/Footer";
 import MerchantBanner from "../main/MerchantBanner";
 import GuestHeader from "../header/GuestHeader";
 import LoginRequiredModal from "../components/LoginRequiredModal";
+import { fetchUserInfo } from "../apis/userApi";
+import { useNavigate } from "react-router-dom";
 
 const GuestMainPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("IN_PROGRESS");
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedBusinesses, setSelectedBusinesses] = useState([]);
@@ -22,6 +25,29 @@ const GuestMainPage = () => {
     setSelectedCategories([]);
     setSelectedBusinesses([]);
   }, [activeTab]);
+
+  useEffect(() => {
+    const checkIfLoggedIn = async () => {
+      try {
+        const user = await fetchUserInfo();
+        if (user?.role === "ROLE_USER") {
+          alert(
+            "참가자 계정으로 로그인된 상태입니다.\n참가자 메인 페이지로 이동합니다."
+          );
+          navigate("/participant-main-page");
+        } else if (user?.role === "ROLE_BUSINESS") {
+          alert(
+            "소상공인 계정으로 로그인된 상태입니다.\n소상공인 메인 페이지로 이동합니다."
+          );
+          navigate("/merchant-main-page");
+        }
+      } catch (err) {
+        console.log("게스트 접근 허용");
+      }
+    };
+
+    checkIfLoggedIn();
+  }, [navigate]);
 
   return (
     <div>
