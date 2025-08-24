@@ -29,7 +29,7 @@ const MerchantMainPage = () => {
       try {
         const user = await fetchUserInfo();
         if (user.role !== "ROLE_BUSINESS") {
-          alert("접근 권한이 없습니다.");
+          alert("소상공인 계정으로 로그인해야 이용할 수 있습니다.");
           navigate("/participant-main-page");
         }
       } catch (err) {

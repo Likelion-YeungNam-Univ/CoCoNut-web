@@ -28,7 +28,7 @@ const ParticipantMainPage = () => {
       try {
         const user = await fetchUserInfo();
         if (user.role !== "ROLE_USER") {
-          alert("접근 권한이 없습니다.");
+          alert("참가자 계정으로 로그인해야 이용할 수 있습니다.");
           navigate("/merchant-main-page");
         }
       } catch (err) {
