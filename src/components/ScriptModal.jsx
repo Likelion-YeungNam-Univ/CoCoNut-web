@@ -41,7 +41,7 @@ const ScriptModal = ({
 
           {/* 모달 박스 */}
           <div
-            className="bg-white rounded-[12px] overflow-y-auto pt-[48px] pb-[36px] px-[60px]"
+            className="bg-white rounded-[12px] overflow-y-auto pt-[48px] pb-[36px] pl-[60px]"
             style={{ width, height }}
           >
             {title && (
