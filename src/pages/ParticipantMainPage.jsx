@@ -32,7 +32,7 @@ const ParticipantMainPage = () => {
           navigate("/merchant-main-page");
         }
       } catch (err) {
-        console.error("권한 확인 실패:", err);
+        alert("참가자 계정으로 로그인해야 이용할 수 있습니다.");
         navigate("/signin");
       }
     };
