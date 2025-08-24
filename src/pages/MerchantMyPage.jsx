@@ -414,7 +414,32 @@ const MerchantMyPage = () => {
         const myProjects = projectsResponse.data.filter(
           (project) => project.writerNickname === userResponse.data.nickname
         );
-        setUserProjects(myProjects);
+
+        const projectsWithImages = await Promise.all(
+          myProjects.map(async (project) => {
+            try {
+              const imageResponse = await api.get(
+                `/rewards/finish/project/${project.projectId}/image`
+              );
+              return {
+                ...project,
+                winnerImageUrl:
+                  imageResponse.data?.imageUrl &&
+                  imageResponse.data.imageUrl !== "string"
+                    ? imageResponse.data.imageUrl
+                    : null,
+              };
+            } catch (err) {
+              console.error(
+                "수상작 이미지를 불러오는 중 오류가 발생했습니다:",
+                err
+              );
+              return { ...project, winnerImageUrl: null };
+            }
+          })
+        );
+
+        setUserProjects(projectsWithImages);
       } catch (err) {
         console.error("데이터를 가져오는 데 실패했습니다:", err);
         setUserData(null);
