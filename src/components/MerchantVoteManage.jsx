@@ -270,7 +270,11 @@ export default function MerchantVoteManage({
 
         {/* 우승작 크게 */}
         <div className="mx-auto mt-10 border border-gray-200 w-[600px] rounded-2xl  bg-white overflow-hidden justify-center">
-          <div className="mx-auto aspect-square max-w-[600px] w-full bg-gray-100 overflow-hidden">
+          <div
+     className="mx-auto aspect-square max-w-[600px] w-full bg-gray-100 overflow-hidden cursor-pointer"
+     onClick={() => onCardClick(winner?.submissionId ?? winnerId)}
+     title="작품 미리보기"
+   >
             {winner?.imageUrl ? (
               <img src={winner.imageUrl} alt={winner?.title || "winner"} className="w-full h-full object-cover" />
             ) : (
@@ -291,7 +295,12 @@ export default function MerchantVoteManage({
         {/* 나머지 썸네일 */}
         <div className="grid grid-cols-4 gap-[24px] mt-[32px]">
           {others.map((it) => (
-            <div key={it.submissionId} className="border border-[#E1E1E1] rounded-[12px] w-[240px] h-[306px]">
+     <div
+       key={it.submissionId}
+       className="border border-[#E1E1E1] rounded-[12px] w-[240px] h-[306px] cursor-pointer hover:ring-2 hover:ring-[#2FD8F6]"
+       onClick={() => onCardClick(it.submissionId)}
+       title="작품 미리보기"
+     >
               <div className="relative border border-[#EBEBEB] w-[240px] h-[240px] rounded-[12px] bg-[#EBEBEB] overflow-hidden">
                 {it.imageUrl ? <img src={it.imageUrl} className="w-full h-full object-cover" alt={it.title} /> : null}
               </div>
