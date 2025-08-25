@@ -8,7 +8,7 @@ import vote3 from "../assets/vote3.png";
 import VoteConfirmModal from "./VoteConfirmModal";
 import { getProjectVotes } from "../apis/votesApi";
 import { selectWinner, getProjectWinner } from "../apis/rewardsApi";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const REFRESH_MS = 10000;
 
@@ -69,6 +69,7 @@ export default function MerchantVoteManage({
   onWinnerSelected, 
   uiVariant = "voting",
 }) {
+  const navigate = useNavigate();
 
   const [items, setItems] = useState(
     submissions.map((s) => ({
@@ -192,9 +193,17 @@ useEffect(() => {
     return map;
   }, [ranked]);
 
-  const onCardClick = (id) => {
-    if (!isSelecting) return;
-    setSelectedId((prev) => (prev === id ? null : id)); // 단일선택
+ const onCardClick = (id) => {
+    if (!id) return;
+    // 선택 모드가 아니고, 결과 화면이 아니며, 아직 우승작이 없으면 → 상세 페이지 이동
+    if (!isSelecting && uiVariant !== "result" && !winnerId) {
+      navigate(`/submissions/${id}`);
+      return;
+    }
+    // 선택 모드일 땐 기존처럼 토글
+    if (isSelecting) {
+      setSelectedId((prev) => (prev === id ? null : id));
+    }
   };
 
   const confirmWinner = async () => {
