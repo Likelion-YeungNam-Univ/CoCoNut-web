@@ -5,7 +5,9 @@ import VoteConfirmModal from "./VoteConfirmModal";
 import vote1 from "../assets/vote1.png";
 import vote2 from "../assets/vote2.png";
 import vote3 from "../assets/vote3.png";
+import SubmissionPreviewModal from "./SubmissionPreviewModal";
 import { getProjectVotes, voteSubmission, getSubmissionVotes } from "../apis/votesApi";
+import { fetchSubmissionDetail } from "../apis/submissionApi";
 
 const REFRESH_MS = 10000;
 
@@ -25,6 +27,10 @@ const ParticipantVoteGrid = ({
   const [openConfirm, setOpenConfirm] = useState(false);
   const [checking, setChecking] = useState(true);
   const [hasVoted, setHasVoted] = useState(false);
+
+  // 🔸 미리보기 모달 상태
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState(null); // { title, imageUrl, description, relatedUrl }
 
   // 투표 기간
   const timeWindowOpen = useMemo(() => {
@@ -93,23 +99,21 @@ const ParticipantVoteGrid = ({
   }, [submissions]);
 
   // (보조) 단건 조회로 투표 여부 1회 검증
- const verifyFromSubmission = useCallback(async () => {
-  // 1순위: 로컬 저장된 sid, 2순위: 프로젝트 내 임의의 제출물 id
-   const sidLocal = votedSubmissionKey ? localStorage.getItem(votedSubmissionKey) : null;
-   const sidAny = items[0]?.submissionId ?? items[0]?.id ?? null;
-   const sid = sidLocal || sidAny;
-   if (!sid) return false;
+  const verifyFromSubmission = useCallback(async () => {
+    const sidLocal = votedSubmissionKey ? localStorage.getItem(votedSubmissionKey) : null;
+    const sidAny = items[0]?.submissionId ?? items[0]?.id ?? null;
+    const sid = sidLocal || sidAny;
+    if (!sid) return false;
     try {
       const res = await getSubmissionVotes(sid);
       const voted = Boolean(res?.voted ?? res?.voteresult);
-    // ✅ 서버 값으로 무조건 덮어쓰기
-     setHasVoted(voted);
-     if (votedKey) {
-       if (voted) localStorage.setItem(votedKey, "1");
-       else localStorage.removeItem(votedKey);
-     }
-     if (!voted && votedSubmissionKey) localStorage.removeItem(votedSubmissionKey);
-     return voted;
+      setHasVoted(voted);
+      if (votedKey) {
+        if (voted) localStorage.setItem(votedKey, "1");
+        else localStorage.removeItem(votedKey);
+      }
+      if (!voted && votedSubmissionKey) localStorage.removeItem(votedSubmissionKey);
+      return voted;
     } catch (e) {
       console.error("verifyFromSubmission failed:", e);
       return false;
@@ -154,10 +158,9 @@ const ParticipantVoteGrid = ({
       setTotalVotes(total);
       if (totalKey) sessionStorage.setItem(totalKey, String(total));
 
-      // 서버가 '내가 투표했는지'를 "명시적으로" 보냈는지 확인
       const rawFlags = [
         data?.myVoteSubmissionId,
-        data?.my_vote_submission_id, // snake_case 대비
+        data?.my_vote_submission_id,
         data?.hasVoted,
         data?.has_voted,
         data?.voted,
@@ -167,8 +170,7 @@ const ParticipantVoteGrid = ({
       const hasSignal = rawFlags.some((v) => v !== undefined && v !== null);
       const serverHasVoted = hasSignal && Boolean(rawFlags.find(Boolean));
 
-      // 서버가 명시했을 때만 덮어쓰기 (안 주면 기존 값 유지)
-          if (hasSignal) {
+      if (hasSignal) {
         setHasVoted(serverHasVoted);
         if (votedKey) {
           if (serverHasVoted) {
@@ -179,28 +181,26 @@ const ParticipantVoteGrid = ({
           }
         }
       } else {
-        // 서버 신호가 없고, 로컬에 "어느 제출물에 투표했는지"가 있으면 단건으로 1회 검증
-          if (!verifiedOnceRef.current) {
-      verifiedOnceRef.current = true;
-      await verifyFromSubmission();
-    }
+        if (!verifiedOnceRef.current) {
+          verifiedOnceRef.current = true;
+          await verifyFromSubmission();
+        }
       }
     } catch (e) {
       console.error("loadProjectVotes failed:", e);
     } finally {
       setChecking(false);
     }
-  }, [projectId, totalKey, votedKey, verifyFromSubmission]);
+  }, [projectId, totalKey, votedKey, verifyFromSubmission, votedSubmissionKey]);
 
-  // userId가 준비되어야 최종 판단 가능
- useEffect(() => {
-   if (!projectId) return;
-   setChecking(true);
-   (async () => {
-     await loadProjectVotes();
-   })();
- }, [projectId, userId]);
-  // 투표 중이면 주기적 새로고침
+  useEffect(() => {
+    if (!projectId) return;
+    setChecking(true);
+    (async () => {
+      await loadProjectVotes();
+    })();
+  }, [projectId, userId]);
+
   useEffect(() => {
     if (!canVote) return;
     const t = setInterval(loadProjectVotes, REFRESH_MS);
@@ -212,15 +212,38 @@ const ParticipantVoteGrid = ({
 
   const keyOf = (s) => s?.submissionId ?? s?.id;
 
-  const handleCardClick = (s) => {
-    if (!isSelecting || hasVoted || checking) return;
-    const nextKey = keyOf(s);
-    if (mySubmissionId && String(nextKey) === String(mySubmissionId)) {
-      alert("본인 작품에는 투표할 수 없습니다.");
+  // 🔸 카드 클릭 처리: 선택 모드면 선택/토글, 그 외엔 미리보기 모달 오픈
+  const handleCardClick = async (s) => {
+    // 선택 모드 + 아직 투표 안했고 확인 중 아니면 → 선택/토글
+    if (isSelecting && !hasVoted && !checking) {
+      const nextKey = keyOf(s);
+      if (mySubmissionId && String(nextKey) === String(mySubmissionId)) {
+        alert("본인 작품에는 투표할 수 없습니다.");
+        return;
+      }
+      const curKey = keyOf(selected);
+      setSelected(curKey === nextKey ? null : s);
       return;
     }
-    const curKey = keyOf(selected);
-    setSelected(curKey === nextKey ? null : s);
+
+    // 그 외(선택 모드 아님 등) → 미리보기 모달
+    let detail = {};
+    try {
+      if (!s?.description || !s?.relatedUrl) {
+        const id = s?.submissionId ?? s?.id;
+        if (id) detail = await fetchSubmissionDetail(id);
+      }
+    } catch (e) {
+      console.warn("fetchSubmissionDetail failed:", e);
+    }
+
+    setPreviewData({
+      title: s?.title ?? detail?.title ?? "",
+      imageUrl: s?.imageUrl ?? detail?.imageUrl ?? "",
+      description: s?.description ?? detail?.description ?? "",
+      relatedUrl: s?.relatedUrl ?? detail?.relatedUrl ?? "",
+    });
+    setPreviewOpen(true);
   };
 
   const handleConfirm = async () => {
@@ -266,7 +289,6 @@ const ParticipantVoteGrid = ({
       const resp = e?.response;
       const dup = resp?.status === 409;
 
-      // 서버가 내려주는 메시지 우선 사용, 없으면 기본 문구
       const serverMsg = resp?.data?.message;
       const msg = dup
         ? serverMsg || "해당 공모전에 대한 작품에 이미 투표하셨습니다."
@@ -275,16 +297,13 @@ const ParticipantVoteGrid = ({
       alert(msg);
 
       if (dup) {
-        // 즉시 '이미 투표했어요' 상태로 전환
         setHasVoted(true);
         setIsSelecting(false);
         setSelected(null);
         setOpenConfirm(false);
         if (votedKey) localStorage.setItem(votedKey, "1");
-        
-        // votedSubmissionKey는 여기서는 설정하지 않고 서버 집계에 맡긴다.
-        await loadProjectVotes(); // 최신 집계 반영(표 수 등)
-        return; // 여기서 종료
+        await loadProjectVotes();
+        return;
       }
 
       setOpenConfirm(false);
@@ -362,7 +381,7 @@ const ParticipantVoteGrid = ({
               className={`border border-[#E1E1E1] rounded-[12px] w-[240px] h-[306px] ${
                 isSelecting && !hasVoted && !checking
                   ? "cursor-pointer hover:ring-2 hover:ring-[#2FD8F6]"
-                  : "cursor-default"
+                  : "cursor-pointer" /* 미리보기 허용 위해 커서 포인터 유지 */
               } ${isSelected && !hasVoted ? "ring-2 ring-[#2FD8F6]" : ""}`}
             >
               <div className="relative border border-[#EBEBEB] w-[240px] h-[240px] rounded-[12px] bg-[#EBEBEB] overflow-hidden">
@@ -439,6 +458,16 @@ const ParticipantVoteGrid = ({
         onClose={() => setOpenConfirm(false)}
         onConfirm={handleConfirm}
         submission={selected}
+      />
+
+      {/* 🔸 미리보기 모달 */}
+      <SubmissionPreviewModal
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        projectTitle={previewData?.title ?? ""}
+        uploadedImage={previewData?.imageUrl ?? ""}
+        description={previewData?.description ?? ""}
+        link={previewData?.relatedUrl ?? ""}
       />
     </div>
   );
