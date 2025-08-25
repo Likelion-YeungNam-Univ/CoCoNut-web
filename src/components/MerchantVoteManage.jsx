@@ -180,7 +180,7 @@ export default function MerchantVoteManage({
   const onCardClick = async (id) => {
     if (!id) return;
 
-    if (!isSelecting && uiVariant !== "result" && !winnerId) {
+    if (!isSelecting && uiVariant !== "result") {
       const base =
         ranked.find((it) => toKey(it.submissionId) === toKey(id)) ||
         submissions.find((it) => toKey(it.submissionId) === toKey(id));
