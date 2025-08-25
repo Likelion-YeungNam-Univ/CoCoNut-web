@@ -83,6 +83,18 @@ const MerchantMyProject = () => {
       winnerSubmissionId:
         results[i].winnerSubmissionId ?? deriveWinnerId(p) ?? null,
       // awardConfirmed는 서버가 주는 값 우선, 없으면 false
+       submissionCount:
+  results[i].submissionCount ??
+   p.submissionCount ??
+   p.participantsCount ??
+   p.totalSubmissions ??
+   0,
+ participantsCount:
+   results[i].submissionCount ??
+   p.participantsCount ??
+   p.submissionCount ??
+   p.totalSubmissions ??
+   0,
       awardConfirmed: Boolean(p.awardConfirmed),
     }));
   }, []);
@@ -213,7 +225,7 @@ const MerchantMyProject = () => {
                     <MyProjectsList
                       getCategoryLabel={getCategoryLabel}
                       getBusinessTypeLabel={getBusinessTypeLabel}
-                      project={{ project: p }}
+                      project={p}
                     />
                   </Link>
                 </div>
