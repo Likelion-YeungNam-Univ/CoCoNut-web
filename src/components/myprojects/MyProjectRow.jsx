@@ -53,7 +53,7 @@ const MyProjectRow = ({ project, getCategoryLabel, getBusinessTypeLabel }) => {
           <img className="w-4 h-4" src={participantIcon} alt="참여작" />
           <span className="text-[#828282] w-[36px]">참여작</span>
           <span className="font-medium text-[#212121]">
-            {project?.submissionsCount ?? 0}개
+           {project.submissionCount}개
           </span>
         </div>
         <div className="flex items-center gap-[6px]">
