@@ -281,7 +281,7 @@ const ParticipantVoteGrid = ({
         setSelected(null);
         setOpenConfirm(false);
         if (votedKey) localStorage.setItem(votedKey, "1");
-        // ⚠️ dup인 경우, 실제 내가 찍은 제출물이 selKey와 다를 수 있으므로
+        
         // votedSubmissionKey는 여기서는 설정하지 않고 서버 집계에 맡긴다.
         await loadProjectVotes(); // 최신 집계 반영(표 수 등)
         return; // 여기서 종료

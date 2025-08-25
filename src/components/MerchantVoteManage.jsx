@@ -26,19 +26,7 @@ const getNick = (s) =>
   s?.username ??
   null;
 
-const fmtYMD = (s) => {
-  if (!s) return "-";
-  try {
-    const d = new Date(s);
-    if (isNaN(d)) return s;
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${y}.${m}.${dd}`;
-  } catch {
-    return s;
-  }
-};
+
 
 const RankBadge = ({ rank, votes, variant = "voting" }) => {
   if (!rank) return null;
@@ -197,7 +185,7 @@ useEffect(() => {
     if (!id) return;
     // 선택 모드가 아니고, 결과 화면이 아니며, 아직 우승작이 없으면 → 상세 페이지 이동
     if (!isSelecting && uiVariant !== "result" && !winnerId) {
-      navigate(`/submissions/${id}`);
+      navigate(`/projects/${projectId}/submission`);
       return;
     }
     // 선택 모드일 땐 기존처럼 토글
