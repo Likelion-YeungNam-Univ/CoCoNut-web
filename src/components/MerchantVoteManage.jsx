@@ -6,9 +6,10 @@ import vote1 from "../assets/vote1.png";
 import vote2 from "../assets/vote2.png";
 import vote3 from "../assets/vote3.png";
 import VoteConfirmModal from "./VoteConfirmModal";
+import SubmissionPreviewModal from "./SubmissionPreviewModal";
 import { getProjectVotes } from "../apis/votesApi";
 import { selectWinner, getProjectWinner } from "../apis/rewardsApi";
-import { Link, useNavigate } from "react-router-dom";
+import { fetchSubmissionDetail } from "../apis/submissionApi";
 
 const REFRESH_MS = 10000;
 
@@ -18,15 +19,23 @@ function toKey(v) {
   return Number.isFinite(n) ? String(n) : String(v);
 }
 
-
 const getNick = (s) =>
-  s?.writerNickname ??
-  s?.nickname ??
-  s?.userNickname ??
-  s?.username ??
-  null;
+  s?.writerNickname ?? s?.nickname ?? s?.userNickname ?? s?.username ?? null;
 
-
+const fmtYMD = (s, addDays = 0) => {
+  if (!s) return "-";
+  try {
+    const d = new Date(s);
+    if (isNaN(d)) return s;
+    if (addDays) d.setDate(d.getDate() + addDays);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const dd = String(d.getDate()).padStart(2, "0");
+    return `${y}.${m}.${dd}`;
+  } catch {
+    return s;
+  }
+};
 
 const RankBadge = ({ rank, votes, variant = "voting" }) => {
   if (!rank) return null;
@@ -49,17 +58,15 @@ const RankBadge = ({ rank, votes, variant = "voting" }) => {
 };
 
 export default function MerchantVoteManage({
-  project,
+  project, // optional, only for title fallback in preview
   projectId,
   submissions = [],
   voteStartDate,
   voteEndDate,
   winnerSubmissionId: winnerFromServer = null,
-  onWinnerSelected, 
-  uiVariant = "voting",
+  onWinnerSelected,
+  uiVariant = "voting", // "voting" | "result"
 }) {
-  const navigate = useNavigate();
-
   const [items, setItems] = useState(
     submissions.map((s) => ({
       ...s,
@@ -67,7 +74,6 @@ export default function MerchantVoteManage({
     }))
   );
   const [totalVotes, setTotalVotes] = useState(0);
-
 
   useEffect(() => {
     setItems(
@@ -78,49 +84,37 @@ export default function MerchantVoteManage({
     );
   }, [submissions]);
 
-
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
- const [winnerEmail, setWinnerEmail] = useState(null);
- const [loadingWinnerEmail, setLoadingWinnerEmail] = useState(false);
- const [winnerId, setWinnerId] = useState(winnerFromServer ?? null);
+
+  const [winnerEmail, setWinnerEmail] = useState(null);
+  const [loadingWinnerEmail, setLoadingWinnerEmail] = useState(false);
+  const [winnerId, setWinnerId] = useState(winnerFromServer ?? null);
 
   useEffect(() => {
-   setWinnerId(winnerFromServer ?? null);
- }, [winnerFromServer]);
+    setWinnerId(winnerFromServer ?? null);
+  }, [winnerFromServer]);
 
-const fmtYMD = (s, addDays = 0) => {
-  if (!s) return "-";
-  try {
-    const d = new Date(s);
-    if (isNaN(d)) return s;
-    d.setDate(d.getDate() + addDays); 
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dd = String(d.getDate()).padStart(2, "0");
-    return `${y}.${m}.${dd}`;
-  } catch {
-    return s;
-  }
-};
+  // --- Preview modal state ---
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewData, setPreviewData] = useState(null); // { title, imageUrl, description, relatedUrl }
 
-
-useEffect(() => {
-   if (!projectId || !winnerId) return;
-   (async () => {
-     setLoadingWinnerEmail(true);
-     try {
-       const info = await getProjectWinner(projectId);
-       setWinnerEmail(info?.winnerEmail ?? null);
-     } catch (e) {
-       console.error("getProjectWinner failed:", e);
-       setWinnerEmail(null);
-     } finally {
-       setLoadingWinnerEmail(false);
-     }
-   })();
- }, [projectId, winnerId]);
+  useEffect(() => {
+    if (!projectId || !winnerId) return;
+    (async () => {
+      setLoadingWinnerEmail(true);
+      try {
+        const info = await getProjectWinner(projectId);
+        setWinnerEmail(info?.winnerEmail ?? null);
+      } catch (e) {
+        console.error("getProjectWinner failed:", e);
+        setWinnerEmail(null);
+      } finally {
+        setLoadingWinnerEmail(false);
+      }
+    })();
+  }, [projectId, winnerId]);
 
   // 투표수 로딩
   const loadVotes = useCallback(async () => {
@@ -182,14 +176,35 @@ useEffect(() => {
     return map;
   }, [ranked]);
 
- const onCardClick = (id) => {
+  // 카드 클릭: 선택 모드가 아니고, 결과 화면이 아니며, 아직 우승작이 없으면 → 미리보기 모달
+  const onCardClick = async (id) => {
     if (!id) return;
-    // 선택 모드가 아니고, 결과 화면이 아니며, 아직 우승작이 없으면 → 상세 페이지 이동
+
     if (!isSelecting && uiVariant !== "result" && !winnerId) {
-      navigate(`/project-detail-participant/${project.projectId}`);
+      const base =
+        ranked.find((it) => toKey(it.submissionId) === toKey(id)) ||
+        submissions.find((it) => toKey(it.submissionId) === toKey(id));
+
+      let detail = {};
+      try {
+        if (!base?.description || !base?.relatedUrl) {
+          detail = await fetchSubmissionDetail(id);
+        }
+      } catch (e) {
+        console.warn("fetchSubmissionDetail failed:", e);
+      }
+
+      setPreviewData({
+        title: base?.title ?? detail?.title ?? "",
+        imageUrl: base?.imageUrl ?? detail?.imageUrl ?? "",
+        description: base?.description ?? detail?.description ?? "",
+        relatedUrl: base?.relatedUrl ?? detail?.relatedUrl ?? "",
+      });
+      setPreviewOpen(true);
       return;
     }
-    // 선택 모드일 땐 기존처럼 토글
+
+    // 선택 모드에서는 선택 토글
     if (isSelecting) {
       setSelectedId((prev) => (prev === id ? null : id));
     }
@@ -229,44 +244,35 @@ useEffect(() => {
       <div className="font-pretendard flex flex-col items-center">
         {/* 상단 안내 */}
         <div className="flex flex-col mt-[80px] items-center text-center gap-[8px]">
-          <div className="text-[24px] font-semibold">
-            수상작 선정이 완료되었습니다.🎉
-          </div>
+          <div className="text-[24px] font-semibold">수상작 선정이 완료되었습니다.🎉</div>
           <div className="text-[14px] text-[#A3A3A3]">
             선정하신 수상작은 모든 사용자에게 공개됩니다
           </div>
 
-        <div className="flex flex-row mt-[40px] items-center gap-[16px] border bg-[#E0F9FE] border-[#E0F9FE] rounded-[24px] justify-center text-[16px] text-[#26ADC5] px-[16px] py-[10px]">
-   <div className="text-center">
-     <div className="font-medium">
-       {winnerNick} 님의 작품이 수상작으로 선정되었습니다.
-     </div>
-     {loadingWinnerEmail ? (
-       <div className="mt-1 text-[#26ADC5]/70">이메일 불러오는 중…</div>
-     ) : winnerEmail ? (
-       <div className="mt-1">
-         수상자 연락처:&nbsp;
-         <a href={`mailto:${winnerEmail}`} className="underline font-semibold">
-           {winnerEmail}
-         </a>
-        
-       </div>
-     ) : (
-       <div className="mt-1 text-[#26ADC5]/70">이메일 정보를 찾을 수 없습니다.</div>
-     )}
-   </div>
- </div>
+          <div className="flex flex-row mt-[40px] items-center gap-[16px] border bg-[#E0F9FE] border-[#E0F9FE] rounded-[24px] justify-center text-[16px] text-[#26ADC5] px-[16px] py-[10px]">
+            <div className="text-center">
+              <div className="font-medium">{winnerNick} 님의 작품이 수상작으로 선정되었습니다.</div>
+              {loadingWinnerEmail ? (
+                <div className="mt-1 text-[#26ADC5]/70">이메일 불러오는 중…</div>
+              ) : winnerEmail ? (
+                <div className="mt-1">
+                  수상자 연락처:&nbsp;
+                  <a href={`mailto:${winnerEmail}`} className="underline font-semibold">
+                    {winnerEmail}
+                  </a>
+                </div>
+              ) : (
+                <div className="mt-1 text-[#26ADC5]/70">이메일 정보를 찾을 수 없습니다.</div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* 우승작 크게 */}
         <div className="mx-auto mt-10 border border-gray-200 w-[600px] rounded-2xl  bg-white overflow-hidden justify-center">
           <div className="mx-auto aspect-square max-w-[600px] w-full bg-gray-100 overflow-hidden">
             {winner?.imageUrl ? (
-              <img
-                src={winner.imageUrl}
-                alt={winner?.title || "winner"}
-                className="w-full h-full object-cover"
-              />
+              <img src={winner.imageUrl} alt={winner?.title || "winner"} className="w-full h-full object-cover" />
             ) : (
               <div className="text-gray-400">이미지 없음</div>
             )}
@@ -285,22 +291,11 @@ useEffect(() => {
         {/* 나머지 썸네일 */}
         <div className="grid grid-cols-4 gap-[24px] mt-[32px]">
           {others.map((it) => (
-            <div
-              key={it.submissionId}
-              className="border border-[#E1E1E1] rounded-[12px] w-[240px] h-[306px]"
-            >
+            <div key={it.submissionId} className="border border-[#E1E1E1] rounded-[12px] w-[240px] h-[306px]">
               <div className="relative border border-[#EBEBEB] w-[240px] h-[240px] rounded-[12px] bg-[#EBEBEB] overflow-hidden">
-                {it.imageUrl ? (
-                  <img
-                    src={it.imageUrl}
-                    className="w-full h-full object-cover"
-                    alt={it.title}
-                  />
-                ) : null}
+                {it.imageUrl ? <img src={it.imageUrl} className="w-full h-full object-cover" alt={it.title} /> : null}
               </div>
-              <span className="block mt-[20px] ml-[16px] font-semibold truncate">
-                {it.title}
-              </span>
+              <span className="block mt-[20px] ml-[16px] font-semibold truncate">{it.title}</span>
             </div>
           ))}
         </div>
@@ -324,7 +319,7 @@ useEffect(() => {
               <div className="border rounded-[24px] bg-[#E0F9FE] text-[#26ADC5] border-[#E0F9FE] px-[12px] py-[8px] text-[14px] flex items-center gap-[8px]">
                 <div className="font-medium">선정 기간</div>
                 <div className="font-semibold">
-                 {`${fmtYMD(voteStartDate, 7)} - ${fmtYMD(voteEndDate, 7)}`}
+                  {`${fmtYMD(voteStartDate, 7)} - ${fmtYMD(voteEndDate, 7)}`}
                 </div>
               </div>
             </div>
@@ -356,11 +351,7 @@ useEffect(() => {
       </div>
 
       {/* 카드 그리드: 투표수 많은 순서로 정렬된 ranked 사용 */}
-      <div
-        className={`mt-[28px] grid ${
-          isResult ? "grid-cols-5 gap-[16px]" : "grid-cols-4 gap-[24px]"
-        }`}
-      >
+      <div className={`mt-[28px] grid ${isResult ? "grid-cols-5 gap-[16px]" : "grid-cols-4 gap-[24px]"}`}>
         {ranked.map((it) => {
           const badge = top3ById.get(toKey(it.submissionId));
           const selected = toKey(selectedId) === toKey(it.submissionId);
@@ -386,11 +377,7 @@ useEffect(() => {
                   />
                 ) : null}
                 {it.imageUrl ? (
-                  <img
-                    src={it.imageUrl}
-                    className="w-full h-full object-cover"
-                    alt={it.title}
-                  />
+                  <img src={it.imageUrl} className="w-full h-full object-cover" alt={it.title} />
                 ) : null}
                 {isSelecting && selected && (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -398,9 +385,7 @@ useEffect(() => {
                   </div>
                 )}
               </div>
-              <span className="block mt-[20px] ml-[16px] font-semibold truncate">
-                {it.title}
-              </span>
+              <span className="block mt-[20px] ml-[16px] font-semibold truncate">{it.title}</span>
             </div>
           );
         })}
@@ -441,13 +426,21 @@ useEffect(() => {
         open={openConfirm}
         onClose={() => setOpenConfirm(false)}
         onConfirm={confirmWinner}
-        submission={items.find(
-          (it) => toKey(it.submissionId) === toKey(selectedId)
-        )}
+        submission={items.find((it) => toKey(it.submissionId) === toKey(selectedId))}
         title="이 작품을 수상작으로 선정하시겠습니까?"
         description="선정하신 이후에는 변경할 수 없어요."
         confirmText="선정하기"
         cancelText="취소"
+      />
+
+      {/* 미리보기 모달 */}
+      <SubmissionPreviewModal
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        projectTitle={previewData?.title ?? project?.title ?? ""}
+        uploadedImage={previewData?.imageUrl ?? ""}
+        description={previewData?.description ?? ""}
+        link={previewData?.relatedUrl ?? ""}
       />
     </div>
   );
