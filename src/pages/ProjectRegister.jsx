@@ -243,7 +243,7 @@ const ProjectRegister = () => {
       if (isFormDirtyRef.current) {
         setIsBackModalOpen(true);
       } else {
-        navigate(-1);
+        navigate("/merchant-main-page");
       }
     };
 
