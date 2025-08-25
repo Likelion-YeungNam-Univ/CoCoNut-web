@@ -27,8 +27,7 @@ const ConfirmBackModal = ({ isOpen, onClose, onConfirm }) => {
           <button
             onClick={() => {
               onConfirm();
-              window.history.back();
-              window.history.back();
+              navigate("/merchant-main-page");
             }}
             className="py-2 px-4 bg-[#4C4C4C] text-[12px] text-white rounded-lg hover:bg-gray-800 transition"
           >
