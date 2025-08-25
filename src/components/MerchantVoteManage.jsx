@@ -49,6 +49,7 @@ const RankBadge = ({ rank, votes, variant = "voting" }) => {
 };
 
 export default function MerchantVoteManage({
+  project,
   projectId,
   submissions = [],
   voteStartDate,
