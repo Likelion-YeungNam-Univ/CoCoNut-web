@@ -235,11 +235,7 @@ const ProjectRegister = () => {
 
   // 뒤로가기 모달을 위한 useEffect
   useEffect(() => {
-    if (isFormDirty) {
-      window.history.pushState(null, "", window.location.href);
-    }
-
-    const handlePopstate = (e) => {
+    const handlePopstate = () => {
       if (isFormDirtyRef.current) {
         setIsBackModalOpen(true);
       } else {
@@ -251,7 +247,7 @@ const ProjectRegister = () => {
     return () => {
       window.removeEventListener("popstate", handlePopstate);
     };
-  }, [isFormDirty]);
+  }, []);
 
   // 모달이 열릴 때 body에 클래스 추가, 닫힐 때 제거
   useEffect(() => {
