@@ -437,7 +437,7 @@ const ProjectRegister = () => {
       description: aiProjectData.description,
       createdAt: createdAt,
       deadline: aiProjectData.deadline,
-      rewardAmount: parseInt(aiProjectData.rewardAmount, 10),
+      rewardAmount: parseInt(aiProjectData.rewardAmount.replace(/,/g, ""), 10),
       summary: aiProjectData.summary,
       colors: colors.length > 0 && !colors.includes("color_free") ? colors : [],
       styles: styles.length > 0 && !styles.includes("style_free") ? styles : [],
