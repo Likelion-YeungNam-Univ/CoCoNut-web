@@ -235,25 +235,22 @@ const ProjectRegister = () => {
 
   // 뒤로가기 모달을 위한 useEffect
   useEffect(() => {
+    // 현재 페이지를 history 스택에 추가
     window.history.pushState(null, "", window.location.href);
-  }, []);
 
-  // 2) popstate 이벤트 리스너
-  useEffect(() => {
     const handlePopstate = () => {
-      console.log("뒤로가기 감지됨, dirty 상태:", isFormDirtyRef.current);
       if (isFormDirtyRef.current) {
-        setIsBackModalOpen(true);
-        // 뒤로가기 동작 막기 위해 다시 pushState
-        window.history.pushState(null, "", window.location.href);
+        setIsBackModalOpen(true); // 폼 작성 중이면 모달 열기
       } else {
-        navigate("/merchant-main-page");
+        navigate("/merchant-main-page"); // 아니면 그냥 메인으로 이동
       }
     };
 
     window.addEventListener("popstate", handlePopstate);
-    return () => window.removeEventListener("popstate", handlePopstate);
-  }, [navigate]);
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+    };
+  }, []);
 
   // 모달이 열릴 때 body에 클래스 추가, 닫힐 때 제거
   useEffect(() => {
@@ -1344,7 +1341,11 @@ const ProjectRegister = () => {
         <ConfirmBackModal
           isOpen={isBackModalOpen}
           onClose={() => setIsBackModalOpen(false)}
-          onConfirm={handleConfirmBack}
+          onConfirm={() => {
+            setIsBackModalOpen(false);
+            setIsFormDirty(false);
+            navigate("/merchant-main-page");
+          }}
         />
       )}
       {isSuccessModalOpen && (
