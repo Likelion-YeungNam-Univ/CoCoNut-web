@@ -235,19 +235,25 @@ const ProjectRegister = () => {
 
   // 뒤로가기 모달을 위한 useEffect
   useEffect(() => {
+    window.history.pushState(null, "", window.location.href);
+  }, []);
+
+  // 2) popstate 이벤트 리스너
+  useEffect(() => {
     const handlePopstate = () => {
+      console.log("뒤로가기 감지됨, dirty 상태:", isFormDirtyRef.current);
       if (isFormDirtyRef.current) {
         setIsBackModalOpen(true);
+        // 뒤로가기 동작 막기 위해 다시 pushState
+        window.history.pushState(null, "", window.location.href);
       } else {
         navigate("/merchant-main-page");
       }
     };
 
     window.addEventListener("popstate", handlePopstate);
-    return () => {
-      window.removeEventListener("popstate", handlePopstate);
-    };
-  }, []);
+    return () => window.removeEventListener("popstate", handlePopstate);
+  }, [navigate]);
 
   // 모달이 열릴 때 body에 클래스 추가, 닫힐 때 제거
   useEffect(() => {
