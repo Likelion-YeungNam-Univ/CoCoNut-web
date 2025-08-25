@@ -191,7 +191,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                     <div className="grid grid-cols-3 gap-2 mt-2">
                       {data.color && data.color.length > 0 ? (
                         data.color[0] === "color_free" ? (
-                          <span className="px-4 py-2 rounded border border-[#F3F3F3] text-sm bg-white text-[#212121] flex items-center justify-center col-span-3 font-pretendard">
+                          <span className="w-[130px] h-[48px] rounded border border-[#F3F3F3] text-sm bg-white text-[#212121] flex items-center justify-center col-span-6 font-pretendard">
                             색상 자유
                           </span>
                         ) : (
