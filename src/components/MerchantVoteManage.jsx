@@ -185,7 +185,7 @@ useEffect(() => {
     if (!id) return;
     // 선택 모드가 아니고, 결과 화면이 아니며, 아직 우승작이 없으면 → 상세 페이지 이동
     if (!isSelecting && uiVariant !== "result" && !winnerId) {
-      navigate(`/projects/${projectId}/submission`);
+      navigate(`/project-detail/${project.projectId}`);
       return;
     }
     // 선택 모드일 땐 기존처럼 토글
