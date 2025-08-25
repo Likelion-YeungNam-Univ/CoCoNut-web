@@ -170,7 +170,7 @@ const PreviewModal = ({ isOpen, onClose, data }) => {
                     내용
                   </h2>
                   {data.image && (
-                    <div className="p-4 bg-[#EBEBEB] rounded-md text-[#4C4C4C] whitespace-pre-wrap w-full font-pretendard">
+                    <div className="p-4 rounded-md text-[#4C4C4C] whitespace-pre-wrap w-full font-pretendard">
                       <img
                         src={data.image}
                         alt="업로드 이미지 미리보기"
