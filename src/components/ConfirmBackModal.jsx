@@ -26,10 +26,7 @@ const ConfirmBackModal = ({ isOpen, onClose, onConfirm }) => {
             취소하기
           </button>
           <button
-            onClick={() => {
-              onConfirm();
-              navigate("/merchant-main-page");
-            }}
+            onClick={onConfirm}
             className="py-2 px-4 bg-[#4C4C4C] text-[12px] text-white rounded-lg hover:bg-gray-800 transition"
           >
             네, 돌아갈래요
