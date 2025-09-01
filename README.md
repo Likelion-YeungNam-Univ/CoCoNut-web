@@ -1,3 +1,6 @@
+# 🥥CoCoNut - Likelion 
+<img width="1920" height="1080" alt="Slide 16_9 - 1" src="https://github.com/user-attachments/assets/1c893860-51b2-454b-8de8-977463c8ab80" />
+
 # 🥥 CoCoNut-FE
 
 # 🧑‍💻 팀원 및 팀 소개
@@ -8,6 +11,17 @@
 | [GitHub](https://github.com/chlwjd0803) | [GitHub](https://github.com/eastminnn) | [GitHub](https://github.com/Limtaehyeon) | [GitHub](https://github.com/chominseo0723) |[GitHub](https://github.com/hyeji-neee) |[GitHub](https://github.com/SSXXMM22) |
 
 <br>
+
+## 문제 정의
+<img width="1920" height="1080" alt="Slide 16_9 - 3" src="https://github.com/user-attachments/assets/15d41c3f-1de0-44c1-b253-4e4061e16633" />
+
+## 서비스 소개 📌
+<img width="1920" height="1080" alt="Slide 16_9 - 4" src="https://github.com/user-attachments/assets/d587a983-e126-48e0-ac56-da517114865a" />
+
+## 𖣑 Bridgee만의 핵심 기능 🗳️ 
+<img width="1920" height="1080" alt="Slide 16_9 - 5 (1)" src="https://github.com/user-attachments/assets/f1053fda-5b6f-4855-9b80-6531d0b15c60" />
+<img width="1920" height="1080" alt="Slide 16_9 - 7" src="https://github.com/user-attachments/assets/1c31b4c8-cacc-4422-883d-62502047792e" />
+
 
 # 📌 컨벤션
 
